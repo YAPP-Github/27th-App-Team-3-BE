@@ -1,0 +1,8 @@
+rootProject.name = 'yapp'
+
+include 'bootstrap'
+include 'love'
+include 'love:domain'
+include 'love:application'
+include 'love:infrastructure'
+include 'love:web'

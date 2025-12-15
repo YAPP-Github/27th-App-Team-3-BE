@@ -1,0 +1,79 @@
+plugins {
+	id 'org.jetbrains.kotlin.jvm' version '1.9.25' apply false
+	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25' apply false
+	id 'org.springframework.boot' version '3.5.8' apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
+	id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25' apply false
+	id 'org.jetbrains.kotlin.plugin.allopen' version '1.9.25' apply false
+}
+
+group = 'com.yapp'
+version = '0.0.1-SNAPSHOT'
+
+allprojects {
+	group = 'com.yapp'
+	version = '0.0.1-SNAPSHOT'
+
+	repositories {
+		mavenCentral()
+	}
+}
+
+subprojects {
+	apply plugin: 'org.jetbrains.kotlin.jvm'
+
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(21)
+		}
+	}
+
+	kotlin {
+		compilerOptions {
+			freeCompilerArgs.addAll '-Xjsr305=strict'
+		}
+	}
+}
+
+project(':bootstrap') {
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'org.jetbrains.kotlin.plugin.spring'
+
+	tasks.named('bootJar') {
+		archiveFileName = "${rootProject.name}.jar"
+		mainClass = 'com.yapp.ApplicationKt'
+	}
+
+	tasks.named('jar') {
+		enabled = false
+	}
+}
+
+configure(subprojects.findAll { it.path.startsWith(':love') }) {
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'org.jetbrains.kotlin.plugin.spring'
+	apply plugin: 'org.jetbrains.kotlin.plugin.jpa'
+	apply plugin: 'org.jetbrains.kotlin.plugin.allopen'
+
+	dependencies {
+		testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	}
+
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+
+	dependencyManagement {
+		imports {
+			mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+		}
+	}
+
+	allOpen {
+		annotation 'jakarta.persistence.Entity'
+		annotation 'jakarta.persistence.MappedSuperclass'
+		annotation 'jakarta.persistence.Embeddable'
+	}
+}

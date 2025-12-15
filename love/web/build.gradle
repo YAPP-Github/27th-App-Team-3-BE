@@ -1,0 +1,14 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.spring'
+}
+
+dependencies {
+    implementation project(':love:domain')
+    implementation project(':love:application')
+    implementation project(':love:infrastructure')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

@@ -1,0 +1,12 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.spring'
+}
+
+dependencies {
+    implementation project(':love:domain')
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-tx'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
