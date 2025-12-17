@@ -1,0 +1,33 @@
+#!/bin/bash
+
+echo "🔍 Running Spotless check before commit..."
+
+# 변경된 Kotlin 파일들 이름만 추출 후 저장
+stagedFiles=$(git diff --staged --name-only | grep -E '\.kt$|\.kts$')
+
+if [ -z "$stagedFiles" ]; then
+    echo "✅ No Kotlin files to check."
+    exit 0
+fi
+
+# SpotlessApply 실행
+echo "🎨 Running spotlessApply. Formatting code..."
+./gradlew spotlessApply --daemon
+
+# spotlessApply 실패 시 커밋 중단
+if [ $? -ne 0 ]; then
+    echo "❌ Spotless formatting failed. Please fix the errors and try again."
+    exit 1
+fi
+
+# 변경 사항이 발생한 파일들 다시 git add
+echo "📦 Re-staging formatted files..."
+for file in $stagedFiles; do
+    if test -f "$file"; then
+        git add "$file"
+    fi
+done
+
+echo "✅ Spotless check passed!"
+exit 0
+
