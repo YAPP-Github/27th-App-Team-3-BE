@@ -12,3 +12,15 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
+tasks.register('copyPrivate', Copy) {
+    copy {
+        from "${rootProject.projectDir}/twix-submodule"
+        include "*.yml"
+        into 'src/main/resources'
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn tasks.named('copyPrivate')
+}
