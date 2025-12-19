@@ -1,7 +1,7 @@
 ---
 name: Issue Tempalte
 about: Suggest an idea for this project
-title: '[feat] 구현할 내용'
+title: 'feat: 구현할 내용'
 labels: ''
 assignees: ''
 
