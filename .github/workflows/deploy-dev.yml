@@ -110,6 +110,28 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
+      - name: Stop existing deployment if any
+        run: |
+          DEPLOYMENT_ID=$(aws deploy list-deployments \
+            --application-name teamtwix-dev-app \
+            --deployment-group-name teamtwix-dev-deployment-group \
+            --region ${{ env.AWS_REGION }} \
+            --include-only-statuses InProgress \
+            --max-items 1 \
+            --query 'deployments[0]' \
+            --output text)
+
+          if [ "$DEPLOYMENT_ID" != "None" ] && [ "$DEPLOYMENT_ID" != "" ]; then
+            echo "Stopping existing deployment: $DEPLOYMENT_ID"
+            aws deploy stop-deployment \
+              --deployment-id $DEPLOYMENT_ID \
+              --auto-rollback-enabled \
+              --region ${{ env.AWS_REGION }}
+            sleep 10
+          else
+            echo "No active deployment to stop"
+          fi
+
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
