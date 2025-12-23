@@ -28,7 +28,7 @@ class GlobalExceptionHandler {
     protected fun invalidArgumentBindResponse(e: BindException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.INVALID_INPUT_VALUE
 
-        logger.warn("Parameter binding failed: ${e.message}")
+        logger.warn { "Parameter binding failed: ${e.message}" }
 
         val error = ErrorResponse.error(globalErrorCode)
 
@@ -41,7 +41,7 @@ class GlobalExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.METHOD_NOT_ALLOWED
 
-        logger.warn("HTTP method not supported: ${e.message}")
+        logger.warn { "HTTP method not supported: ${e.message}" }
 
         val error = ErrorResponse.error(globalErrorCode)
 
