@@ -1,0 +1,24 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.github.oshai:kotlin-logging-jvm:7.0.3'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.mockk:mockk:1.13.13'
+}
+
+// 실행 가능한 앱이 아니라 라이브러리이므로 bootJar는 끄고 jar만 켬
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
