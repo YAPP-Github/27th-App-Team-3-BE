@@ -1,5 +1,6 @@
 package com.yapp.love.domain.user.repository
 
+import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.domain.user.model.User
 
 interface UserRepository {
@@ -10,4 +11,9 @@ interface UserRepository {
     fun findById(id: Long): User?
 
     fun deleteById(id: Long)
+
+    fun findByOauthProviderAndOauthProviderId(
+        oauthProvider: SocialProvider,
+        oauthProviderId: String,
+    ): User?
 }
