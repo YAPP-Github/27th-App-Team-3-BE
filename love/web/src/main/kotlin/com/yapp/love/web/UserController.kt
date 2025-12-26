@@ -13,16 +13,4 @@ class UserController(
     fun getAllUsers(): List<User> {
         return userService.getAllUsers()
     }
-
-    @PostMapping
-    fun createUser(
-        @RequestBody request: CreateUserRequest,
-    ): User {
-        return userService.createUser(request.name, request.email)
-    }
 }
-
-data class CreateUserRequest(
-    val name: String,
-    val email: String,
-)
