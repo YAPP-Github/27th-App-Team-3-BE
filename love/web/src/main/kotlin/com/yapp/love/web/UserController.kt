@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
 ) {
     @GetMapping
     fun getAllUsers(): List<User> {
@@ -15,12 +15,14 @@ class UserController(
     }
 
     @PostMapping
-    fun createUser(@RequestBody request: CreateUserRequest): User {
+    fun createUser(
+        @RequestBody request: CreateUserRequest,
+    ): User {
         return userService.createUser(request.name, request.email)
     }
 }
 
 data class CreateUserRequest(
     val name: String,
-    val email: String
+    val email: String,
 )

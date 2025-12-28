@@ -7,14 +7,17 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     fun getAllUsers(): List<User> {
         return userRepository.findAll()
     }
 
     @Transactional
-    fun createUser(name: String, email: String): User {
+    fun createUser(
+        name: String,
+        email: String,
+    ): User {
         val user = User(name = name, email = email)
         return userRepository.save(user)
     }
