@@ -68,7 +68,7 @@ jobs:
 
       - name: Update submodule to latest
         run: |
-          git submodule update --remote --merge
+          git submodule update --remote
           git submodule status
 
       - name: Set up JDK 21
