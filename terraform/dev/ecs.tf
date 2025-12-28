@@ -125,6 +125,14 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "DB_NAME"
           value = var.rds_database_name
+        },
+        {
+          name  = "REDIS_HOST"
+          value = aws_elasticache_cluster.redis.cache_nodes[0].address
+        },
+        {
+          name  = "REDIS_PORT"
+          value = "6379"
         }
       ]
 
