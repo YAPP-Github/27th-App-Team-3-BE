@@ -1,12 +1,14 @@
 name: CD - Deploy to Dev Environment
 
 on:
-  workflow_run:
-    workflows: ["CI - Test and Build"]
-    types:
-      - completed
-    branches:
-      - dev
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      SUBMODULE_TOKEN:
+        required: true
 
 env:
   AWS_REGION: ap-northeast-2
@@ -20,13 +22,11 @@ jobs:
   deploy:
     name: Deploy to AWS ECS
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: dev
           submodules: true
           token: ${{ secrets.SUBMODULE_TOKEN }}
 

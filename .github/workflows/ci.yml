@@ -103,3 +103,13 @@ jobs:
           echo "✅ All tests passed!"
           echo "✅ Build successful!"
           echo "🚀 Ready for deployment"
+
+  deploy-dev:
+    name: Deploy to Dev
+    needs: [test, build]
+    if: success() && github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    uses: ./.github/workflows/deploy-dev.yml
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SUBMODULE_TOKEN: ${{ secrets.SUBMODULE_TOKEN }}
