@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.spring'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
+    id 'com.gorylenko.gradle-git-properties' version '2.5.4'
 }
 
 dependencies {
