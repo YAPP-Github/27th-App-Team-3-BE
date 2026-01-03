@@ -8,6 +8,7 @@ COPY build.gradle settings.gradle ./
 COPY bootstrap ./bootstrap
 COPY love ./love
 COPY twix-submodule ./twix-submodule
+COPY .git ./.git
 
 # Copy config files from submodule to bootstrap resources
 RUN cp twix-submodule/*.yml bootstrap/src/main/resources/ || true
