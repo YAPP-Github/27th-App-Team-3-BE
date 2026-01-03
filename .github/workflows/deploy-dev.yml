@@ -1,9 +1,6 @@
 name: CD - Deploy to Dev Environment
 
 on:
-  push:
-    branches:
-      - dev
   workflow_run:
     workflows: ["CI - Test and Build"]
     types:
@@ -20,34 +17,16 @@ env:
   CONTAINER_NAME: teamtwix-dev-container
 
 jobs:
-  check-ci:
-    name: Check CI Status
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run'
-
-    steps:
-      - name: Check CI workflow result
-        if: github.event.workflow_run.conclusion != 'success'
-        run: |
-          echo "❌ CI workflow failed. Deployment cancelled."
-          exit 1
-
-      - name: CI Passed
-        run: echo "✅ CI workflow passed. Proceeding with deployment."
-
   deploy:
     name: Deploy to AWS ECS
     runs-on: ubuntu-latest
-    needs: [check-ci]
-    if: |
-      always() &&
-      (github.event_name == 'push' ||
-       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: dev
           submodules: true
           token: ${{ secrets.SUBMODULE_TOKEN }}
 
