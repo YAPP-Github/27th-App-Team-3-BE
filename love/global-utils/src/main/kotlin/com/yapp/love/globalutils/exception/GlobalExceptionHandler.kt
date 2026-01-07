@@ -26,7 +26,7 @@ class GlobalExceptionHandler {
 
         logger.warn(e) { "GlobalException: ${errorCode.getCode()}" }
 
-        val error = ErrorResponse.error(errorCode)
+        val error = ErrorResponse.from(errorCode)
 
         return ResponseEntity(error, errorCode.getHttpStatus())
     }
@@ -37,7 +37,7 @@ class GlobalExceptionHandler {
 
         logger.warn(e) { "Parameter binding failed" }
 
-        val error = ErrorResponse.error(globalErrorCode)
+        val error = ErrorResponse.from(globalErrorCode)
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
@@ -50,7 +50,7 @@ class GlobalExceptionHandler {
 
         logger.warn(e) { "HTTP method not supported" }
 
-        val error = ErrorResponse.error(globalErrorCode)
+        val error = ErrorResponse.from(globalErrorCode)
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
@@ -68,7 +68,7 @@ class GlobalExceptionHandler {
 
         logger.warn(e) { "Validation failed: $errorMsg" }
 
-        val error = ErrorResponse.error(globalErrorCode)
+        val error = ErrorResponse.from(globalErrorCode)
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
@@ -79,7 +79,7 @@ class GlobalExceptionHandler {
 
         logger.warn(ex) { "Malformed JSON request" }
 
-        val error = ErrorResponse.error(globalErrorCode)
+        val error = ErrorResponse.from(globalErrorCode)
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
@@ -90,7 +90,7 @@ class GlobalExceptionHandler {
 
         logger.warn(ex) { "Resource not found: ${ex.resourcePath}" }
 
-        val error = ErrorResponse.error(globalErrorCode)
+        val error = ErrorResponse.from(globalErrorCode)
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
@@ -102,7 +102,7 @@ class GlobalExceptionHandler {
         // Log4j2 Sentry Appender가 ERROR 로그를 자동으로 Sentry에 전송
         logger.error(ex) { "Unexpected error occurred" }
 
-        val error = ErrorResponse.error(globalErrorCode)
+        val error = ErrorResponse.from(globalErrorCode)
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
