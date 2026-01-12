@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 
 private val logger = KotlinLogging.logger {}
 
@@ -19,9 +20,13 @@ class AppleOauthClient(
     private val appleProperties: AppleOauthProperties,
     private val clientSecretService: AppleClientSecretService,
 ) {
+    companion object {
+        private const val APPLE_TOKEN_ENDPOINT = "https://appleid.apple.com"
+    }
+
     private val webClient: WebClient =
         webClientBuilder
-            .baseUrl(appleProperties.aud)
+            .baseUrl(APPLE_TOKEN_ENDPOINT)
             .build()
 
     fun exchangeCodeForToken(code: String): AppleTokenResponse {
@@ -30,17 +35,60 @@ class AppleOauthClient(
         val formData =
             AppleIdTokenRequest("authorization_code", code, appleProperties.clientId, clientSecret)
 
-        return webClient.post()
-            .uri("/auth/token")
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .body(BodyInserters.fromFormData(formData.toMultiValueMap()))
-            .retrieve()
-            .bodyToMono(AppleTokenResponse::class.java)
-            .doOnError { e ->
-                if (e is WebClientResponseException) {
-                    logger.error { "Apple token error: ${e.statusCode} - ${e.responseBodyAsString}" }
+        logger.debug {
+            "Requesting Apple token exchange with clientId: ${appleProperties.clientId}, code length: ${code.length}"
+        }
+
+        return try {
+            webClient.post()
+                .uri("/auth/token")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(formData.toMultiValueMap()))
+                .retrieve()
+                .onStatus({ it.isError }) { response ->
+                    response.bodyToMono(String::class.java)
+                        .defaultIfEmpty("(empty response body)")
+                        .flatMap { body ->
+                            logger.error {
+                                """
+                                |Apple token exchange failed:
+                                |Status: ${response.statusCode()}
+                                |Response Body: $body
+                                |Request URL: ${APPLE_TOKEN_ENDPOINT}/auth/token
+                                |Client ID: ${appleProperties.clientId}
+                                """.trimMargin()
+                            }
+                            val statusCode = response.statusCode()
+                            Mono.error(
+                                WebClientResponseException.create(
+                                    statusCode.value(),
+                                    "Apple token exchange failed",
+                                    response.headers().asHttpHeaders(),
+                                    body.toByteArray(),
+                                    null,
+                                ),
+                            )
+                        }
+                }
+                .bodyToMono(AppleTokenResponse::class.java)
+                .block() ?: throw IllegalStateException("Apple token response is null")
+        } catch (e: WebClientResponseException) {
+            // 이미 onStatus에서 로깅했지만, 혹시 모를 경우를 대비
+            if (!e.message.contains("Apple token exchange failed")) {
+                logger.error(e) {
+                    """
+                    |Apple token exchange failed (caught):
+                    |Status: ${e.statusCode}
+                    |Response Body: ${e.responseBodyAsString}
+                    |Request URL: ${APPLE_TOKEN_ENDPOINT}/auth/token
+                    |Client ID: ${appleProperties.clientId}
+                    """.trimMargin()
                 }
             }
-            .block() ?: throw IllegalStateException("Apple token response is null")
+            throw e
+        } catch (e: Exception) {
+            logger.error(e) { "Apple token exchange failed: ${e.message}" }
+            throw e
+        }
     }
 }

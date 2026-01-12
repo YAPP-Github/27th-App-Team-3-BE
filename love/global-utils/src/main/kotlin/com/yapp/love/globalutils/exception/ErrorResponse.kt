@@ -10,7 +10,7 @@ data class ErrorResponse(
 ) {
     companion object {
         // [실패] ErrorCode 인터페이스를 사용하는 경우
-        fun error(errorCode: ErrorCode): ErrorResponse {
+        fun from(errorCode: ErrorCode): ErrorResponse {
             return ErrorResponse(
                 status = errorCode.getHttpStatus().value(),
                 code = errorCode.getCode(),
@@ -19,7 +19,7 @@ data class ErrorResponse(
         }
 
         // [실패] 메시지를 직접 덮어쓰는 경우
-        fun error(
+        fun from(
             errorCode: ErrorCode,
             message: String,
         ): ErrorResponse {

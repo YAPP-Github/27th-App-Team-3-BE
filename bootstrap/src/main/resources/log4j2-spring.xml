@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Properties>
+        <!-- 콘솔 출력용 패턴 (컬러) -->
+        <Property name="CONSOLE_LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight{%-5level}{FATAL=red blink, ERROR=red, WARN=yellow bold, INFO=green, DEBUG=green bold, TRACE=blue} %style{[%t]}{cyan} %style{[%X{traceId}]}{magenta} %style{[%X{userId}]}{cyan} %style{[%X{clientIp}]}{yellow} %style{[%X{requestInfo}]}{blue} %style{%logger{36}}{bright,white} - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- 콘솔 출력 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${CONSOLE_LOG_PATTERN}" disableAnsi="false"/>
+        </Console>
+
+        <!-- Sentry Appender (dev, prod) -->
+        <Sentry name="Sentry" dsn="${spring:sentry.dsn}" minimumEventLevel="WARN" minimumBreadcrumbLevel="INFO"/>
+    </Appenders>
+
+    <Loggers>
+        <!-- Spring Profile: local -->
+        <SpringProfile name="local">
+            <Root level="INFO">
+                <AppenderRef ref="Console"/>
+            </Root>
+            <!-- SQL 로그 (개발용) -->
+            <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+                <AppenderRef ref="Console"/>
+            </Logger>
+        </SpringProfile>
+
+        <!-- Spring Profile: dev, prod -->
+        <SpringProfile name="dev,prod">
+            <Root level="INFO">
+                <AppenderRef ref="Console"/>
+                <AppenderRef ref="Sentry"/>
+            </Root>
+        </SpringProfile>
+    </Loggers>
+</Configuration>
+
