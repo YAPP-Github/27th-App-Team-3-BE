@@ -1,5 +1,6 @@
 package com.yapp.love.web.config
 
+import com.yapp.love.infrastructure.logging.SecurityMdcLoggingFilter
 import com.yapp.love.web.security.JwtAuthenticationEntryPoint
 import com.yapp.love.web.security.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
@@ -19,7 +20,14 @@ class SecurityConfig(
     private val corsConfigurationSource: CorsConfigurationSource,
 ) {
     @Bean
+    fun securityMdcLoggingFilter(): SecurityMdcLoggingFilter {
+        return SecurityMdcLoggingFilter()
+    }
+
+    @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        val mdcFilter = securityMdcLoggingFilter()
+
         http
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource) }
@@ -42,6 +50,7 @@ class SecurityConfig(
             }
             .exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAfter(mdcFilter, JwtAuthenticationFilter::class.java)
 
         return http.build()
     }
