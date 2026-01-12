@@ -32,7 +32,33 @@ class SwaggerConfig {
                             .type(SecurityScheme.Type.HTTP)
                             .scheme("bearer")
                             .bearerFormat("JWT")
-                            .description("JWT Access Token을 입력하세요. (Bearer 제외)"),
+                            .description(
+                                """
+                                ## AccessToken과 RefreshToken
+
+                                ### 사용 방법
+                                - **AccessToken**: 일반 API 요청 시 `Authorization` 헤더에 사용
+                                - **RefreshToken**: AccessToken 갱신 시에만 사용 (일반 API 요청에 사용 불가)
+
+                                ### 헤더 형식
+                                ```
+                                Authorization: Bearer {accessToken}
+                                ```
+
+                                ### 주의사항
+                                ⚠️ **RefreshToken을 일반 API 요청의 Authorization 헤더에 사용할 경우 401 Unauthorized가 반환됩니다.**
+
+                                ### 401 응답 예시
+                                RefreshToken을 Authorization 헤더에 넣을 경우:
+                                ```json
+                                {
+                                    "status": 401,
+                                    "code": "G4010",
+                                    "message": "인증되지 않은 사용자입니다."
+                                }
+                                ```
+                                """.trimIndent(),
+                            ),
                     ),
             )
     }
@@ -40,7 +66,11 @@ class SwaggerConfig {
     private fun apiInfo(): Info {
         return Info()
             .title("TWIX PROJECT API")
-            .description("YAPP APP 3팀 TWIX 백엔드 API 문서")
+            .description(
+                """
+                YAPP APP 3팀 TWIX 백엔드 API 문서
+                """.trimIndent(),
+            )
             .version("v1.0.0")
     }
 }

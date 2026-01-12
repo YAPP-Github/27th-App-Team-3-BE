@@ -3,11 +3,16 @@ package com.yapp.love.application.auth.service
 import com.yapp.love.application.auth.dto.AppleLoginCommand
 import com.yapp.love.application.auth.dto.GoogleLoginCommand
 import com.yapp.love.application.auth.dto.OAuthLoginResult
+import com.yapp.love.application.auth.dto.RefreshTokenCommand
+import com.yapp.love.application.auth.dto.TokenRefreshResult
 import com.yapp.love.application.auth.port.OAuthProvider
+import com.yapp.love.application.auth.port.RefreshTokenRepository
 import com.yapp.love.application.auth.port.TokenProvider
 import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.domain.user.model.User
 import com.yapp.love.domain.user.repository.UserRepository
+import com.yapp.love.globalutils.exception.GlobalErrorCode
+import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,6 +26,7 @@ class AuthService(
     oauthProviders: List<OAuthProvider>,
     private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
+    private val refreshTokenRepository: RefreshTokenRepository,
 ) {
     private val providerMap: Map<SocialProvider, OAuthProvider> =
         oauthProviders.associateBy { it.getProviderType() }
@@ -41,7 +47,10 @@ class AuthService(
     ): OAuthLoginResult {
         val oauthProvider =
             providerMap[provider]
-                ?: throw IllegalStateException("OAuth provider not registered: $provider")
+                ?: throw GlobalException(
+                    errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR,
+                    message = "OAuth provider not registered: $provider",
+                )
 
         val userInfo = oauthProvider.authenticate(code)
 
@@ -95,11 +104,49 @@ class AuthService(
         val accessToken = tokenProvider.createAccessToken(user.id!!)
         val refreshToken = tokenProvider.createRefreshToken(user.id!!)
 
+        refreshTokenRepository.save(user.id!!, refreshToken)
+
         return OAuthLoginResult(
             userId = user.id!!,
             accessToken = accessToken,
             refreshToken = refreshToken,
             isNewUser = isNewUser,
         )
+    }
+
+    /**
+     * RefreshToken으로 AccessToken 갱신
+     */
+    fun refreshToken(command: RefreshTokenCommand): TokenRefreshResult {
+        val refreshToken = command.refreshToken
+
+        if (!tokenProvider.validateToken(refreshToken)) {
+            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "유효하지 않은 RefreshToken입니다.")
+        }
+
+        val tokenType = tokenProvider.getTokenType(refreshToken)
+        if (tokenType != TokenProvider.TOKEN_TYPE_REFRESH) {
+            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "RefreshToken이 아닙니다.")
+        }
+
+        val userId = tokenProvider.getUserIdFromToken(refreshToken)
+
+        if (!refreshTokenRepository.exists(userId, refreshToken)) {
+            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "유효하지 않은 RefreshToken입니다.")
+        }
+
+        val newAccessToken = tokenProvider.createAccessToken(userId)
+        val newRefreshToken = tokenProvider.createRefreshToken(userId)
+
+        refreshTokenRepository.save(userId, newRefreshToken)
+
+        return TokenRefreshResult(
+            accessToken = newAccessToken,
+            refreshToken = newRefreshToken,
+        )
+    }
+
+    fun logout(userId: Long) {
+        refreshTokenRepository.delete(userId)
     }
 }
