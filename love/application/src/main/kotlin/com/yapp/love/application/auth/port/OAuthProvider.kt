@@ -1,4 +1,4 @@
-package com.yapp.love.application.auth
+package com.yapp.love.application.auth.port
 
 import com.yapp.love.domain.user.model.SocialProvider
 

@@ -1,6 +1,6 @@
 package com.yapp.love.infrastructure.jwt
 
-import com.yapp.love.application.auth.TokenProvider
+import com.yapp.love.application.auth.port.TokenProvider
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -44,6 +44,11 @@ class JwtTokenProvider(
         return claims.subject.toLong()
     }
 
+    fun getTokenType(token: String): String {
+        val claims = parseToken(token)
+        return claims[CLAIM_TOKEN_TYPE] as? String ?: TOKEN_TYPE_ACCESS
+    }
+
     private fun createToken(
         userId: Long,
         expiration: Long,
@@ -70,8 +75,8 @@ class JwtTokenProvider(
     }
 
     companion object {
-        private const val TOKEN_TYPE_ACCESS = "access"
-        private const val TOKEN_TYPE_REFRESH = "refresh"
+        const val TOKEN_TYPE_ACCESS = "access"
+        const val TOKEN_TYPE_REFRESH = "refresh"
         private const val CLAIM_TOKEN_TYPE = "type"
     }
 }

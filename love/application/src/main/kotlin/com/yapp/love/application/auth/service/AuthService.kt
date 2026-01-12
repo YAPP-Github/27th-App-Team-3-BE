@@ -1,10 +1,10 @@
 package com.yapp.love.application.auth.service
 
-import com.yapp.love.application.auth.OAuthProvider
-import com.yapp.love.application.auth.TokenProvider
 import com.yapp.love.application.auth.dto.AppleLoginCommand
 import com.yapp.love.application.auth.dto.GoogleLoginCommand
 import com.yapp.love.application.auth.dto.OAuthLoginResult
+import com.yapp.love.application.auth.port.OAuthProvider
+import com.yapp.love.application.auth.port.TokenProvider
 import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.domain.user.model.User
 import com.yapp.love.domain.user.repository.UserRepository

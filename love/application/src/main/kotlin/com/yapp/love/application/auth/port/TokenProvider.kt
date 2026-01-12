@@ -1,4 +1,4 @@
-package com.yapp.love.application.auth
+package com.yapp.love.application.auth.port
 
 interface TokenProvider {
     fun createAccessToken(userId: Long): String

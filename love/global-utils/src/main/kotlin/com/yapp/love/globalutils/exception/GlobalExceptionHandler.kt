@@ -3,6 +3,8 @@ package com.yapp.love.globalutils.exception
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -89,6 +91,28 @@ class GlobalExceptionHandler {
         val globalErrorCode = GlobalErrorCode.NOT_FOUND
 
         logger.warn(ex) { "Resource not found: ${ex.resourcePath}" }
+
+        val error = ErrorResponse.from(globalErrorCode)
+
+        return ResponseEntity(error, globalErrorCode.getHttpStatus())
+    }
+
+    @ExceptionHandler(AuthenticationException::class)
+    protected fun handleAuthenticationException(ex: AuthenticationException): ResponseEntity<ErrorResponse> {
+        val globalErrorCode = GlobalErrorCode.UNAUTHORIZED
+
+        logger.warn(ex) { "Authentication failed: ${ex.message}" }
+
+        val error = ErrorResponse.from(globalErrorCode)
+
+        return ResponseEntity(error, globalErrorCode.getHttpStatus())
+    }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    protected fun handleAccessDeniedException(ex: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        val globalErrorCode = GlobalErrorCode.FORBIDDEN
+
+        logger.warn(ex) { "Access denied: ${ex.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 

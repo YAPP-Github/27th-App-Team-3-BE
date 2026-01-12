@@ -1,22 +1,59 @@
 package com.yapp.love.infrastructure.oauth.apple
 
-import com.yapp.love.application.auth.OAuthProvider
-import com.yapp.love.application.auth.OAuthUserInfo
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.yapp.love.application.auth.port.OAuthProvider
+import com.yapp.love.application.auth.port.OAuthUserInfo
 import com.yapp.love.domain.user.model.SocialProvider
-import com.yapp.love.infrastructure.oauth.apple.service.AppleIdTokenVerifier
+import com.yapp.love.infrastructure.oauth.apple.config.AppleOauthProperties
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 class AppleOAuthService(
     private val appleOauthClient: AppleOauthClient,
-    private val appleIdTokenVerifier: AppleIdTokenVerifier,
+    private val appleProperties: AppleOauthProperties,
 ) : OAuthProvider {
     override fun getProviderType(): SocialProvider = SocialProvider.APPLE
 
     override fun authenticate(code: String): OAuthUserInfo {
         val tokenResponse = appleOauthClient.exchangeCodeForToken(code)
-        val oauthUserInfo = appleIdTokenVerifier.verify(tokenResponse.idToken)
+        return verifyIdToken(tokenResponse.idToken)
+    }
 
-        return oauthUserInfo
+    private fun verifyIdToken(idToken: String): OAuthUserInfo {
+        // JWT 디코딩 (서명 검증 없이 클레임만 추출)
+        val parts = idToken.split(".")
+        if (parts.size != 3) {
+            throw IllegalArgumentException("Invalid JWT format")
+        }
+
+        val payloadJson = String(java.util.Base64.getUrlDecoder().decode(parts[1]))
+        val claims = parseJsonToClaims(payloadJson)
+
+        // audience 검증
+        val aud = claims["aud"] as? String
+        if (aud != appleProperties.clientId) {
+            logger.error { "Apple ID token audience mismatch: $aud" }
+            throw IllegalStateException("Invalid Apple ID token audience")
+        }
+
+        // issuer 검증
+        val iss = claims["iss"] as? String
+        if (iss != "https://appleid.apple.com") {
+            logger.error { "Apple ID token issuer mismatch: $iss" }
+            throw IllegalStateException("Invalid Apple ID token issuer")
+        }
+
+        return OAuthUserInfo(
+            providerId = claims["sub"] as String,
+            email = claims["email"] as? String,
+        )
+    }
+
+    private fun parseJsonToClaims(json: String): Map<String, Any> {
+        val mapper = ObjectMapper()
+        return mapper.readValue(json, Map::class.java) as Map<String, Any>
     }
 }
