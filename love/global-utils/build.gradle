@@ -6,9 +6,9 @@ plugins {
 dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'io.github.oshai:kotlin-logging-jvm:7.0.3'
+    implementation 'io.github.oshai:kotlin-logging-jvm:5.1.4'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
