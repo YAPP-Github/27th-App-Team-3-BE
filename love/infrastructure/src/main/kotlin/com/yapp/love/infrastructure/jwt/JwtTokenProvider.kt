@@ -30,7 +30,7 @@ class JwtTokenProvider(
         return createToken(userId, refreshTokenExpiration, TOKEN_TYPE_REFRESH)
     }
 
-    fun validateToken(token: String): Boolean {
+    override fun validateToken(token: String): Boolean {
         return try {
             val claims = parseToken(token)
             !claims.expiration.before(Date())
@@ -39,14 +39,25 @@ class JwtTokenProvider(
         }
     }
 
-    fun getUserIdFromToken(token: String): Long {
+    override fun getUserIdFromToken(token: String): Long {
         val claims = parseToken(token)
         return claims.subject.toLong()
     }
 
-    fun getTokenType(token: String): String {
+    override fun getTokenType(token: String): String {
         val claims = parseToken(token)
         return claims[CLAIM_TOKEN_TYPE] as? String ?: TOKEN_TYPE_ACCESS
+    }
+
+    override fun getRemainingExpirationTime(token: String): Long {
+        return try {
+            val claims = parseToken(token)
+            val expiration = claims.expiration.time
+            val now = Date().time
+            maxOf(0, expiration - now)
+        } catch (e: Exception) {
+            0
+        }
     }
 
     private fun createToken(
