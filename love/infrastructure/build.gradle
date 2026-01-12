@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.spring'
     id 'org.jetbrains.kotlin.plugin.jpa'
     id 'org.jetbrains.kotlin.plugin.allopen'
-    id "io.sentry.jvm.gradle" version "5.12.2"
 }
 
 dependencies {
