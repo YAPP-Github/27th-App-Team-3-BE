@@ -1,8 +1,8 @@
 package com.yapp.love.web.config
 
-import com.yapp.love.infrastructure.logging.SecurityMdcLoggingFilter
 import com.yapp.love.web.security.JwtAuthenticationEntryPoint
 import com.yapp.love.web.security.JwtAuthenticationFilter
+import com.yapp.love.web.security.SecurityMdcLoggingFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity

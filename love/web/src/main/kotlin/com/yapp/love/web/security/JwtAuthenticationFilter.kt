@@ -1,6 +1,6 @@
 package com.yapp.love.web.security
 
-import com.yapp.love.infrastructure.jwt.JwtTokenProvider
+import com.yapp.love.application.auth.port.TokenProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -17,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class JwtAuthenticationFilter(
-    private val jwtTokenProvider: JwtTokenProvider,
+    private val tokenProvider: TokenProvider,
 ) : OncePerRequestFilter() {
     companion object {
         private const val AUTHORIZATION_HEADER = "Authorization"
@@ -32,11 +32,11 @@ class JwtAuthenticationFilter(
         try {
             val token = resolveToken(request)
 
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                val userId = jwtTokenProvider.getUserIdFromToken(token)
-                val tokenType = jwtTokenProvider.getTokenType(token)
+            if (token != null && tokenProvider.validateToken(token)) {
+                val userId = tokenProvider.getUserIdFromToken(token)
+                val tokenType = tokenProvider.getTokenType(token)
 
-                if (tokenType == JwtTokenProvider.TOKEN_TYPE_ACCESS) {
+                if (tokenType == TokenProvider.TOKEN_TYPE_ACCESS) {
                     val authentication = createAuthentication(userId, request)
                     SecurityContextHolder.getContext().authentication = authentication
                 }
