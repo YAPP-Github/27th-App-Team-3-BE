@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import com.yapp.love.application.auth.port.RefreshTokenRepository as RefreshTokenRepositoryPort
 
 @Repository
-class RefreshTokenRepository(
+class RefreshTokenRepositoryImpl(
     private val redisTemplate: StringRedisTemplate,
 ) : RefreshTokenRepositoryPort {
     companion object {
