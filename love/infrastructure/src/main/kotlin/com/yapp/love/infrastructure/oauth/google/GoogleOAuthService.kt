@@ -7,6 +7,9 @@ import com.yapp.love.infrastructure.oauth.google.config.GoogleOAuthProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,6 +24,13 @@ class GoogleOAuthService(
             .baseUrl(GOOGLE_TOKENINFO_URI)
             .build()
 
+    private val verifier = GoogleIdTokenVerifier.Builder(
+        NetHttpTransport(),
+        GsonFactory.getDefaultInstance()
+    )
+        .setAudience(listOf(googleProperties.clientId))
+        .build()
+
     override fun getProviderType(): SocialProvider = SocialProvider.GOOGLE
 
     override fun authenticate(code: String): OAuthUserInfo {
@@ -29,26 +39,14 @@ class GoogleOAuthService(
     }
 
     private fun verifyIdToken(idToken: String): OAuthUserInfo {
-        val response =
-            webClient.get()
-                .uri { uriBuilder ->
-                    uriBuilder
-                        .queryParam("id_token", idToken)
-                        .build()
-                }
-                .retrieve()
-                .bodyToMono(GoogleTokenInfoResponse::class.java)
-                .block() ?: throw IllegalStateException("Google token info response is null")
+        val idToken = verifier.verify(idToken)
+            ?: throw IllegalStateException("Invalid Google ID token")
 
-        // Verify audience matches our client ID
-        if (response.aud != googleProperties.clientId) {
-            logger.error { "Google ID token audience mismatch: ${response.aud}" }
-            throw IllegalStateException("Invalid Google ID token audience")
-        }
+        val payload = idToken.payload
 
         return OAuthUserInfo(
-            providerId = response.sub,
-            email = response.email,
+            providerId = payload.subject,
+            email = payload.email,
         )
     }
 
