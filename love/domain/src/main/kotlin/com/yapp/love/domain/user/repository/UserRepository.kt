@@ -14,4 +14,9 @@ interface UserRepository {
     ): User?
 
     fun deleteById(id: Long)
+
+    fun findByOauthProviderAndOauthProviderId(
+        oauthProvider: SocialProvider,
+        oauthProviderId: String,
+    ): User?
 }
