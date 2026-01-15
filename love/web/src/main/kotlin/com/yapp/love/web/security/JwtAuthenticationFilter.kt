@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 
+private val logger = KotlinLogging.logger {}
+
 @Component
 class JwtAuthenticationFilter(
     private val tokenProvider: TokenProvider,
@@ -47,6 +49,8 @@ class JwtAuthenticationFilter(
             SecurityContextHolder.clearContext()
         } catch (e: Exception) {
             logger.warn { "JWT authentication failed: ${e.message}" }
+            // 필터에서 예외를 던지면 GlobalExceptionHandler가 처리할 수 없으므로
+            // SecurityContext를 clear하고 계속 진행
             SecurityContextHolder.clearContext()
         }
 
