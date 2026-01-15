@@ -15,6 +15,7 @@ import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 
 /**
  * 인증 관련 서비스
@@ -27,16 +28,15 @@ class AuthService(
     private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
     private val refreshTokenRepository: RefreshTokenRepository,
+    private val transactionTemplate: TransactionTemplate,
 ) {
     private val providerMap: Map<SocialProvider, OAuthProvider> =
         oauthProviders.associateBy { it.getProviderType() }
 
-    @Transactional
     fun appleLogin(command: AppleLoginCommand): OAuthLoginResult {
         return login(provider = SocialProvider.APPLE, code = command.code)
     }
 
-    @Transactional
     fun googleLogin(command: GoogleLoginCommand): OAuthLoginResult {
         return login(provider = SocialProvider.GOOGLE, code = command.code)
     }
@@ -121,18 +121,18 @@ class AuthService(
         val refreshToken = command.refreshToken
 
         if (!tokenProvider.validateToken(refreshToken)) {
-            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "유효하지 않은 RefreshToken입니다.")
+            throw GlobalException(GlobalErrorCode.INVALID_TOKEN)
         }
 
         val tokenType = tokenProvider.getTokenType(refreshToken)
         if (tokenType != TokenProvider.TOKEN_TYPE_REFRESH) {
-            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "RefreshToken이 아닙니다.")
+            throw GlobalException(GlobalErrorCode.AUTH_REFRESH_TOKEN_TYPE_MISMATCH)
         }
 
         val userId = tokenProvider.getUserIdFromToken(refreshToken)
 
         if (!refreshTokenRepository.exists(userId, refreshToken)) {
-            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "유효하지 않은 RefreshToken입니다.")
+            throw GlobalException(GlobalErrorCode.AUTH_REFRESH_TOKEN_REVOKED)
         }
 
         val newAccessToken = tokenProvider.createAccessToken(userId)
