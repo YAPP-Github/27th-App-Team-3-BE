@@ -8,10 +8,6 @@ import org.springframework.stereotype.Service
 class UserService(
     private val userRepository: UserRepository,
 ) {
-    fun getAllUsers(): List<User> {
-        return userRepository.findAll()
-    }
-
     fun getUserById(id: Long): User? {
         return userRepository.findById(id)
     }
