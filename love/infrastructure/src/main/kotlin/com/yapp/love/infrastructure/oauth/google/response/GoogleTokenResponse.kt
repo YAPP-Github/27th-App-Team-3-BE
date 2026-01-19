@@ -1,6 +1,5 @@
 package com.yapp.love.infrastructure.oauth.google.response
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
