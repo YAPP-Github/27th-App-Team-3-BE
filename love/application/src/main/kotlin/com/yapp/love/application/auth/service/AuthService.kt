@@ -2,6 +2,7 @@ package com.yapp.love.application.auth.service
 
 import com.yapp.love.application.auth.dto.AppleLoginCommand
 import com.yapp.love.application.auth.dto.GoogleLoginCommand
+import com.yapp.love.application.auth.dto.KakaoLoginCommand
 import com.yapp.love.application.auth.dto.OAuthLoginResult
 import com.yapp.love.application.auth.dto.RefreshTokenCommand
 import com.yapp.love.application.auth.dto.TokenRefreshResult
@@ -13,9 +14,9 @@ import com.yapp.love.domain.user.model.User
 import com.yapp.love.domain.user.repository.UserRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * 인증 관련 서비스
@@ -44,6 +45,10 @@ class AuthService(
         return login(provider = SocialProvider.GOOGLE, code = command.code)
     }
 
+    fun kakaoLogin(command: KakaoLoginCommand): OAuthLoginResult {
+        return login(provider = SocialProvider.KAKAO, code = command.code)
+    }
+
     private fun login(
         provider: SocialProvider,
         code: String,
@@ -57,20 +62,26 @@ class AuthService(
 
         val userInfo = oauthProvider.authenticate(code)
 
-        val result = transactionTemplate.execute {
-            val (user, isNewUser) =
-                findOrCreateUser(
-                    provider = provider,
-                    providerId = userInfo.providerId,
-                    email = userInfo.email,
-                    name = userInfo.email?.substringBefore("@"),
-                )
-            createLoginResult(user, isNewUser)
-        }
+        val result =
+            transactionTemplate.execute {
+                val (user, isNewUser) =
+                    findOrCreateUser(
+                        provider = provider,
+                        providerId = userInfo.providerId,
+                        email = userInfo.email,
+                        name = userInfo.email?.substringBefore("@"),
+                    )
+                createLoginResult(user, isNewUser)
+            }
 
         return result ?: run {
-            logger.error { "failed to login user: $provider" }
-            throw GlobalException(GlobalErrorCode.INTERNAL_SERVER_ERROR, )
+            logger.error {
+                "Transaction returned null during login - provider=$provider, providerId=${userInfo.providerId}"
+            }
+            throw GlobalException(
+                GlobalErrorCode.INTERNAL_SERVER_ERROR,
+                "로그인 처리에 실패했습니다. 다시 시도해주세요.",
+            )
         }
     }
 

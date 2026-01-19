@@ -2,14 +2,15 @@ package com.yapp.love.web.auth
 
 import com.yapp.love.application.auth.dto.AppleLoginCommand
 import com.yapp.love.application.auth.dto.GoogleLoginCommand
+import com.yapp.love.application.auth.dto.KakaoLoginCommand
 import com.yapp.love.application.auth.dto.RefreshTokenCommand
 import com.yapp.love.application.auth.service.AuthService
 import com.yapp.love.web.auth.dto.AppleLoginRequest
 import com.yapp.love.web.auth.dto.GoogleLoginRequest
+import com.yapp.love.web.auth.dto.KakaoLoginRequest
 import com.yapp.love.web.auth.dto.OAuthLoginResponse
 import com.yapp.love.web.auth.dto.RefreshTokenRequest
 import com.yapp.love.web.auth.dto.TokenRefreshResponse
-import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -24,10 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val authService: AuthService,
 ) {
-    @Operation(
-        summary = "Apple 로그인",
-        description = "Apple authorization code로 로그인합니다. 신규 사용자는 자동으로 가입됩니다.",
-    )
+    @AppleLoginApiSpec
     @PostMapping("/apple")
     fun loginWithApple(
         @Valid @RequestBody request: AppleLoginRequest,
@@ -37,10 +35,7 @@ class AuthController(
         return ResponseEntity.ok(OAuthLoginResponse.from(result))
     }
 
-    @Operation(
-        summary = "Google 로그인",
-        description = "Google authorization code로 로그인합니다. 신규 사용자는 자동으로 가입됩니다.",
-    )
+    @GoogleLoginApiSpec
     @PostMapping("/google")
     fun loginWithGoogle(
         @Valid @RequestBody request: GoogleLoginRequest,
@@ -50,10 +45,17 @@ class AuthController(
         return ResponseEntity.ok(OAuthLoginResponse.from(result))
     }
 
-    @Operation(
-        summary = "토큰 갱신",
-        description = "RefreshToken으로 새로운 AccessToken과 RefreshToken을 발급받습니다.",
-    )
+    @KakaoLoginApiSpec
+    @PostMapping("/kakao")
+    fun loginWithKakao(
+        @Valid @RequestBody request: KakaoLoginRequest,
+    ): ResponseEntity<OAuthLoginResponse> {
+        val command = KakaoLoginCommand(code = request.code)
+        val result = authService.kakaoLogin(command)
+        return ResponseEntity.ok(OAuthLoginResponse.from(result))
+    }
+
+    @RefreshTokenApiSpec
     @PostMapping("/refresh")
     fun refreshToken(
         @Valid @RequestBody request: RefreshTokenRequest,
@@ -63,10 +65,7 @@ class AuthController(
         return ResponseEntity.ok(TokenRefreshResponse.from(result))
     }
 
-    @Operation(
-        summary = "로그아웃",
-        description = "로그아웃합니다. 저장된 RefreshToken이 삭제됩니다.",
-    )
+    @LogoutApiSpec
     @PostMapping("/logout")
     fun logout(
         @AuthUser userId: Long,
