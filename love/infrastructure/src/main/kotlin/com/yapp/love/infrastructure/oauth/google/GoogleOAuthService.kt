@@ -7,14 +7,11 @@ import com.yapp.love.application.auth.port.OAuthProvider
 import com.yapp.love.application.auth.port.OAuthUserInfo
 import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.infrastructure.oauth.google.config.GoogleOAuthProperties
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
-
 @Component
 class GoogleOAuthService(
-    webClientBuilder: WebClient.Builder,
     private val googleOAuthClient: GoogleOAuthClient,
     private val googleProperties: GoogleOAuthProperties,
 ) : OAuthProvider {
