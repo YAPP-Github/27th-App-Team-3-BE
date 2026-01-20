@@ -90,6 +90,7 @@ data class AnniversarySetupRequest(
 )
 
 enum class OnboardingStatus {
+    TERMS_AGREEMENT, // 약관 동의 단계
     COUPLE_CONNECTION, // 커플 연결 단계
     PROFILE_SETUP, // 프로필 설정 단계
     ANNIVERSARY_SETUP, // 기념일 설정 단계
