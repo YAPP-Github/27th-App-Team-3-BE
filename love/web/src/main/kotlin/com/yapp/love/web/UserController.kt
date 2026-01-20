@@ -10,11 +10,6 @@ import org.springframework.web.bind.annotation.*
 class UserController(
     private val userService: UserService,
 ) {
-    @GetMapping
-    fun getAllUsers(): List<User> {
-        return userService.getAllUsers()
-    }
-
     @GetMapping("/me")
     fun getMyInfo(
         @AuthUser userId: Long,
