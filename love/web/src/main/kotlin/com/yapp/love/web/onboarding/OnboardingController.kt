@@ -1,0 +1,103 @@
+package com.yapp.love.web.onboarding
+
+import com.yapp.love.web.auth.AuthUser
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
+import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
+
+
+@Tag(name = "Onboarding", description = "온보딩 API")
+@RestController
+@RequestMapping("/api/v1/onboarding")
+class OnboardingController(
+) {
+    @Operation(summary = "온보딩 상태 조회")
+    @GetMapping("/status")
+    fun getOnboardingStatus(
+        @AuthUser userId: Long,
+    ): OnboardingStatusResponse {
+        // TODO: 온보딩 상태 조회 구현
+        return OnboardingStatusResponse(
+            status = OnboardingStatus.COUPLE_CONNECTION,
+        )
+    }
+
+    @Operation(summary = "초대 코드 조회")
+    @GetMapping("/invite-code")
+    fun getInviteCode(
+        @AuthUser userId: Long,
+    ): InviteCodeResponse {
+        return InviteCodeResponse(
+            "inviteCode"
+        )
+    }
+
+    data class InviteCodeResponse(
+        val inviteCode: String,
+    )
+
+    @Operation(summary = "커플 연결")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "커플 연결 성공"),
+        ApiResponse(responseCode = "404", description = "잘못된 코드"),
+    )
+    @PostMapping("/couple-connection")
+    fun coupleConnection(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: CoupleConnectionRequest,
+    ) {
+        // TODO: 커플 연결 구현
+    }
+
+    @Operation(summary = "프로필 등록")
+    @PostMapping("/profile")
+    fun profileSetup(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: ProfileSetupRequest,
+    ) {
+        // TODO: 프로필 설정 구현
+    }
+
+    @Operation(summary = "기념일 설정")
+    @PostMapping("/anniversary")
+    fun anniversarySetup(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: AnniversarySetupRequest,
+    ) {
+        // TODO: 기념일 설정 구현
+    }
+}
+
+data class CoupleConnectionRequest(
+    @field:NotBlank(message = "초대 코드는 필수입니다.")
+    val inviteCode: String,
+)
+
+data class ProfileSetupRequest(
+    @field:NotBlank(message = "닉네임은 필수입니다.")
+    @field:Size(min = 1, max = 10, message = "닉네임은 1~10자 이내여야 합니다.")
+    val nickname: String,
+)
+
+data class AnniversarySetupRequest(
+    @field:NotNull(message = "기념일은 필수입니다.")
+    val anniversaryDate: LocalDate,
+)
+
+enum class OnboardingStatus {
+    COUPLE_CONNECTION,  // 커플 연결 단계
+    PROFILE_SETUP,      // 프로필 설정 단계
+    ANNIVERSARY_SETUP,  // 기념일 설정 단계
+    COMPLETED,          // 온보딩 완료
+}
+
+data class OnboardingStatusResponse(
+    val status: OnboardingStatus,
+)
