@@ -12,12 +12,10 @@ import jakarta.validation.constraints.Size
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
-
 @Tag(name = "Onboarding", description = "온보딩 API")
 @RestController
 @RequestMapping("/api/v1/onboarding")
-class OnboardingController(
-) {
+class OnboardingController() {
     @Operation(summary = "온보딩 상태 조회")
     @GetMapping("/status")
     fun getOnboardingStatus(
@@ -35,7 +33,7 @@ class OnboardingController(
         @AuthUser userId: Long,
     ): InviteCodeResponse {
         return InviteCodeResponse(
-            "inviteCode"
+            "inviteCode",
         )
     }
 
@@ -92,10 +90,10 @@ data class AnniversarySetupRequest(
 )
 
 enum class OnboardingStatus {
-    COUPLE_CONNECTION,  // 커플 연결 단계
-    PROFILE_SETUP,      // 프로필 설정 단계
-    ANNIVERSARY_SETUP,  // 기념일 설정 단계
-    COMPLETED,          // 온보딩 완료
+    COUPLE_CONNECTION, // 커플 연결 단계
+    PROFILE_SETUP, // 프로필 설정 단계
+    ANNIVERSARY_SETUP, // 기념일 설정 단계
+    COMPLETED, // 온보딩 완료
 }
 
 data class OnboardingStatusResponse(
