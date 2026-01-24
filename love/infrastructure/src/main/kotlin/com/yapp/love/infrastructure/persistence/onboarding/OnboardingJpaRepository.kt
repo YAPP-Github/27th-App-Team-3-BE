@@ -1,4 +1,4 @@
-package com.yapp.love.infrastructure.persistence
+package com.yapp.love.infrastructure.persistence.onboarding
 
 import com.yapp.love.domain.onboarding.OnboardingInfoRepository
 import com.yapp.love.domain.onboarding.model.UserOnboardingInfo
