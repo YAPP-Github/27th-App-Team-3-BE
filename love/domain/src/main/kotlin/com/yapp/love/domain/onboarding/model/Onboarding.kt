@@ -5,8 +5,8 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "invite_code")
-class InviteCode(
+@Table(name = "invite_codes")
+class InviteCodes(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
