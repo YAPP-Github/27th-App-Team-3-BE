@@ -38,7 +38,7 @@ class OnboardingController(
         @AuthUser userId: Long,
     ): InviteCodeResponse {
         return InviteCodeResponse(
-            "inviteCode"
+            onboardingService.getOrCreateInviteCode(userId)
         )
     }
 
