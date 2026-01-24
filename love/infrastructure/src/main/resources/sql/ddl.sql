@@ -7,7 +7,8 @@ CREATE TABLE invite_codes
     used_at    TIMESTAMP NULL,
     used_by_id BIGINT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX      idx_invite_codes_creator_id (creator_id)
 );
 
 -- 커플 테이블
