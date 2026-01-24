@@ -41,6 +41,7 @@ class SecurityConfig(
                         "/swagger-ui.html",
                         "/api-docs/**",
                         "/actuator/health",
+                        "/api/v1/onboarding/**",
                     )
                     .permitAll()
                     // @AuthUser를 사용하는 엔드포인트만 인증 필요
