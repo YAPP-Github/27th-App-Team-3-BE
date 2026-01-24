@@ -1,5 +1,7 @@
 package com.yapp.love.web.onboarding
 
+import com.yapp.love.application.onboarding.OnboardingService
+import com.yapp.love.domain.onboarding.model.OnboardingStatus
 import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -17,19 +19,19 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/api/v1/onboarding")
 class OnboardingController(
+    private val onboardingService: OnboardingService,
 ) {
+
     @Operation(summary = "온보딩 상태 조회")
     @GetMapping("/status")
     fun getOnboardingStatus(
         @AuthUser userId: Long,
     ): OnboardingStatusResponse {
-        // TODO: 온보딩 상태 조회 구현
         return OnboardingStatusResponse(
-            status = OnboardingStatus.COUPLE_CONNECTION,
+            onboardingService.getOnboardingStatus(userId)
         )
     }
 
-    @Operation(summary = "초대 코드 조회")
     @GetMapping("/invite-code")
     fun getInviteCode(
         @AuthUser userId: Long,
@@ -90,14 +92,6 @@ data class AnniversarySetupRequest(
     @field:NotNull(message = "기념일은 필수입니다.")
     val anniversaryDate: LocalDate,
 )
-
-enum class OnboardingStatus {
-    TERMS_AGREEMENT, // 약관 동의 단계
-    COUPLE_CONNECTION, // 커플 연결 단계
-    PROFILE_SETUP, // 프로필 설정 단계
-    ANNIVERSARY_SETUP, // 기념일 설정 단계
-    COMPLETED, // 온보딩 완료
-}
 
 data class OnboardingStatusResponse(
     val status: OnboardingStatus,
