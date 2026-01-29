@@ -41,7 +41,8 @@ class Goal(
     @Column(name = "deleted_at")
     var deletedAt: Instant? = null,
 
-    @Column(name = "goal_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "goal_status", nullable = false, length = 50)
     var goalStatus: GoalStatus,
 
     @Enumerated(EnumType.STRING)
@@ -86,12 +87,22 @@ class Goal(
         }
     }
 
-    private fun validateGoalDates() {
+    /**
+     * 생성 시점에만 적용되는 검증 (시간에 의존)
+     * - 팩토리 메서드에서만 호출
+     */
+    private fun validateForCreation() {
         val today = LocalDate.now()
         require(!startDate.isBefore(today)) {
             "시작일은 오늘 또는 미래여야 합니다."
         }
+    }
 
+    /**
+     * 항상 유효해야 하는 불변 조건 검증
+     * - init 블록과 업데이트 메서드에서 호출
+     */
+    private fun validateGoalDates() {
         if (hasEndDate) {
             require(endDate != null) {
                 "종료일이 설정된 목표는 종료일자를 입력해야 합니다."
@@ -126,7 +137,7 @@ class Goal(
                 GoalStatus.IN_PROGRESS
             }
 
-            return Goal(
+            val goal = Goal(
                 coupleId = coupleId,
                 name = name,
                 icon = icon,
@@ -138,6 +149,11 @@ class Goal(
                 goalStatus = initialStatus,
                 deletedAt = null
             )
+
+            // 생성 시점에만 필요한 검증 (시간 의존적)
+            goal.validateForCreation()
+
+            return goal
         }
     }
 }
