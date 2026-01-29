@@ -1,7 +1,7 @@
 package com.yapp.love.infrastructure.persistence.couple
 
 import com.yapp.love.domain.couple.model.CoupleInfo
-import com.yapp.love.domain.goal.repository.CoupleRepository
+import com.yapp.love.domain.couple.repository.CoupleRepository
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

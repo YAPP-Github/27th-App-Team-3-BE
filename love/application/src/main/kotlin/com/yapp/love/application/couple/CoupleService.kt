@@ -1,7 +1,7 @@
 package com.yapp.love.application.couple
 
 import com.yapp.love.domain.couple.model.CoupleInfo
-import com.yapp.love.domain.goal.repository.CoupleRepository
+import com.yapp.love.domain.couple.repository.CoupleRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
