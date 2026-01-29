@@ -4,12 +4,15 @@ import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.goal.dto.CreateGoalCommand
 import com.yapp.love.application.goal.dto.UpdateGoalCommand
+import com.yapp.love.globalutils.exception.GlobalErrorCode
+import com.yapp.love.globalutils.exception.GlobalException
 import com.yapp.love.web.auth.AuthUser
 import com.yapp.love.web.goal.dto.*
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 @Tag(name = "Goal", description = "목표 API")
 @RestController
@@ -31,8 +34,8 @@ class GoalController(
             icon = request.icon,
             repeatCycle = request.repeatCycle,
             repeatCount = request.repeatCount,
-            startDate = LocalDate.parse(request.startDate),
-            endDate = request.endDate?.let { LocalDate.parse(it) }
+            startDate = parseDate(request.startDate, "시작일"),
+            endDate = request.endDate?.let { parseDate(it, "종료일") }
         )
         val goalInfo = goalService.createGoal(command)
         return GoalResponse.from(goalInfo)
@@ -48,7 +51,7 @@ class GoalController(
         val coupleId = coupleInfo.id!!
         val partnerUserId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
 
-        val targetDate = LocalDate.parse(date)
+        val targetDate = parseDate(date, "조회 날짜")
         val goalsWithPhotologs = goalService.getGoalsWithPhotologs(
             coupleId = coupleId,
             myUserId = userId,
@@ -103,7 +106,7 @@ class GoalController(
         @AuthUser userId: Long,
         @PathVariable goalId: Long
     ): GoalResponse {
-        val goal = goalService.getGoalById(goalId)
+        val goal = goalService.getGoalById(userId, goalId)
         return GoalResponse.from(goal)
     }
 
@@ -121,7 +124,7 @@ class GoalController(
             repeatCount = request.repeatCount,
             endDate = request.endDate?.let { LocalDate.parse(it) }
         )
-        val goalInfo = goalService.updateGoal(goalId, command)
+        val goalInfo = goalService.updateGoal(userId, goalId, command)
         return GoalResponse.from(goalInfo)
     }
 
@@ -131,7 +134,7 @@ class GoalController(
         @AuthUser userId: Long,
         @PathVariable goalId: Long
     ): DeleteGoalResponse {
-        goalService.deleteGoal(goalId)
+        goalService.deleteGoal(userId, goalId)
         return DeleteGoalResponse(
             success = true,
             message = "목표가 삭제되었습니다."
@@ -144,7 +147,7 @@ class GoalController(
         @AuthUser userId: Long,
         @PathVariable goalId: Long
     ): CompleteGoalResponse {
-        val goalInfo = goalService.completeGoal(goalId)
+        val goalInfo = goalService.completeGoal(userId, goalId)
         return CompleteGoalResponse(
             goalId = goalInfo.goalId,
             name = goalInfo.name,
@@ -153,4 +156,14 @@ class GoalController(
         )
     }
 
+    private fun parseDate(dateString: String, fieldName: String = "날짜"): LocalDate {
+        return try {
+            LocalDate.parse(dateString)
+        } catch (e: DateTimeParseException) {
+            throw GlobalException(
+                GlobalErrorCode.INVALID_INPUT_VALUE,
+                "${fieldName} 형식이 올바르지 않습니다. (입력값: $dateString, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"
+            )
+        }
+    }
 }
