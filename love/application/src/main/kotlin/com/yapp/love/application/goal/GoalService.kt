@@ -5,12 +5,14 @@ import com.yapp.love.application.goal.dto.GoalInfo
 import com.yapp.love.application.goal.dto.GoalWithPhotoLogs
 import com.yapp.love.application.goal.dto.UpdateGoalCommand
 import com.yapp.love.application.photolog.PhotologService
+import com.yapp.love.domain.couple.repository.CoupleRepository
 import com.yapp.love.domain.goal.model.Goal
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -22,8 +24,10 @@ class GoalService(
     private val goalRepository: GoalRepository,
     private val photologRepository: PhotologRepository,
     private val photologService: PhotologService,
-    private val coupleRepository: com.yapp.love.domain.goal.repository.CoupleRepository,
+    private val coupleRepository: CoupleRepository,
+    private val coupleService: com.yapp.love.application.couple.CoupleService,
 ) {
+    private val logger = KotlinLogging.logger {}
     @Transactional
     fun createGoal(command: CreateGoalCommand): GoalInfo {
         // 커플 존재 여부 확인
@@ -80,8 +84,9 @@ class GoalService(
         }
     }
 
-    fun getGoalById(goalId: Long): GoalInfo {
+    fun getGoalById(userId: Long, goalId: Long): GoalInfo {
         val goal = getGoalEntityById(goalId)
+        verifyUserOwnsGoal(userId, goal)
         return GoalInfo.from(goal)
     }
 
@@ -90,15 +95,26 @@ class GoalService(
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "목표를 찾을 수 없습니다.")
     }
 
+    private fun verifyUserOwnsGoal(userId: Long, goal: Goal) {
+        val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
+        if (coupleInfo.id != goal.coupleId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "해당 목표에 대한 권한이 없습니다.")
+        }
+    }
+
     @Transactional
-    fun updateGoal(goalId: Long, command: UpdateGoalCommand): GoalInfo {
+    fun updateGoal(userId: Long, goalId: Long, command: UpdateGoalCommand): GoalInfo {
         val goal = getGoalEntityById(goalId)
+        verifyUserOwnsGoal(userId, goal)
 
         // 종료일이 변경되고, 새 종료일이 오늘 이전으로 설정되면 인증 기록 삭제
         if (goal.endDate != command.endDate && command.endDate != null) {
             val today = LocalDate.now()
             if (command.endDate.isBefore(today)) {
-                photologService.deleteByGoalIdAfterEndDate(goalId, command.endDate)
+                val deletedCount = photologService.deleteByGoalIdAfterEndDate(goalId, command.endDate)
+                logger.info {
+                    "Goal $goalId endDate changed to ${command.endDate}, deleted $deletedCount photologs"
+                }
             }
         }
 
@@ -116,18 +132,35 @@ class GoalService(
     }
 
     @Transactional
-    fun deleteGoal(goalId: Long): Boolean {
+    fun deleteGoal(userId: Long, goalId: Long): Boolean {
         val goal = getGoalEntityById(goalId)
+        verifyUserOwnsGoal(userId, goal)
+
         goal.deletedAt = Instant.now()
         goal.goalStatus = GoalStatus.DELETED
+        goalRepository.save(goal)
+
         // TODO: 인증 로직이 구현되면 인증도 soft delete하는 로직 추가
         return true
     }
 
     @Transactional
-    fun completeGoal(goalId: Long): GoalInfo {
+    fun completeGoal(userId: Long, goalId: Long): GoalInfo {
         val goal = getGoalEntityById(goalId)
+        verifyUserOwnsGoal(userId, goal)
+
+        // 진행 중인 목표만 완료할 수 있음
+        if (goal.goalStatus != GoalStatus.IN_PROGRESS) {
+            throw GlobalException(
+                GlobalErrorCode.INVALID_INPUT_VALUE,
+                "진행 중인 목표만 완료할 수 있습니다. (현재 상태: ${goal.goalStatus})"
+            )
+        }
+
         goal.goalStatus = GoalStatus.COMPLETED
+        goalRepository.save(goal)
+
+        logger.info { "Goal $goalId completed by user $userId" }
         // TODO: 통계가 구현되면 통계에 반영하는 로직 추가
         return GoalInfo.from(goal)
     }
