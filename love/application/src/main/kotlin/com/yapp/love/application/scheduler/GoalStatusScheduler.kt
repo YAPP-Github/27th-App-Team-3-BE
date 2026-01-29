@@ -23,9 +23,16 @@ class GoalStatusScheduler(
     fun updateGoalStatuses() {
         val today = LocalDate.now()
 
-        val startedCount = goalRepository.updateNotStartedToInProgress(today)
-        val completedCount = goalRepository.updateInProgressToCompleted(today)
+        try {
+            val startedCount = goalRepository.updateNotStartedToInProgress(today)
+            val completedCount = goalRepository.updateInProgressToCompleted(today)
 
-        logger.info { "Goal status updated: $startedCount started, $completedCount completed" }
+            logger.info { "Goal status updated: $startedCount started, $completedCount completed" }
+        } catch (e: Exception) {
+            logger.error(e) {
+                "Failed to update goal statuses for date: $today. " +
+                "Goals may be in incorrect states. Manual intervention may be required."
+            }
+        }
     }
 }
