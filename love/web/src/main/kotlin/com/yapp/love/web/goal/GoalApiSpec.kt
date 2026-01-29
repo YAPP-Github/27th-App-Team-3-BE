@@ -53,6 +53,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                             name = "종료일 검증 오류",
                             value = """{"status": 400, "code": "G4000", "message": "종료일은 시작일 이후여야 합니다."}""",
                         ),
+                        ExampleObject(
+                            name = "시작일 형식 오류",
+                            value = """{"status": 400, "code": "G4000", "message": "시작일 형식이 올바르지 않습니다. (입력값: 2024/01/29, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
+                        ),
+                        ExampleObject(
+                            name = "종료일 형식 오류",
+                            value = """{"status": 400, "code": "G4000", "message": "종료일 형식이 올바르지 않습니다. (입력값: 20260129, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
+                        ),
                     ],
                 ),
             ],
@@ -132,7 +140,7 @@ annotation class CreateGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "날짜 형식 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "날짜 형식이 올바르지 않습니다."}""",
+                            value = """{"status": 400, "code": "G4000", "message": "조회 날짜 형식이 올바르지 않습니다. (입력값: 20260129, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
                         ),
                     ],
                 ),
@@ -216,6 +224,21 @@ annotation class GetGoalsApiSpec
             ],
         ),
         ApiResponse(
+            responseCode = "403",
+            description = "권한 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "목표 접근 권한 없음",
+                            value = """{"status": 403, "code": "G4030", "message": "해당 목표에 대한 권한이 없습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
             responseCode = "404",
             description = "리소스를 찾을 수 없음",
             content = [
@@ -293,6 +316,10 @@ annotation class GetGoalApiSpec
                             name = "종료일 검증 오류",
                             value = """{"status": 400, "code": "G4000", "message": "종료일은 시작일 이후여야 합니다."}""",
                         ),
+                        ExampleObject(
+                            name = "종료일 형식 오류",
+                            value = """{"status": 400, "code": "G4000", "message": "종료일 형식이 올바르지 않습니다. (입력값: 20260129, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
+                        ),
                     ],
                 ),
             ],
@@ -307,6 +334,21 @@ annotation class GetGoalApiSpec
                         ExampleObject(
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "403",
+            description = "권한 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "목표 수정 권한 없음",
+                            value = """{"status": 403, "code": "G4030", "message": "해당 목표에 대한 권한이 없습니다."}""",
                         ),
                     ],
                 ),
@@ -375,6 +417,21 @@ annotation class UpdateGoalApiSpec
             ],
         ),
         ApiResponse(
+            responseCode = "403",
+            description = "권한 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "목표 삭제 권한 없음",
+                            value = """{"status": 403, "code": "G4030", "message": "해당 목표에 대한 권한이 없습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
             responseCode = "404",
             description = "리소스를 찾을 수 없음",
             content = [
@@ -422,6 +479,25 @@ annotation class DeleteGoalApiSpec
             content = [Content(schema = Schema(implementation = CompleteGoalResponse::class))],
         ),
         ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "진행 중이 아닌 목표 완료 시도",
+                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: NOT_STARTED)"}""",
+                        ),
+                        ExampleObject(
+                            name = "이미 완료된 목표",
+                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: COMPLETED)"}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
             responseCode = "401",
             description = "인증 실패",
             content = [
@@ -431,6 +507,21 @@ annotation class DeleteGoalApiSpec
                         ExampleObject(
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "403",
+            description = "권한 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "목표 완료 권한 없음",
+                            value = """{"status": 403, "code": "G4030", "message": "해당 목표에 대한 권한이 없습니다."}""",
                         ),
                     ],
                 ),
