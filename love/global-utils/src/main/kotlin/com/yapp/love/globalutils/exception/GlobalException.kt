@@ -4,8 +4,12 @@ import org.springframework.web.server.ResponseStatusException
 
 open class GlobalException(
     val errorCode: ErrorCode,
-    message: String? = null,
+    private val customMessage: String? = null,
 ) : ResponseStatusException(
         errorCode.getHttpStatus(),
-        message ?: errorCode.getMessage(),
-    )
+        customMessage ?: errorCode.getMessage(),
+    ) {
+    fun getCustomMessage(): String {
+        return customMessage ?: errorCode.getMessage()
+    }
+}

@@ -28,7 +28,7 @@ class GlobalExceptionHandler {
 
         logger.warn(e) { "GlobalException: ${errorCode.getCode()}" }
 
-        val error = ErrorResponse.from(errorCode)
+        val error = ErrorResponse.from(errorCode, e.getCustomMessage())
 
         return ResponseEntity(error, errorCode.getHttpStatus())
     }
