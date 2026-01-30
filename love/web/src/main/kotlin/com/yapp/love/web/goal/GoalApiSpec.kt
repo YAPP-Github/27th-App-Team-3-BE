@@ -30,8 +30,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
-                            name = "필수 값 누락",
-                            value = """{"status": 400, "code": "G4001", "message": "필수 입력값이 누락되었습니다."}""",
+                            name = "JSON 형식 오류",
+                            value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
                         ),
                         ExampleObject(
                             name = "DAILY 목표 repeatCount 오류",
@@ -52,14 +52,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                         ExampleObject(
                             name = "종료일 검증 오류",
                             value = """{"status": 400, "code": "G4000", "message": "종료일은 시작일 이후여야 합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "시작일 형식 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "시작일 형식이 올바르지 않습니다. (입력값: 2024/01/29, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
-                        ),
-                        ExampleObject(
-                            name = "종료일 형식 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "종료일 형식이 올바르지 않습니다. (입력값: 20260129, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
                         ),
                     ],
                 ),
@@ -140,7 +132,7 @@ annotation class CreateGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "날짜 형식 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "조회 날짜 형식이 올바르지 않습니다. (입력값: 20260129, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "요청 본문의 값이 검증 조건을 충족하지 않습니다"}""",
                         ),
                     ],
                 ),
@@ -157,20 +149,9 @@ annotation class CreateGoalApiSpec
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
                         ),
-                    ],
-                ),
-            ],
-        ),
-        ApiResponse(
-            responseCode = "404",
-            description = "리소스를 찾을 수 없음",
-            content = [
-                Content(
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
                         ExampleObject(
-                            name = "커플 정보 없음",
-                            value = """{"status": 404, "code": "G4040", "message": "요청한 리소스를 찾을 수 없습니다."}""",
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
                         ),
                     ],
                 ),
@@ -219,6 +200,10 @@ annotation class GetGoalsApiSpec
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
                         ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
+                        ),
                     ],
                 ),
             ],
@@ -240,14 +225,14 @@ annotation class GetGoalsApiSpec
         ),
         ApiResponse(
             responseCode = "404",
-            description = "리소스를 찾을 수 없음",
+            description = "목표를 찾을 수 없음",
             content = [
                 Content(
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
                             name = "목표 없음",
-                            value = """{"status": 404, "code": "G4040", "message": "요청한 리소스를 찾을 수 없습니다."}""",
+                            value = """{"status": 404, "code": "G4040", "message": "목표를 찾을 수 없습니다."}""",
                         ),
                     ],
                 ),
@@ -293,33 +278,13 @@ annotation class GetGoalApiSpec
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
-                            name = "필수 값 누락",
-                            value = """{"status": 400, "code": "G4001", "message": "필수 입력값이 누락되었습니다."}""",
+                            name = "JSON 형식 오류",
+                            value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
                         ),
                         ExampleObject(
-                            name = "DAILY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "DAILY 목표는 하루 한번만 가능합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "WEEKLY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "WEEKLY 목표는 1번 이상 6번 이하로 가능합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "MONTHLY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "MONTHLY 목표는 1번 이상 25 이하로 가능합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "시작일 검증 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "시작일은 오늘 또는 미래여야 합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "종료일 검증 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "종료일은 시작일 이후여야 합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "종료일 형식 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "종료일 형식이 올바르지 않습니다. (입력값: 20260129, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"}""",
-                        ),
+                            name = "필수 값 누락 또는 조건에 맞지 않는 값",
+                            value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
+                        )
                     ],
                 ),
             ],
@@ -334,6 +299,10 @@ annotation class GetGoalApiSpec
                         ExampleObject(
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
                         ),
                     ],
                 ),
@@ -356,14 +325,14 @@ annotation class GetGoalApiSpec
         ),
         ApiResponse(
             responseCode = "404",
-            description = "리소스를 찾을 수 없음",
+            description = "목표를 찾을 수 없음",
             content = [
                 Content(
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
                             name = "목표 없음",
-                            value = """{"status": 404, "code": "G4040", "message": "요청한 리소스를 찾을 수 없습니다."}""",
+                            value = """{"status": 404, "code": "G4040", "message": "목표를 찾을 수 없습니다."}""",
                         ),
                     ],
                 ),
@@ -412,6 +381,10 @@ annotation class UpdateGoalApiSpec
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
                         ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
+                        ),
                     ],
                 ),
             ],
@@ -433,14 +406,14 @@ annotation class UpdateGoalApiSpec
         ),
         ApiResponse(
             responseCode = "404",
-            description = "리소스를 찾을 수 없음",
+            description = "목표를 찾을 수 없음",
             content = [
                 Content(
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
                             name = "목표 없음",
-                            value = """{"status": 404, "code": "G4040", "message": "요청한 리소스를 찾을 수 없습니다."}""",
+                            value = """{"status": 404, "code": "G4040", "message": "목표를 찾을 수 없습니다."}""",
                         ),
                     ],
                 ),
@@ -507,6 +480,10 @@ annotation class DeleteGoalApiSpec
                         ExampleObject(
                             name = "인증되지 않은 사용자",
                             value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
                         ),
                     ],
                 ),

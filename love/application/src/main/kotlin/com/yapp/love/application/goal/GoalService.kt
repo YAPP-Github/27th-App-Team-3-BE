@@ -121,7 +121,7 @@ class GoalService(
             goal.updateRepeatSettings(command.repeatCycle, command.repeatCount)
             goal.updateEndDate(command.endDate != null, command.endDate)
         } catch (e: IllegalArgumentException) {
-            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, e.message ?: "입력값이 올바르지 않습니다.")
+            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE,"입력값이 올바르지 않습니다.")
         }
 
         goalRepository.save(goal)
