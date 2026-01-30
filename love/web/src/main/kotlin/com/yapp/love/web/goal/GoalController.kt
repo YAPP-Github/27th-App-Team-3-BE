@@ -147,7 +147,7 @@ class GoalController(
         return CompleteGoalResponse(
             goalId = goalInfo.goalId,
             name = goalInfo.name,
-            status = goalInfo.status,
+            goalStatus = goalInfo.goalStatus,
             completedAt = goalInfo.updatedAt
         )
     }

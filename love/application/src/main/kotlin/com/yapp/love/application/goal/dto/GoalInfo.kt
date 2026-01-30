@@ -9,11 +9,11 @@ data class GoalInfo(
     val goalId: Long,
     val name: String,
     val icon: GoalIcon,
+    val goalStatus: GoalStatus,
     val repeatCycle: RepeatCycle,
     val repeatCount: Int,
     val startDate: String,
     val endDate: String?,
-    val status: GoalStatus,
     val createdAt: String,
     val updatedAt: String
 ) {
@@ -27,7 +27,7 @@ data class GoalInfo(
                 repeatCount = goal.repeatCount,
                 startDate = goal.startDate.toString(),
                 endDate = goal.endDate?.toString(),
-                status = goal.goalStatus,
+                goalStatus = goal.goalStatus,
                 createdAt = goal.createdAt.toString(),
                 updatedAt = goal.updatedAt.toString()
             )

@@ -1,9 +1,9 @@
 package com.yapp.love.web.goal.dto
 
-import com.yapp.love.domain.goal.model.Goal
 import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
+import com.yapp.love.application.goal.dto.GoalInfo
 
 data class GoalResponse(
     val goalId: Long,
@@ -13,11 +13,11 @@ data class GoalResponse(
     val repeatCount: Int,
     val startDate: String,
     val endDate: String?,
-    val status: GoalStatus,
+    val goalStatus: GoalStatus,
     val createdAt: String
 ) {
     companion object {
-        fun from(goalInfo: com.yapp.love.application.goal.dto.GoalInfo): GoalResponse {
+        fun from(goalInfo: GoalInfo): GoalResponse {
             return GoalResponse(
                 goalId = goalInfo.goalId,
                 name = goalInfo.name,
@@ -26,7 +26,7 @@ data class GoalResponse(
                 repeatCount = goalInfo.repeatCount,
                 startDate = goalInfo.startDate,
                 endDate = goalInfo.endDate,
-                status = goalInfo.status,
+                goalStatus = goalInfo.goalStatus,
                 createdAt = goalInfo.createdAt
             )
         }
@@ -66,6 +66,6 @@ data class DeleteGoalResponse(
 data class CompleteGoalResponse(
     val goalId: Long,
     val name: String,
-    val status: GoalStatus,
+    val goalStatus: GoalStatus,
     val completedAt: String
 )
