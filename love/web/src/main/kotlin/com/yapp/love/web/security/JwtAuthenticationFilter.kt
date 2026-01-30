@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 
-private val logger = KotlinLogging.logger {}
 
 @Component
 class JwtAuthenticationFilter(

@@ -30,29 +30,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
-                            name = "JSON 형식 오류",
+                            name = "올바르지 않은 입력값",
+                            value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "JSON 형식 오류 또는 잘못된 형식의 입력값",
                             value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "DAILY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "DAILY 목표는 하루 한번만 가능합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "WEEKLY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "WEEKLY 목표는 1번 이상 6번 이하입니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "MONTHLY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "MONTHLY 목표는 1번 이상 25번 이하입니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "시작일 검증 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "시작일은 오늘 또는 미래여야 합니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "종료일 검증 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "종료일은 시작일 이후여야 합니다."}""",
-                        ),
+                        )
                     ],
                 ),
             ],
@@ -132,7 +116,7 @@ annotation class CreateGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "날짜 형식 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "요청 본문의 값이 검증 조건을 충족하지 않습니다"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
                         ),
                     ],
                 ),
@@ -283,8 +267,8 @@ annotation class GetGoalApiSpec
                         ),
                         ExampleObject(
                             name = "필수 값 누락 또는 조건에 맞지 않는 값",
-                            value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
-                        ),
+                            value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
+                        )
                     ],
                 ),
             ],
@@ -460,11 +444,11 @@ annotation class DeleteGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "진행 중이 아닌 목표 완료 시도",
-                            value = """{"status": 400, "code": "G4000", "message": "진행중 목표만 완료 가능"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: NOT_STARTED)"}""",
                         ),
                         ExampleObject(
                             name = "이미 완료된 목표",
-                            value = """{"status": 400, "code": "G4000", "message": "이미 완료된 목표입니다"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: COMPLETED)"}""",
                         ),
                     ],
                 ),
@@ -513,7 +497,7 @@ annotation class DeleteGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "목표 없음",
-                            value = """{"status": 404, "code": "G4040", "message": "요청한 리소스를 찾을 수 없습니다."}""",
+                            value = """{"status": 404, "code": "G4040", "message": "목표를 찾을 수 없습니다."}""",
                         ),
                     ],
                 ),
