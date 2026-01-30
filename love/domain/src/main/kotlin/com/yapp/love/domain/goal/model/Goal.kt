@@ -10,6 +10,10 @@ import java.time.LocalDate
     name = "goals",
     indexes = [
         Index(name = "idx_goals_couple_deleted_start", columnList = "couple_id, deleted_at, start_date"),
+        // 스케줄러용 인덱스: IN_PROGRESS -> COMPLETED 전환
+        Index(name = "idx_goals_status_enddate", columnList = "goal_status, has_end_date, end_date, deleted_at"),
+        // 스케줄러용 인덱스: NOT_STARTED -> IN_PROGRESS 전환
+        Index(name = "idx_goals_status_startdate", columnList = "goal_status, start_date, deleted_at"),
     ])
 class Goal(
     @Id

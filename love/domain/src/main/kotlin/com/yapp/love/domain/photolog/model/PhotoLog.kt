@@ -18,10 +18,6 @@ import java.time.LocalDate
     indexes = [
         // 목표별 날짜별 인증 조회 (가장 빈번: 홈 화면)
         Index(name = "idx_photo_log_goal_date", columnList = "goal_id, verification_date"),
-        // 사용자별 인증 조회
-        Index(name = "idx_photo_log_user_date", columnList = "user_id, verification_date"),
-        // 통계 조회: 목표별 달성 횟수 COUNT
-        Index(name = "idx_photo_log_goal_status", columnList = "goal_id, status")
     ]
 )
 class Photolog(
@@ -46,9 +42,6 @@ class Photolog(
 
     @Column(length = 30)
     var comment: String? = null,
-
-    @Column(nullable = false)
-    var status: Boolean = true,
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

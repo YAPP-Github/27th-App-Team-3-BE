@@ -16,7 +16,6 @@ interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Lo
         SELECT p FROM Photolog p
         WHERE p.goalId IN :goalIds
         AND p.verificationDate = :verificationDate
-        AND p.status = true
     """)
     override fun findByGoalIdsAndVerificationDate(
         @Param("goalIds") goalIds: List<Long>,
@@ -28,7 +27,6 @@ interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Lo
         WHERE p.goalId = :goalId
         AND p.userId = :userId
         AND p.verificationDate = :verificationDate
-        AND p.status = true
     """)
     override fun findByGoalIdAndUserIdAndVerificationDate(
         @Param("goalId") goalId: Long,
@@ -38,11 +36,9 @@ interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Lo
 
     @Modifying
     @Query("""
-        UPDATE Photolog p
-        SET p.status = false
+        DELETE Photolog p
         WHERE p.goalId = :goalId
         AND p.verificationDate BETWEEN :startDate AND :endDate
-        AND p.status = true
     """)
     override fun deleteByGoalIdAndVerificationDateBetween(
         @Param("goalId") goalId: Long,
