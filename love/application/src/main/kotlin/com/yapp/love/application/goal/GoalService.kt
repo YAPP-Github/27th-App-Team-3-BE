@@ -1,15 +1,14 @@
 package com.yapp.love.application.goal
 
+import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.goal.dto.CreateGoalCommand
 import com.yapp.love.application.goal.dto.GoalInfo
 import com.yapp.love.application.goal.dto.GoalWithPhotoLogs
 import com.yapp.love.application.goal.dto.UpdateGoalCommand
 import com.yapp.love.application.photolog.PhotologService
-import com.yapp.love.domain.couple.repository.CoupleRepository
 import com.yapp.love.domain.goal.model.Goal
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.repository.GoalRepository
-import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -21,17 +20,15 @@ import java.time.LocalDate
 @Service
 @Transactional(readOnly = true)
 class GoalService(
-    private val goalRepository: GoalRepository,
-    private val photologRepository: PhotologRepository,
     private val photologService: PhotologService,
-    private val coupleRepository: CoupleRepository,
-    private val coupleService: com.yapp.love.application.couple.CoupleService,
+    private val coupleService: CoupleService,
+    private val goalRepository: GoalRepository
 ) {
     private val logger = KotlinLogging.logger {}
     @Transactional
     fun createGoal(command: CreateGoalCommand): GoalInfo {
         // 커플 존재 여부 확인
-        if (!coupleRepository.existsById(command.coupleId)) {
+        if (!coupleService.existsById(command.coupleId)) {
             throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 커플입니다.")
         }
 
@@ -67,7 +64,7 @@ class GoalService(
         }
 
         val goalIds = goals.map { it.id!! }
-        val photologs = photologRepository.findByGoalIdsAndVerificationDate(goalIds, targetDate)
+        val photologs = photologService.findByGoalIdsAndVerificationDate(goalIds, targetDate)
 
         val photologsByGoalId = photologs.groupBy { it.goalId }
 
@@ -111,9 +108,9 @@ class GoalService(
         if (goal.endDate != command.endDate && command.endDate != null) {
             val today = LocalDate.now()
             if (command.endDate.isBefore(today)) {
-                val deletedCount = photologService.deleteByGoalIdAfterEndDate(goalId, command.endDate)
+                photologService.deleteByGoalIdAfterEndDate(goalId, command.endDate)
                 logger.info {
-                    "Goal $goalId endDate changed to ${command.endDate}, deleted $deletedCount photologs"
+                    "Goal $goalId endDate changed to ${command.endDate}"
                 }
             }
         }

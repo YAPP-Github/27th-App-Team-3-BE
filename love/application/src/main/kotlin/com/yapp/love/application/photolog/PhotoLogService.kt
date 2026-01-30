@@ -1,5 +1,6 @@
 package com.yapp.love.application.photolog
 
+import com.yapp.love.domain.photolog.model.Photolog
 import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
@@ -15,26 +16,31 @@ class PhotologService(
     private val photologRepository: PhotologRepository,
 ) {
     private val logger = KotlinLogging.logger {}
+
+    fun findByGoalIdsAndVerificationDate(
+        goalIds: List<Long>,
+        verificationDate: LocalDate
+    ): List<Photolog> {
+        return photologRepository.findByGoalIdsAndVerificationDate(goalIds, verificationDate)
+    }
     /**
      * 특정 날짜 이후의 인증 기록 삭제
      *
      * @param goalId 목표 ID
      * @param endDate 이 날짜 다음날부터 오늘까지의 인증 기록을 삭제
-     * @return 삭제된 포토로그 개수
      * @throws GlobalException 삭제 실패 시
      */
     @Transactional
-    fun deleteByGoalIdAfterEndDate(goalId: Long, endDate: LocalDate): Int {
+    fun deleteByGoalIdAfterEndDate(goalId: Long, endDate: LocalDate) {
         val from = endDate.plusDays(1)
         val to = LocalDate.now()
 
-        return if (!from.isAfter(to)) {
+        if (!from.isAfter(to)) {
             try {
-                val deletedCount = photologRepository.deleteByGoalIdAndVerificationDateBetween(goalId, from, to)
+                photologRepository.deleteByGoalIdAndVerificationDateBetween(goalId, from, to)
                 logger.info {
-                    "Deleted $deletedCount photologs for goalId=$goalId, dateRange=$from to $to"
+                    "Deleted photologs for goalId=$goalId, dateRange=$from to $to"
                 }
-                deletedCount
             } catch (e: DataAccessException) {
                 logger.error(e) {
                     "Failed to delete photologs for goalId=$goalId, dateRange=$from to $to"
@@ -48,7 +54,6 @@ class PhotologService(
             logger.debug {
                 "No photologs to delete for goalId=$goalId (from=$from is after to=$to)"
             }
-            0
         }
     }
 }

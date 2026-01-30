@@ -4,15 +4,12 @@ import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.goal.dto.CreateGoalCommand
 import com.yapp.love.application.goal.dto.UpdateGoalCommand
-import com.yapp.love.globalutils.exception.GlobalErrorCode
-import com.yapp.love.globalutils.exception.GlobalException
 import com.yapp.love.web.auth.AuthUser
 import com.yapp.love.web.goal.dto.*
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
-import java.time.format.DateTimeParseException
 
 @Tag(name = "Goal", description = "목표 API")
 @RestController
@@ -34,8 +31,8 @@ class GoalController(
             icon = request.icon,
             repeatCycle = request.repeatCycle,
             repeatCount = request.repeatCount,
-            startDate = parseDate(request.startDate, "시작일"),
-            endDate = request.endDate?.let { parseDate(it, "종료일") }
+            startDate = request.startDate,
+            endDate = request.endDate
         )
         val goalInfo = goalService.createGoal(command)
         return GoalResponse.from(goalInfo)
@@ -45,18 +42,17 @@ class GoalController(
     @GetMapping
     fun getGoals(
         @AuthUser userId: Long,
-        @RequestParam date: String  // "2026-01-14"
+        @RequestParam date: LocalDate
     ): GoalListResponse {
         val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
         val coupleId = coupleInfo.id!!
         val partnerUserId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
 
-        val targetDate = parseDate(date, "조회 날짜")
         val goalsWithPhotologs = goalService.getGoalsWithPhotologs(
             coupleId = coupleId,
             myUserId = userId,
             partnerUserId = partnerUserId,
-            targetDate = targetDate
+            targetDate = date
         )
 
         val goalItems = goalsWithPhotologs.map { goalWithPhotologs ->
@@ -122,7 +118,7 @@ class GoalController(
             icon = request.icon,
             repeatCycle = request.repeatCycle,
             repeatCount = request.repeatCount,
-            endDate = request.endDate?.let { LocalDate.parse(it) }
+            endDate = request.endDate
         )
         val goalInfo = goalService.updateGoal(userId, goalId, command)
         return GoalResponse.from(goalInfo)
@@ -154,16 +150,5 @@ class GoalController(
             status = goalInfo.status,
             completedAt = goalInfo.updatedAt
         )
-    }
-
-    private fun parseDate(dateString: String, fieldName: String = "날짜"): LocalDate {
-        return try {
-            LocalDate.parse(dateString)
-        } catch (e: DateTimeParseException) {
-            throw GlobalException(
-                GlobalErrorCode.INVALID_INPUT_VALUE,
-                "${fieldName} 형식이 올바르지 않습니다. (입력값: $dateString, 올바른 형식: yyyy-MM-dd, 예: 2026-01-29)"
-            )
-        }
     }
 }

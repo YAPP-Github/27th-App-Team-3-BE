@@ -24,4 +24,8 @@ class CoupleService(
             coupleInfo.user1Id
         }
     }
+
+    fun existsById(coupleId: Long): Boolean {
+        return coupleRepository.existsById(coupleId)
+    }
 }

@@ -8,9 +8,7 @@ import com.yapp.love.domain.goal.model.Goal
 import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
-import com.yapp.love.domain.couple.repository.CoupleRepository
 import com.yapp.love.domain.goal.repository.GoalRepository
-import com.yapp.love.domain.photolog.repository.PhotologRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -21,16 +19,12 @@ import java.time.LocalDate
 class GoalServiceTest : DescribeSpec({
 
     val goalRepository = mockk<GoalRepository>()
-    val photologRepository = mockk<PhotologRepository>()
     val photologService = mockk<PhotologService>()
-    val coupleRepository = mockk<CoupleRepository>()
     val coupleService = mockk<CoupleService>()
 
     val goalService = GoalService(
         goalRepository = goalRepository,
-        photologRepository = photologRepository,
         photologService = photologService,
-        coupleRepository = coupleRepository,
         coupleService = coupleService
     )
 
@@ -83,7 +77,7 @@ class GoalServiceTest : DescribeSpec({
 
                 every { goalRepository.findActiveGoalById(goalId) } returns goal
                 every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
-                every { photologService.deleteByGoalIdAfterEndDate(goalId, newEndDate) } returns 5
+                every { photologService.deleteByGoalIdAfterEndDate(goalId, newEndDate) } just Runs
                 every { goalRepository.save(goal) } returns goal
 
                 // when
@@ -123,7 +117,7 @@ class GoalServiceTest : DescribeSpec({
 
                 every { goalRepository.findActiveGoalById(goalId) } returns goal
                 every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
-                every { photologService.deleteByGoalIdAfterEndDate(goalId, newEndDate) } returns 3
+                every { photologService.deleteByGoalIdAfterEndDate(goalId, newEndDate) } just Runs
                 every { goalRepository.save(goal) } returns goal
 
                 // when
@@ -287,7 +281,7 @@ class GoalServiceTest : DescribeSpec({
 
                 every { goalRepository.findActiveGoalById(goalId) } returns goal
                 every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
-                every { photologService.deleteByGoalIdAfterEndDate(goalId, newEndDate) } returns 7
+                every { photologService.deleteByGoalIdAfterEndDate(goalId, newEndDate) } just Runs
                 every { goalRepository.save(goal) } returns goal
 
                 // when

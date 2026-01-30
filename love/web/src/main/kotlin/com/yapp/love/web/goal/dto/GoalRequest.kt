@@ -5,6 +5,7 @@ import com.yapp.love.domain.goal.model.RepeatCycle
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
 data class CreateGoalRequest(
     @field:NotBlank(message = "목표 이름은 필수입니다")
@@ -24,9 +25,9 @@ data class CreateGoalRequest(
     val repeatCount: Int,
 
     @field:NotNull(message = "시작일은 필수입니다")
-    val startDate: String,
+    val startDate: LocalDate,
 
-    val endDate: String? = null,
+    val endDate: LocalDate? = null,
 )
 
 data class UpdateGoalRequest(
@@ -43,5 +44,5 @@ data class UpdateGoalRequest(
     @field:Min(value = 1, message = "반복 횟수는 1 이상이어야 합니다")
     val repeatCount: Int,
 
-    val endDate: String? = null,
+    val endDate: LocalDate? = null,
 )
