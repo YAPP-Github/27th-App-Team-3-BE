@@ -1,7 +1,6 @@
 package com.yapp.love.web.security
 
 import com.yapp.love.application.auth.port.TokenProvider
-import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -14,6 +13,8 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 
+private val logger = KotlinLogging.logger {}
+
 @Component
 class JwtAuthenticationFilter(
     private val tokenProvider: TokenProvider,
@@ -21,7 +22,6 @@ class JwtAuthenticationFilter(
     companion object {
         private const val AUTHORIZATION_HEADER = "Authorization"
         private const val BEARER_PREFIX = "Bearer "
-        const val TOKEN_ERROR_ATTRIBUTE = "TOKEN_ERROR"
     }
 
     override fun doFilterInternal(
@@ -41,13 +41,10 @@ class JwtAuthenticationFilter(
                     SecurityContextHolder.getContext().authentication = authentication
                 }
             }
-        } catch (e: GlobalException) {
-            logger.warn { "JWT token error: ${e.errorCode.getCode()} - ${e.getCustomMessage()}" }
-            // 토큰 에러 정보를 request attribute에 저장
-            request.setAttribute(TOKEN_ERROR_ATTRIBUTE, e.errorCode)
-            SecurityContextHolder.clearContext()
         } catch (e: Exception) {
             logger.warn { "JWT authentication failed: ${e.message}" }
+            // 필터에서 예외를 던지면 GlobalExceptionHandler가 처리할 수 없으므로
+            // SecurityContext를 clear하고 계속 진행
             SecurityContextHolder.clearContext()
         }
 
