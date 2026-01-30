@@ -41,6 +41,7 @@ class SecurityConfig(
                         "/swagger-ui.html",
                         "/api-docs/**",
                         "/actuator/health",
+                        "/api/v1/onboarding/**",
                     )
                     .permitAll()
                     .anyRequest()
