@@ -1,8 +1,8 @@
 package com.yapp.love.web.config
 
-import com.yapp.love.infrastructure.logging.SecurityMdcLoggingFilter
 import com.yapp.love.web.security.JwtAuthenticationEntryPoint
 import com.yapp.love.web.security.JwtAuthenticationFilter
+import com.yapp.love.web.security.SecurityMdcLoggingFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -44,10 +44,8 @@ class SecurityConfig(
                         "/api/v1/onboarding/**",
                     )
                     .permitAll()
-                    // @AuthUser를 사용하는 엔드포인트만 인증 필요
-                    // 나머지는 permitAll로 설정하여 선택적 인증 지원
                     .anyRequest()
-                    .permitAll()
+                    .authenticated()
             }
             .exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)

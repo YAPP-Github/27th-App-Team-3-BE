@@ -1,7 +1,10 @@
 package com.yapp.love.infrastructure.jwt
 
 import com.yapp.love.application.auth.port.TokenProvider
+import com.yapp.love.globalutils.exception.GlobalErrorCode
+import com.yapp.love.globalutils.exception.GlobalException
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
@@ -32,10 +35,12 @@ class JwtTokenProvider(
 
     override fun validateToken(token: String): Boolean {
         return try {
-            val claims = parseToken(token)
-            !claims.expiration.before(Date())
+            parseToken(token)
+            true
+        } catch (e: ExpiredJwtException) {
+            throw GlobalException(GlobalErrorCode.TOKEN_EXPIRED)
         } catch (e: Exception) {
-            false
+            throw GlobalException(GlobalErrorCode.INVALID_TOKEN)
         }
     }
 

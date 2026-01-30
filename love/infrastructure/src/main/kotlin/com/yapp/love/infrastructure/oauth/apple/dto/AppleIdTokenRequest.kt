@@ -3,17 +3,17 @@ package com.yapp.love.infrastructure.oauth.apple.dto
 import org.springframework.util.LinkedMultiValueMap
 
 data class AppleIdTokenRequest(
-    val grant_type: String,
+    val grantType: String,
     val code: String,
-    val client_id: String,
-    val client_secret: String,
+    val clientId: String,
+    val clientSecret: String,
 ) {
     fun toMultiValueMap(): LinkedMultiValueMap<String, String> {
         return LinkedMultiValueMap<String, String>().apply {
-            add("grant_type", grant_type)
+            add("grant_type", grantType)
             add("code", code)
-            add("client_id", client_id)
-            add("client_secret", client_secret)
+            add("client_id", clientId)
+            add("client_secret", clientSecret)
         }
     }
 }

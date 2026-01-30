@@ -1,16 +1,23 @@
 package com.yapp.love.web.config
 
+import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
 import io.swagger.v3.oas.models.servers.Server
+import org.springdoc.core.utils.SpringDocUtils
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 class SwaggerConfig {
+    init {
+        // @AuthUser 파라미터를 Swagger UI에서 숨김
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthUser::class.java)
+    }
+
     @Bean
     fun openAPI(): OpenAPI {
         val securitySchemeName = "Bearer Authentication"

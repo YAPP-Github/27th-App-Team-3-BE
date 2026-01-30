@@ -11,7 +11,6 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
-private val logger = KotlinLogging.logger {}
 
 @Component
 class AuthUserArgumentResolver : HandlerMethodArgumentResolver {
@@ -20,24 +19,18 @@ class AuthUserArgumentResolver : HandlerMethodArgumentResolver {
             parameter.parameterType == Long::class.java
     }
 
-    override fun resolveArgument(
+    override fun
+        resolveArgument(
         parameter: MethodParameter,
         mavContainer: ModelAndViewContainer?,
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
     ): Any {
         val authentication = SecurityContextHolder.getContext().authentication
-        if (authentication == null || !authentication.isAuthenticated) {
-            logger.warn { "Authentication not found in SecurityContext" }
-            throw GlobalException(GlobalErrorCode.UNAUTHORIZED)
-        }
+            ?: throw GlobalException(GlobalErrorCode.UNAUTHORIZED)
 
-        val userId = authentication.principal
-        if (userId !is Long) {
-            logger.warn { "Invalid principal type: ${userId?.javaClass}" }
-            throw GlobalException(GlobalErrorCode.UNAUTHORIZED)
-        }
-
+        val userId = authentication.principal as? Long
+            ?: throw GlobalException(GlobalErrorCode.UNAUTHORIZED)
         return userId
     }
 }

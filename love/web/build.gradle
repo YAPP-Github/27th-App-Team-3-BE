@@ -6,7 +6,6 @@ plugins {
 dependencies {
     implementation project(':love:domain')
     implementation project(':love:application')
-    implementation project(':love:infrastructure')
     implementation project(':love:global-utils')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'

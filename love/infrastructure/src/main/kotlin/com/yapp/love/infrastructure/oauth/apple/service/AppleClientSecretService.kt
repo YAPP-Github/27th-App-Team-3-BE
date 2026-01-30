@@ -27,7 +27,7 @@ class AppleClientSecretService(
             com.nimbusds.jwt.JWTClaimsSet.Builder()
                 .issuer(appleProperties.teamId)
                 .subject(appleProperties.clientId)
-                .audience("https://appleid.apple.com")
+                .audience(appleProperties.aud)
                 .issueTime(Date.from(now))
                 .expirationTime(Date.from(exp))
                 .build()

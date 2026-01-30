@@ -29,8 +29,11 @@ enum class GlobalErrorCode(
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "G4010", "인증되지 않은 사용자입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "G4011", "토큰이 만료되었습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "G4012", "유효하지 않은 토큰입니다."),
+    AUTH_REFRESH_TOKEN_TYPE_MISMATCH(HttpStatus.UNAUTHORIZED, "G4013", "적절한 타입의 토큰이 아닙니다."),
+    AUTH_REFRESH_TOKEN_REVOKED(HttpStatus.UNAUTHORIZED, "G4014", "최신화된 Refresh Token이 토큰이 아닙니다."),
 
     FORBIDDEN(HttpStatus.FORBIDDEN, "G4030", "접근 권한이 없습니다."),
+
 
     // ======================================================================
     // 4. 리소스 및 상태
