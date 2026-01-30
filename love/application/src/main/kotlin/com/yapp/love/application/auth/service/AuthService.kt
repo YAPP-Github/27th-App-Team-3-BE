@@ -52,7 +52,7 @@ class AuthService(
             providerMap[provider]
                 ?: throw GlobalException(
                     errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR,
-                    customMessage = "OAuth provider not registered: $provider",
+                    message = "OAuth provider not registered: $provider",
                 )
 
         val userInfo = oauthProvider.authenticate(code)

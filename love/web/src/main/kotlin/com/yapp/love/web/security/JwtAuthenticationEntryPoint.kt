@@ -1,7 +1,6 @@
 package com.yapp.love.web.security
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.yapp.love.globalutils.exception.ErrorCode
 import com.yapp.love.globalutils.exception.ErrorResponse
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import jakarta.servlet.http.HttpServletRequest
@@ -23,11 +22,7 @@ class JwtAuthenticationEntryPoint(
         response.contentType = MediaType.APPLICATION_JSON_VALUE
         response.status = HttpServletResponse.SC_UNAUTHORIZED
 
-        // Filter에서 저장한 토큰 에러 정보 확인
-        val errorCode = request.getAttribute(JwtAuthenticationFilter.TOKEN_ERROR_ATTRIBUTE) as? ErrorCode
-            ?: GlobalErrorCode.UNAUTHORIZED
-
-        val error = ErrorResponse.from(errorCode)
+        val error = ErrorResponse.from(GlobalErrorCode.UNAUTHORIZED)
         objectMapper.writeValue(response.outputStream, error)
     }
 }

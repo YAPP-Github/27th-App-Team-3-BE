@@ -9,7 +9,6 @@ import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import java.net.BindException
 
@@ -29,7 +28,7 @@ class GlobalExceptionHandler {
 
         logger.warn(e) { "GlobalException: ${errorCode.getCode()}" }
 
-        val error = ErrorResponse.from(errorCode, e.getCustomMessage())
+        val error = ErrorResponse.from(errorCode)
 
         return ResponseEntity(error, errorCode.getHttpStatus())
     }
@@ -70,19 +69,6 @@ class GlobalExceptionHandler {
             }
 
         logger.warn(e) { "Validation failed: $errorMsg" }
-
-        val error = ErrorResponse.from(globalErrorCode)
-
-        return ResponseEntity(error, globalErrorCode.getHttpStatus())
-    }
-
-    @ExceptionHandler(MethodArgumentTypeMismatchException::class)
-    protected fun handleMethodArgumentTypeMismatchException(
-        e: MethodArgumentTypeMismatchException,
-    ): ResponseEntity<ErrorResponse> {
-        val globalErrorCode = GlobalErrorCode.INVALID_INPUT_VALUE
-
-        logger.warn(e) { "Type mismatch for parameter: ${e.name}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
