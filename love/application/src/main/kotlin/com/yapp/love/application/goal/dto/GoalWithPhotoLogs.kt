@@ -6,5 +6,5 @@ import com.yapp.love.domain.photolog.model.Photolog
 data class GoalWithPhotoLogs(
     val goal: Goal,
     val myPhotolog: Photolog?,
-    val partnerPhotolog: Photolog?
+    val partnerPhotolog: Photolog?,
 )

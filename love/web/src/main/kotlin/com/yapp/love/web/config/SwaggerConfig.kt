@@ -17,6 +17,7 @@ class SwaggerConfig {
         // @AuthUser 파라미터를 Swagger UI에서 숨김
         SpringDocUtils.getConfig().addAnnotationsToIgnore(AuthUser::class.java)
     }
+
     @Bean
     fun openAPI(): OpenAPI {
         val securitySchemeName = "Bearer Authentication"

@@ -24,8 +24,9 @@ class JwtAuthenticationEntryPoint(
         response.status = HttpServletResponse.SC_UNAUTHORIZED
 
         // Filter에서 저장한 토큰 에러 정보 확인
-        val errorCode = request.getAttribute(JwtAuthenticationFilter.TOKEN_ERROR_ATTRIBUTE) as? ErrorCode
-            ?: GlobalErrorCode.UNAUTHORIZED
+        val errorCode =
+            request.getAttribute(JwtAuthenticationFilter.TOKEN_ERROR_ATTRIBUTE) as? ErrorCode
+                ?: GlobalErrorCode.UNAUTHORIZED
 
         val error = ErrorResponse.from(errorCode)
         objectMapper.writeValue(response.outputStream, error)

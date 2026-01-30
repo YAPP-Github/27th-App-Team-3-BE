@@ -11,7 +11,7 @@ data class CreateGoalCommand(
     val repeatCycle: RepeatCycle,
     val repeatCount: Int,
     val startDate: LocalDate,
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
 )
 
 data class UpdateGoalCommand(
@@ -19,5 +19,5 @@ data class UpdateGoalCommand(
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
     val repeatCount: Int,
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
 )

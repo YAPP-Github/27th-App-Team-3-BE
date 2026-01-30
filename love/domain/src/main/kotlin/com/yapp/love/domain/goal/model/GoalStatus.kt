@@ -4,5 +4,5 @@ enum class GoalStatus {
     NOT_STARTED,
     IN_PROGRESS,
     COMPLETED,
-    DELETED
+    DELETED,
 }

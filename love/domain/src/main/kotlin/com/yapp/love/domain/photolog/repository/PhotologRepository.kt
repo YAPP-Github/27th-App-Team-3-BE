@@ -10,13 +10,13 @@ interface PhotologRepository {
 
     fun findByGoalIdsAndVerificationDate(
         goalIds: List<Long>,
-        verificationDate: LocalDate
+        verificationDate: LocalDate,
     ): List<Photolog>
 
     fun findByGoalIdAndUserIdAndVerificationDate(
         goalId: Long,
         userId: Long,
-        verificationDate: LocalDate
+        verificationDate: LocalDate,
     ): Photolog?
 
     /**
@@ -25,6 +25,6 @@ interface PhotologRepository {
     fun deleteByGoalIdAndVerificationDateBetween(
         goalId: Long,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ): Int
 }

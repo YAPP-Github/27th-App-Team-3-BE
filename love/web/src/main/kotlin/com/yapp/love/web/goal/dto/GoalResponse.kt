@@ -1,9 +1,9 @@
 package com.yapp.love.web.goal.dto
 
+import com.yapp.love.application.goal.dto.GoalInfo
 import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
-import com.yapp.love.application.goal.dto.GoalInfo
 
 data class GoalResponse(
     val goalId: Long,
@@ -14,7 +14,7 @@ data class GoalResponse(
     val startDate: String,
     val endDate: String?,
     val goalStatus: GoalStatus,
-    val createdAt: String
+    val createdAt: String,
 ) {
     companion object {
         fun from(goalInfo: GoalInfo): GoalResponse {
@@ -27,7 +27,7 @@ data class GoalResponse(
                 startDate = goalInfo.startDate,
                 endDate = goalInfo.endDate,
                 goalStatus = goalInfo.goalStatus,
-                createdAt = goalInfo.createdAt
+                createdAt = goalInfo.createdAt,
             )
         }
     }
@@ -36,7 +36,7 @@ data class GoalResponse(
 data class GoalListResponse(
     val completedCount: Int,
     val totalCount: Int,
-    val goals: List<GoalItemResponse>
+    val goals: List<GoalItemResponse>,
 )
 
 data class GoalItemResponse(
@@ -47,7 +47,7 @@ data class GoalItemResponse(
     val myCompleted: Boolean,
     val partnerCompleted: Boolean,
     val myVerification: PhotologInfo?,
-    val partnerVerification: PhotologInfo?
+    val partnerVerification: PhotologInfo?,
 )
 
 data class PhotologInfo(
@@ -55,17 +55,17 @@ data class PhotologInfo(
     val imageUrl: String,
     val comment: String?,
     val reaction: String?,
-    val uploadedAt: String
+    val uploadedAt: String,
 )
 
 data class DeleteGoalResponse(
     val success: Boolean,
-    val message: String
+    val message: String,
 )
 
 data class CompleteGoalResponse(
     val goalId: Long,
     val name: String,
     val goalStatus: GoalStatus,
-    val completedAt: String
+    val completedAt: String,
 )

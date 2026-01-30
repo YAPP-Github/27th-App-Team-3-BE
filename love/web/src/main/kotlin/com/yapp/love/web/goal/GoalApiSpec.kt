@@ -39,11 +39,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                         ),
                         ExampleObject(
                             name = "WEEKLY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "WEEKLY 목표는 1번 이상 6번 이하로 가능합니다."}""",
+                            value = """{"status": 400, "code": "G4000", "message": "WEEKLY 목표는 1번 이상 6번 이하입니다."}""",
                         ),
                         ExampleObject(
                             name = "MONTHLY 목표 repeatCount 오류",
-                            value = """{"status": 400, "code": "G4000", "message": "MONTHLY 목표는 1번 이상 25 이하로 가능합니다."}""",
+                            value = """{"status": 400, "code": "G4000", "message": "MONTHLY 목표는 1번 이상 25번 이하입니다."}""",
                         ),
                         ExampleObject(
                             name = "시작일 검증 오류",
@@ -284,7 +284,7 @@ annotation class GetGoalApiSpec
                         ExampleObject(
                             name = "필수 값 누락 또는 조건에 맞지 않는 값",
                             value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
-                        )
+                        ),
                     ],
                 ),
             ],
@@ -460,11 +460,11 @@ annotation class DeleteGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "진행 중이 아닌 목표 완료 시도",
-                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: NOT_STARTED)"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "진행중 목표만 완료 가능"}""",
                         ),
                         ExampleObject(
                             name = "이미 완료된 목표",
-                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: COMPLETED)"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "이미 완료된 목표입니다"}""",
                         ),
                     ],
                 ),

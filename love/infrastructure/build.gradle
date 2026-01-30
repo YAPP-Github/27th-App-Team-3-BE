@@ -34,12 +34,6 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
-    implementation 'org.mariadb.jdbc:mariadb-java-client'
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    // Sentry (에러 모니터링)
-    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:8.29.0'
-    implementation 'io.sentry:sentry-log4j2:8.29.0'
-
     // Source: https://mvnrepository.com/artifact/com.google.api-client/google-api-client
     implementation("com.google.api-client:google-api-client:2.8.1")
 

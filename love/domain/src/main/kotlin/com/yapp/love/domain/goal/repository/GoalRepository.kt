@@ -15,7 +15,7 @@ interface GoalRepository {
      */
     fun findActiveGoalsByCoupleIdAndDate(
         coupleId: Long,
-        targetDate: LocalDate
+        targetDate: LocalDate,
     ): List<Goal>
 
     /**

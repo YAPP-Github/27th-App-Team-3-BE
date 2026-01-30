@@ -2,7 +2,6 @@ package com.yapp.love.web.security
 
 import com.yapp.love.application.auth.port.TokenProvider
 import com.yapp.love.globalutils.exception.GlobalException
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

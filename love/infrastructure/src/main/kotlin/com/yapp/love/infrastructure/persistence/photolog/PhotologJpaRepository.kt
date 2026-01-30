@@ -11,38 +11,43 @@ import java.time.LocalDate
 
 @Repository
 interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Long> {
-
-    @Query("""
+    @Query(
+        """
         SELECT p FROM Photolog p
         WHERE p.goalId IN :goalIds
         AND p.verificationDate = :verificationDate
-    """)
+    """,
+    )
     override fun findByGoalIdsAndVerificationDate(
         @Param("goalIds") goalIds: List<Long>,
-        @Param("verificationDate") verificationDate: LocalDate
+        @Param("verificationDate") verificationDate: LocalDate,
     ): List<Photolog>
 
-    @Query("""
+    @Query(
+        """
         SELECT p FROM Photolog p
         WHERE p.goalId = :goalId
         AND p.userId = :userId
         AND p.verificationDate = :verificationDate
-    """)
+    """,
+    )
     override fun findByGoalIdAndUserIdAndVerificationDate(
         @Param("goalId") goalId: Long,
         @Param("userId") userId: Long,
-        @Param("verificationDate") verificationDate: LocalDate
+        @Param("verificationDate") verificationDate: LocalDate,
     ): Photolog?
 
     @Modifying
-    @Query("""
+    @Query(
+        """
         DELETE Photolog p
         WHERE p.goalId = :goalId
         AND p.verificationDate BETWEEN :startDate AND :endDate
-    """)
+    """,
+    )
     override fun deleteByGoalIdAndVerificationDateBetween(
         @Param("goalId") goalId: Long,
         @Param("startDate") startDate: LocalDate,
-        @Param("endDate") endDate: LocalDate
+        @Param("endDate") endDate: LocalDate,
     ): Int
 }

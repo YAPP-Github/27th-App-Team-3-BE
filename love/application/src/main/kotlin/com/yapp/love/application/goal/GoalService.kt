@@ -22,9 +22,10 @@ import java.time.LocalDate
 class GoalService(
     private val photologService: PhotologService,
     private val coupleService: CoupleService,
-    private val goalRepository: GoalRepository
+    private val goalRepository: GoalRepository,
 ) {
     private val logger = KotlinLogging.logger {}
+
     @Transactional
     fun createGoal(command: CreateGoalCommand): GoalInfo {
         // 커플 존재 여부 확인
@@ -32,20 +33,21 @@ class GoalService(
             throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 커플입니다.")
         }
 
-        val goal = try {
-            Goal.of(
-                coupleId = command.coupleId,
-                name = command.name,
-                icon = command.icon,
-                repeatCycle = command.repeatCycle,
-                repeatCount = command.repeatCount,
-                startDate = command.startDate,
-                hasEndDate = command.endDate != null,
-                endDate = command.endDate
-            )
-        } catch (e: IllegalArgumentException) {
-            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "입력값이 올바르지 않습니다.")
-        }
+        val goal =
+            try {
+                Goal.of(
+                    coupleId = command.coupleId,
+                    name = command.name,
+                    icon = command.icon,
+                    repeatCycle = command.repeatCycle,
+                    repeatCount = command.repeatCount,
+                    startDate = command.startDate,
+                    hasEndDate = command.endDate != null,
+                    endDate = command.endDate,
+                )
+            } catch (e: IllegalArgumentException) {
+                throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "입력값이 올바르지 않습니다.")
+            }
 
         val savedGoal = goalRepository.save(goal)
         return GoalInfo.from(savedGoal)
@@ -55,7 +57,7 @@ class GoalService(
         coupleId: Long,
         myUserId: Long,
         partnerUserId: Long,
-        targetDate: LocalDate
+        targetDate: LocalDate,
     ): List<GoalWithPhotoLogs> {
         val goals = goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
 
@@ -76,12 +78,15 @@ class GoalService(
             GoalWithPhotoLogs(
                 goal = goal,
                 myPhotolog = myPhotolog,
-                partnerPhotolog = partnerPhotolog
+                partnerPhotolog = partnerPhotolog,
             )
         }
     }
 
-    fun getGoalById(userId: Long, goalId: Long): GoalInfo {
+    fun getGoalById(
+        userId: Long,
+        goalId: Long,
+    ): GoalInfo {
         val goal = getGoalEntityById(goalId)
         verifyUserOwnsGoal(userId, goal)
         return GoalInfo.from(goal)
@@ -92,7 +97,10 @@ class GoalService(
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "목표를 찾을 수 없습니다.")
     }
 
-    private fun verifyUserOwnsGoal(userId: Long, goal: Goal) {
+    private fun verifyUserOwnsGoal(
+        userId: Long,
+        goal: Goal,
+    ) {
         val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
         if (coupleInfo.id != goal.coupleId) {
             throw GlobalException(GlobalErrorCode.FORBIDDEN, "해당 목표에 대한 권한이 없습니다.")
@@ -100,7 +108,11 @@ class GoalService(
     }
 
     @Transactional
-    fun updateGoal(userId: Long, goalId: Long, command: UpdateGoalCommand): GoalInfo {
+    fun updateGoal(
+        userId: Long,
+        goalId: Long,
+        command: UpdateGoalCommand,
+    ): GoalInfo {
         val goal = getGoalEntityById(goalId)
         verifyUserOwnsGoal(userId, goal)
 
@@ -121,7 +133,7 @@ class GoalService(
             goal.updateRepeatSettings(command.repeatCycle, command.repeatCount)
             goal.updateEndDate(command.endDate != null, command.endDate)
         } catch (e: IllegalArgumentException) {
-            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE,"입력값이 올바르지 않습니다.")
+            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "입력값이 올바르지 않습니다.")
         }
 
         goalRepository.save(goal)
@@ -129,7 +141,10 @@ class GoalService(
     }
 
     @Transactional
-    fun deleteGoal(userId: Long, goalId: Long): Boolean {
+    fun deleteGoal(
+        userId: Long,
+        goalId: Long,
+    ): Boolean {
         val goal = getGoalEntityById(goalId)
         verifyUserOwnsGoal(userId, goal)
 
@@ -142,7 +157,10 @@ class GoalService(
     }
 
     @Transactional
-    fun completeGoal(userId: Long, goalId: Long): GoalInfo {
+    fun completeGoal(
+        userId: Long,
+        goalId: Long,
+    ): GoalInfo {
         val goal = getGoalEntityById(goalId)
         verifyUserOwnsGoal(userId, goal)
 
@@ -150,7 +168,7 @@ class GoalService(
         if (goal.goalStatus != GoalStatus.IN_PROGRESS) {
             throw GlobalException(
                 GlobalErrorCode.INVALID_INPUT_VALUE,
-                "진행 중인 목표만 완료할 수 있습니다. (현재 상태: ${goal.goalStatus})"
+                "진행 중인 목표만 완료할 수 있습니다. (현재 상태: ${goal.goalStatus})",
             )
         }
 
@@ -161,5 +179,4 @@ class GoalService(
         // TODO: 통계가 구현되면 통계에 반영하는 로직 추가
         return GoalInfo.from(goal)
     }
-
 }

@@ -13,9 +13,9 @@ import com.yapp.love.domain.user.model.User
 import com.yapp.love.domain.user.repository.UserRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * 인증 관련 서비스
@@ -57,20 +57,21 @@ class AuthService(
 
         val userInfo = oauthProvider.authenticate(code)
 
-        val result = transactionTemplate.execute {
-            val (user, isNewUser) =
-                findOrCreateUser(
-                    provider = provider,
-                    providerId = userInfo.providerId,
-                    email = userInfo.email,
-                    name = userInfo.email?.substringBefore("@"),
-                )
-            createLoginResult(user, isNewUser)
-        }
+        val result =
+            transactionTemplate.execute {
+                val (user, isNewUser) =
+                    findOrCreateUser(
+                        provider = provider,
+                        providerId = userInfo.providerId,
+                        email = userInfo.email,
+                        name = userInfo.email?.substringBefore("@"),
+                    )
+                createLoginResult(user, isNewUser)
+            }
 
         return result ?: run {
             logger.error { "failed to login user: $provider" }
-            throw GlobalException(GlobalErrorCode.INTERNAL_SERVER_ERROR, )
+            throw GlobalException(GlobalErrorCode.INTERNAL_SERVER_ERROR)
         }
     }
 

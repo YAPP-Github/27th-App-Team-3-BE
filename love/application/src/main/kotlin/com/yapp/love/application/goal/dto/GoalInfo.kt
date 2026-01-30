@@ -15,7 +15,7 @@ data class GoalInfo(
     val startDate: String,
     val endDate: String?,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
 ) {
     companion object {
         fun from(goal: Goal): GoalInfo {
@@ -29,7 +29,7 @@ data class GoalInfo(
                 endDate = goal.endDate?.toString(),
                 goalStatus = goal.goalStatus,
                 createdAt = goal.createdAt.toString(),
-                updatedAt = goal.updatedAt.toString()
+                updatedAt = goal.updatedAt.toString(),
             )
         }
     }

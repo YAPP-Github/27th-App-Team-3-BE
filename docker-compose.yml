@@ -13,5 +13,34 @@ services:
       - mariadb_data:/var/lib/mysql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
+  redis:
+    image: redis:7.0-alpine
+    container_name: yapp-redis
+    command: [ "redis-server"]
+    ports:
+      - "6379:6379"
+    networks:
+      - redis-network
+    volumes:
+      - redis_data:/data
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    networks:
+      - redis-network
+    depends_on:
+      - redis
+    volumes:
+      - redis_insight_data:/db
+
+networks:
+  redis-network:
+    driver: bridge
+
 volumes:
   mariadb_data:
+  redis_data:
+  redis_insight_data:

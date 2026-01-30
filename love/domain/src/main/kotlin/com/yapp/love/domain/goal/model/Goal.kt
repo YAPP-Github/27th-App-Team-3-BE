@@ -14,58 +14,54 @@ import java.time.LocalDate
         Index(name = "idx_goals_status_enddate", columnList = "goal_status, has_end_date, end_date, deleted_at"),
         // 스케줄러용 인덱스: NOT_STARTED -> IN_PROGRESS 전환
         Index(name = "idx_goals_status_startdate", columnList = "goal_status, start_date, deleted_at"),
-    ])
+    ],
+)
 class Goal(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-
     @Column(name = "couple_id", nullable = false)
     val coupleId: Long,
-
     @Column(nullable = false)
     var name: String,
-
     @Enumerated(EnumType.STRING)
     @Column(name = "repeat_cycle", nullable = false)
     var repeatCycle: RepeatCycle,
-
     @Column(name = "repeat_count", nullable = false)
     var repeatCount: Int,
-
     @Column(name = "start_date", nullable = false)
     val startDate: LocalDate,
-
     @Column(name = "has_end_date", nullable = false)
     var hasEndDate: Boolean = false,
-
     @Column(name = "end_date")
     var endDate: LocalDate? = null,
-
     @Column(name = "deleted_at")
     var deletedAt: Instant? = null,
-
     @Enumerated(EnumType.STRING)
     @Column(name = "goal_status", nullable = false, length = 50)
     var goalStatus: GoalStatus,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20, name = "goal_icon")
     var icon: GoalIcon,
 ) : BaseEntity() {
-
     init {
         validateRepeatCycle()
         validateGoalDates()
     }
 
-    fun updateRepeatSettings(newCycle: RepeatCycle, newCount: Int) {
+    fun updateRepeatSettings(
+        newCycle: RepeatCycle,
+        newCount: Int,
+    ) {
         this.repeatCycle = newCycle
         this.repeatCount = newCount
         validateRepeatCycle()
     }
 
-    fun updateEndDate(hasEndDate: Boolean, endDate: LocalDate?) {
+    fun updateEndDate(
+        hasEndDate: Boolean,
+        endDate: LocalDate?,
+    ) {
         this.hasEndDate = hasEndDate
         this.endDate = endDate
         validateGoalDates()
@@ -132,27 +128,29 @@ class Goal(
             repeatCount: Int,
             startDate: LocalDate,
             hasEndDate: Boolean,
-            endDate: LocalDate?
+            endDate: LocalDate?,
         ): Goal {
             val today = LocalDate.now()
-            val initialStatus = if (startDate.isAfter(today)) {
-                GoalStatus.NOT_STARTED
-            } else {
-                GoalStatus.IN_PROGRESS
-            }
+            val initialStatus =
+                if (startDate.isAfter(today)) {
+                    GoalStatus.NOT_STARTED
+                } else {
+                    GoalStatus.IN_PROGRESS
+                }
 
-            val goal = Goal(
-                coupleId = coupleId,
-                name = name,
-                icon = icon,
-                repeatCycle = repeatCycle,
-                repeatCount = repeatCount,
-                startDate = startDate,
-                hasEndDate = hasEndDate,
-                endDate = endDate,
-                goalStatus = initialStatus,
-                deletedAt = null
-            )
+            val goal =
+                Goal(
+                    coupleId = coupleId,
+                    name = name,
+                    icon = icon,
+                    repeatCycle = repeatCycle,
+                    repeatCount = repeatCount,
+                    startDate = startDate,
+                    hasEndDate = hasEndDate,
+                    endDate = endDate,
+                    goalStatus = initialStatus,
+                    deletedAt = null,
+                )
 
             // 생성 시점에만 필요한 검증 (시간 의존적)
             goal.validateForCreation()

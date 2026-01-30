@@ -19,10 +19,11 @@ class PhotologService(
 
     fun findByGoalIdsAndVerificationDate(
         goalIds: List<Long>,
-        verificationDate: LocalDate
+        verificationDate: LocalDate,
     ): List<Photolog> {
         return photologRepository.findByGoalIdsAndVerificationDate(goalIds, verificationDate)
     }
+
     /**
      * 특정 날짜 이후의 인증 기록 삭제
      *
@@ -31,7 +32,10 @@ class PhotologService(
      * @throws GlobalException 삭제 실패 시
      */
     @Transactional
-    fun deleteByGoalIdAfterEndDate(goalId: Long, endDate: LocalDate) {
+    fun deleteByGoalIdAfterEndDate(
+        goalId: Long,
+        endDate: LocalDate,
+    ) {
         val from = endDate.plusDays(1)
         val to = LocalDate.now()
 
@@ -47,7 +51,7 @@ class PhotologService(
                 }
                 throw GlobalException(
                     GlobalErrorCode.INTERNAL_SERVER_ERROR,
-                    "인증 기록 삭제 중 오류가 발생했습니다."
+                    "인증 기록 삭제 중 오류가 발생했습니다.",
                 )
             }
         } else {

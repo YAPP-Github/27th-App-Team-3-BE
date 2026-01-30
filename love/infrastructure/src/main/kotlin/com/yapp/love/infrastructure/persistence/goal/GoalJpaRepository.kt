@@ -11,8 +11,8 @@ import java.time.LocalDate
 
 @Repository
 interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
-
-    @Query("""
+    @Query(
+        """
         SELECT g FROM Goal g
         WHERE g.coupleId = :coupleId
         AND g.deletedAt IS NULL
@@ -25,33 +25,44 @@ interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
                 WHEN 'MONTHLY' THEN 3
             END,
             g.startDate ASC
-    """)
+    """,
+    )
     override fun findActiveGoalsByCoupleIdAndDate(
         @Param("coupleId") coupleId: Long,
-        @Param("targetDate") targetDate: LocalDate
+        @Param("targetDate") targetDate: LocalDate,
     ): List<Goal>
 
     @Query("SELECT g FROM Goal g WHERE g.id = :id AND g.deletedAt IS NULL")
-    override fun findActiveGoalById(@Param("id") id: Long): Goal?
+    override fun findActiveGoalById(
+        @Param("id") id: Long,
+    ): Goal?
 
     @Modifying
-    @Query("""
+    @Query(
+        """
         UPDATE Goal g
         SET g.goalStatus = com.yapp.love.domain.goal.model.GoalStatus.IN_PROGRESS
         WHERE g.goalStatus = com.yapp.love.domain.goal.model.GoalStatus.NOT_STARTED
         AND g.startDate <= :today
         AND g.deletedAt IS NULL
-    """)
-    override fun updateNotStartedToInProgress(@Param("today") today: LocalDate): Int
+    """,
+    )
+    override fun updateNotStartedToInProgress(
+        @Param("today") today: LocalDate,
+    ): Int
 
     @Modifying
-    @Query("""
+    @Query(
+        """
         UPDATE Goal g
         SET g.goalStatus = com.yapp.love.domain.goal.model.GoalStatus.COMPLETED
         WHERE g.goalStatus = com.yapp.love.domain.goal.model.GoalStatus.IN_PROGRESS
         AND g.hasEndDate = true
         AND g.endDate < :today
         AND g.deletedAt IS NULL
-    """)
-    override fun updateInProgressToCompleted(@Param("today") today: LocalDate): Int
+    """,
+    )
+    override fun updateInProgressToCompleted(
+        @Param("today") today: LocalDate,
+    ): Int
 }

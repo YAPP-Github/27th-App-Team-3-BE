@@ -31,7 +31,7 @@ class GoalStatusScheduler(
         } catch (e: Exception) {
             logger.error(e) {
                 "Failed to update goal statuses for date: $today. " +
-                "Goals may be in incorrect states. Manual intervention may be required."
+                    "Goals may be in incorrect states. Manual intervention may be required."
             }
         }
     }

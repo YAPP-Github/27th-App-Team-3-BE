@@ -9,7 +9,8 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CoupleJpaRepository : CoupleRepository, JpaRepository<CoupleInfo, Long> {
-
     @Query("SELECT c FROM CoupleInfo c WHERE c.user1Id = :userId OR c.user2Id = :userId")
-    override fun findByUserId(@Param("userId") userId: Long): CoupleInfo?
+    override fun findByUserId(
+        @Param("userId") userId: Long,
+    ): CoupleInfo?
 }
