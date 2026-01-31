@@ -67,13 +67,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = originalEndDate,
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = newEndDate,
@@ -109,13 +109,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = today.plusDays(10), // 원래 종료일은 미래
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = newEndDate,
@@ -154,13 +154,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = originalEndDate,
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = newEndDate,
@@ -195,13 +195,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = today.minusDays(10),
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = newEndDate,
@@ -238,13 +238,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = endDate,
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기 (수정)", // 이름만 변경
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = endDate, // 동일한 종료일
@@ -281,13 +281,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = false,
                         endDate = null,
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = newEndDate, // 과거 날짜로 종료일 추가
@@ -325,13 +325,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = LocalDate.now().plusDays(10),
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = newEndDate,
@@ -384,13 +384,13 @@ class GoalServiceTest : DescribeSpec({
                         hasEndDate = true,
                         endDate = LocalDate.of(2026, 2, 15),
                         goalStatus = GoalStatus.IN_PROGRESS,
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                     )
 
                 val command =
                     UpdateGoalCommand(
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         endDate = LocalDate.now().minusDays(1),

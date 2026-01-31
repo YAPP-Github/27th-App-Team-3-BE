@@ -24,7 +24,7 @@ class GoalTest {
                     Goal.of(
                         coupleId = 1L,
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         startDate = pastDate,
@@ -43,7 +43,7 @@ class GoalTest {
                     Goal.of(
                         coupleId = 1L,
                         name = "운동하기",
-                        icon = GoalIcon.EXERCISE,
+                        icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
                         startDate = LocalDate.now(),
@@ -64,7 +64,7 @@ class GoalTest {
                 Goal.of(
                     coupleId = 1L,
                     name = "운동하기",
-                    icon = GoalIcon.EXERCISE,
+                    icon = GoalIcon.ICON_DEFAULT,
                     repeatCycle = RepeatCycle.DAILY,
                     repeatCount = 1,
                     startDate = startDate,
@@ -89,7 +89,7 @@ class GoalTest {
                 Goal.of(
                     coupleId = 1L,
                     name = "운동하기",
-                    icon = GoalIcon.EXERCISE,
+                    icon = GoalIcon.ICON_DEFAULT,
                     repeatCycle = RepeatCycle.DAILY,
                     repeatCount = 1,
                     startDate = futureDate,
@@ -109,7 +109,7 @@ class GoalTest {
                 Goal.of(
                     coupleId = 1L,
                     name = "운동하기",
-                    icon = GoalIcon.EXERCISE,
+                    icon = GoalIcon.ICON_DEFAULT,
                     repeatCycle = RepeatCycle.DAILY,
                     repeatCount = 1,
                     startDate = today,
@@ -131,7 +131,7 @@ class GoalTest {
                 Goal.of(
                     coupleId = 1L,
                     name = "운동하기",
-                    icon = GoalIcon.EXERCISE,
+                    icon = GoalIcon.ICON_DEFAULT,
                     repeatCycle = RepeatCycle.DAILY,
                     repeatCount = 1,
                     startDate = LocalDate.now(),
@@ -154,7 +154,7 @@ class GoalTest {
                 Goal.of(
                     coupleId = 1L,
                     name = "운동하기",
-                    icon = GoalIcon.EXERCISE,
+                    icon = GoalIcon.ICON_DEFAULT,
                     repeatCycle = RepeatCycle.DAILY,
                     repeatCount = 1,
                     startDate = startDate,
@@ -176,7 +176,7 @@ class GoalTest {
                 Goal.of(
                     coupleId = 1L,
                     name = "운동하기",
-                    icon = GoalIcon.EXERCISE,
+                    icon = GoalIcon.ICON_DEFAULT,
                     repeatCycle = RepeatCycle.DAILY,
                     repeatCount = 1,
                     startDate = LocalDate.now(),
