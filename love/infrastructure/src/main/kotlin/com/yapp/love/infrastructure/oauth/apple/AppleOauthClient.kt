@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 private val logger = KotlinLogging.logger {}
@@ -46,7 +47,7 @@ class AppleOauthClient(
                 .body(BodyInserters.fromFormData(formData.toMultiValueMap()))
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
-                    response.bodyToMono(String::class.java)
+                    response.bodyToMono<String>()
                         .defaultIfEmpty("(empty response body)")
                         .flatMap { body ->
                             logger.error {
@@ -74,7 +75,7 @@ class AppleOauthClient(
                 .block() ?: throw IllegalStateException("Apple token response is null")
         } catch (e: WebClientResponseException) {
             // 이미 onStatus에서 로깅했지만, 혹시 모를 경우를 대비
-            if (!e.message.contains("Apple token exchange failed")) {
+            if (e.message?.contains("Apple token exchange failed") != true) {
                 logger.error(e) {
                     """
                     |Apple token exchange failed (caught):

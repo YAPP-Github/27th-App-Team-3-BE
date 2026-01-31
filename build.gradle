@@ -91,7 +91,7 @@ subprojects {
     spotless {
         kotlin {
             target '**/*.kt'
-            targetExclude '**/build/**'
+            targetExclude '**/build/**', '**/*ApiSpec.kt'
             ktlint('1.2.1')
             trimTrailingWhitespace()
             endWithNewline()

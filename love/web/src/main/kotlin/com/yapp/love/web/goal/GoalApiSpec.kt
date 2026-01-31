@@ -444,11 +444,11 @@ annotation class DeleteGoalApiSpec
                     examples = [
                         ExampleObject(
                             name = "진행 중이 아닌 목표 완료 시도",
-                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: NOT_STARTED)"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다.(현재: NOT_STARTED)"}""",
                         ),
                         ExampleObject(
                             name = "이미 완료된 목표",
-                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다. (현재 상태: COMPLETED)"}""",
+                            value = """{"status": 400, "code": "G4000", "message": "진행 중인 목표만 완료할 수 있습니다.(현재: COMPLETED)"}""",
                         ),
                     ],
                 ),
