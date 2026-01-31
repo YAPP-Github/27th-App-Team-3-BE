@@ -13,9 +13,8 @@ interface InviteCodeJpaRepository : JpaRepository<InviteCodes, Long> {
 
 @Repository
 class InviteCodeRepositoryImpl(
-    private val inviteCodeJpaRepository: InviteCodeJpaRepository
+    private val inviteCodeJpaRepository: InviteCodeJpaRepository,
 ) : InviteCodeRepository {
-
     override fun isExistByCode(inviteCode: String): Boolean {
         return inviteCodeJpaRepository.existsByCode(inviteCode)
     }

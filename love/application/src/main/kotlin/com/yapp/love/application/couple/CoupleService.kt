@@ -17,7 +17,10 @@ class CoupleService(
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플을 찾을 수 없습니다.")
     }
 
-    fun getPartnerUserIdByCoupleInfo(coupleInfo: CoupleInfo, myUserId: Long): Long {
+    fun getPartnerUserIdByCoupleInfo(
+        coupleInfo: CoupleInfo,
+        myUserId: Long,
+    ): Long {
         return if (coupleInfo.user1Id == myUserId) {
             coupleInfo.user2Id
         } else {

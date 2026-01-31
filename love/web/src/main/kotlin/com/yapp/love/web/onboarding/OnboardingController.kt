@@ -14,21 +14,19 @@ import jakarta.validation.constraints.Size
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
-
 @Tag(name = "Onboarding", description = "온보딩 API")
 @RestController
 @RequestMapping("/api/v1/onboarding")
 class OnboardingController(
     private val onboardingService: OnboardingService,
 ) {
-
     @Operation(summary = "온보딩 상태 조회")
     @GetMapping("/status")
     fun getOnboardingStatus(
         @AuthUser userId: Long,
     ): OnboardingStatusResponse {
         return OnboardingStatusResponse(
-            onboardingService.getOnboardingStatus(userId)
+            onboardingService.getOnboardingStatus(userId),
         )
     }
 
@@ -38,7 +36,7 @@ class OnboardingController(
         @AuthUser userId: Long,
     ): InviteCodeResponse {
         return InviteCodeResponse(
-            onboardingService.getOrCreateInviteCode(userId)
+            onboardingService.getOrCreateInviteCode(userId),
         )
     }
 

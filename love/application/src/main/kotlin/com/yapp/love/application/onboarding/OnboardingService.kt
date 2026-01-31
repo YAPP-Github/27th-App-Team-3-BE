@@ -15,7 +15,6 @@ class OnboardingService(
     private val onboardingInfoRepository: OnboardingInfoRepository,
     private val inviteCodeRepository: InviteCodeRepository,
 ) {
-
     fun getOnboardingStatus(userId: Long): OnboardingStatus {
         return onboardingInfoRepository.findByUserId(userId)?.status
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "온보딩 정보를 찾을 수 없습니다.")

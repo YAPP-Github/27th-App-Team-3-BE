@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 
-
 @Component
 class JwtAuthenticationFilter(
     private val tokenProvider: TokenProvider,

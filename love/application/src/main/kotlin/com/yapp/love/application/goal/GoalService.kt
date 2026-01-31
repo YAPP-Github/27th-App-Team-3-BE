@@ -59,7 +59,6 @@ class GoalService(
         partnerUserId: Long,
         targetDate: LocalDate,
     ): List<GoalWithPhotoLogs> {
-
         val goals = goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
 
         if (goals.isEmpty()) {
