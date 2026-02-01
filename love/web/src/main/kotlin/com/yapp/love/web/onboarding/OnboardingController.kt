@@ -55,7 +55,7 @@ class OnboardingController(
         @AuthUser userId: Long,
         @Valid @RequestBody request: CoupleConnectionRequest,
     ) {
-        // TODO: 커플 연결 구현
+        onboardingService.connectCouple(userId, request.inviteCode)
     }
 
     @Operation(summary = "프로필 등록")

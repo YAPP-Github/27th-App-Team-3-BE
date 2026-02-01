@@ -7,5 +7,7 @@ interface InviteCodeRepository {
 
     fun findByCreatorId(creatorId: Long): InviteCodes?
 
+    fun findByCode(code: String): InviteCodes?
+
     fun save(inviteCode: InviteCodes): InviteCodes
 }
