@@ -123,6 +123,21 @@ class GlobalExceptionHandler {
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }
 
+    @ExceptionHandler(IllegalArgumentException::class, IllegalStateException::class)
+    protected fun handleIllegalException(ex: RuntimeException): ResponseEntity<ErrorResponse> {
+        val globalErrorCode = GlobalErrorCode.INVALID_INPUT_VALUE
+
+        logger.warn(ex) { "Domain validation failed: ${ex.message}" }
+
+        val error = ErrorResponse(
+            status = globalErrorCode.getHttpStatus().value(),
+            code = globalErrorCode.getCode(),
+            message = ex.message ?: globalErrorCode.getMessage(),
+        )
+
+        return ResponseEntity(error, globalErrorCode.getHttpStatus())
+    }
+
     @ExceptionHandler(Exception::class)
     protected fun handleGeneralException(ex: Exception): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR
