@@ -4,6 +4,7 @@ import com.yapp.love.domain.onboarding.InviteCodeRepository
 import com.yapp.love.domain.onboarding.OnboardingInfoRepository
 import com.yapp.love.domain.onboarding.model.InviteCodes
 import com.yapp.love.domain.onboarding.model.OnboardingStatus
+import com.yapp.love.domain.onboarding.model.UserOnboardingInfo
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
@@ -24,6 +25,22 @@ class OnboardingService(
     fun getOrCreateInviteCode(userId: Long): String {
         return inviteCodeRepository.findByCreatorId(userId)?.code
             ?: createInviteCode(userId)
+    }
+
+    @Transactional
+    fun connectCouple(usedUserId: Long, inviteCode: String) {
+        val inviteCodes = inviteCodeRepository.findByCode(inviteCode)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "유효하지 않은 초대 코드입니다.")
+
+        inviteCodes.use(usedUserId)
+        inviteCodeRepository.save(inviteCodes)
+
+        createOnboardingInfo(usedUserId)
+        createOnboardingInfo(inviteCodes.creatorId)
+    }
+
+    private fun createOnboardingInfo(userId: Long): UserOnboardingInfo {
+        return onboardingInfoRepository.save(UserOnboardingInfo.create(userId))
     }
 
     private fun createInviteCode(userId: Long): String {
