@@ -49,12 +49,32 @@ class UserOnboardingInfo(
 
     @Column(name = "completed_at")
     var completedAt: LocalDateTime? = null,
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun updateStatus() {
+        check(status != OnboardingStatus.COMPLETED) { "이미 온보딩이 완료되었습니다." }
+        status = status.next()
+        if (status == OnboardingStatus.COMPLETED) {
+            completedAt = LocalDateTime.now()
+        }
+    }
+
+    companion object {
+        fun create(userId: Long) = UserOnboardingInfo(userId = userId)
+    }
+}
 
 enum class OnboardingStatus {
-    TERMS_AGREEMENT,
     COUPLE_CONNECTION,
     PROFILE_SETUP,
     ANNIVERSARY_SETUP,
     COMPLETED,
+    ;
+
+    fun next(): OnboardingStatus = when (this) {
+        COUPLE_CONNECTION -> PROFILE_SETUP
+        PROFILE_SETUP -> ANNIVERSARY_SETUP
+        ANNIVERSARY_SETUP -> COMPLETED
+        COMPLETED -> COMPLETED
+    }
 }
