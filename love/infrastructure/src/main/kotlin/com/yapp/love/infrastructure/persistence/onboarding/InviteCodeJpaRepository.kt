@@ -11,6 +11,8 @@ interface InviteCodeJpaRepository : JpaRepository<InviteCodes, Long> {
     fun findByCreatorId(creatorId: Long): InviteCodes?
 
     fun findByCode(code: String): InviteCodes?
+
+    fun findByUsedById(usedById: Long): InviteCodes?
 }
 
 @Repository
@@ -27,6 +29,10 @@ class InviteCodeRepositoryImpl(
 
     override fun findByCode(code: String): InviteCodes? {
         return inviteCodeJpaRepository.findByCode(code)
+    }
+
+    override fun findUsedByUserId(userId: Long): InviteCodes? {
+        return inviteCodeJpaRepository.findByUsedById(userId)
     }
 
     override fun save(inviteCode: InviteCodes): InviteCodes {

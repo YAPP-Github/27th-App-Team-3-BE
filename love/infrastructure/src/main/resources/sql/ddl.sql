@@ -12,13 +12,13 @@ CREATE TABLE invite_codes
 );
 
 -- 커플 테이블
-CREATE TABLE couples_info
+CREATE TABLE couple_info
 (
     id               BIGINT AUTO_INCREMENT PRIMARY KEY,
     user1_id         BIGINT NOT NULL,
     user2_id         BIGINT NOT NULL,
     invite_code_id   BIGINT NOT NULL UNIQUE,
-    anniversary_date DATE   NOT NULL,
+    anniversary_date DATE NULL,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX            idx_couples_info_user1_id (user1_id),

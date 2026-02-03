@@ -72,7 +72,7 @@ class OnboardingController(
         @AuthUser userId: Long,
         @Valid @RequestBody request: AnniversarySetupRequest,
     ) {
-        // TODO: 기념일 설정 구현
+        onboardingService.setAnniversary(userId, request.anniversaryDate)
     }
 }
 

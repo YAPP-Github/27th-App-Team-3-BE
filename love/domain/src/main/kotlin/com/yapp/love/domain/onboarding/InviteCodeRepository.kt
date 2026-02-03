@@ -9,5 +9,7 @@ interface InviteCodeRepository {
 
     fun findByCode(code: String): InviteCodes?
 
+    fun findUsedByUserId(userId: Long): InviteCodes?
+
     fun save(inviteCode: InviteCodes): InviteCodes
 }
