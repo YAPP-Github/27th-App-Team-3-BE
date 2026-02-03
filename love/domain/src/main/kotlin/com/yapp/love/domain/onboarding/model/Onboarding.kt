@@ -1,6 +1,7 @@
 package com.yapp.love.domain.onboarding.model
 
 import com.yapp.love.domain.common.BaseEntity
+import com.yapp.love.domain.couple.model.CoupleInfo
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -51,10 +52,15 @@ class UserOnboardingInfo(
     var completedAt: LocalDateTime? = null,
 ) : BaseEntity() {
 
-    fun updateStatus() {
-        check(status != OnboardingStatus.COMPLETED) { "이미 온보딩이 완료되었습니다." }
+    fun updateStatus(coupleInfo: CoupleInfo) {
+        check(status == OnboardingStatus.COMPLETED) { "이미 온보딩이 완료되었습니다." }
         status = status.next()
         if (status == OnboardingStatus.COMPLETED) {
+            completedAt = LocalDateTime.now()
+        }
+
+        if (coupleInfo.anniversaryDate != null && status == OnboardingStatus.PROFILE_SETUP) {
+            status = OnboardingStatus.COMPLETED
             completedAt = LocalDateTime.now()
         }
     }

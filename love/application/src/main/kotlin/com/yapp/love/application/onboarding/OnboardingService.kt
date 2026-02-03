@@ -1,5 +1,7 @@
 package com.yapp.love.application.onboarding
 
+import com.yapp.love.domain.couple.CoupleInfoRepository
+import com.yapp.love.domain.couple.model.CoupleInfo
 import com.yapp.love.domain.onboarding.InviteCodeRepository
 import com.yapp.love.domain.onboarding.OnboardingInfoRepository
 import com.yapp.love.domain.onboarding.model.InviteCodes
@@ -10,6 +12,7 @@ import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.SecureRandom
+import java.time.LocalDate
 
 @Service
 class OnboardingService(
@@ -37,12 +40,35 @@ class OnboardingService(
         inviteCodes.use(usedUserId)
         inviteCodeRepository.save(inviteCodes)
 
-        createOnboardingInfo(usedUserId)
-        createOnboardingInfo(inviteCodes.creatorId)
+        coupleInfoRepository.save(
+            CoupleInfo.create(
+                user1Id = inviteCodes.creatorId,
+                user2Id = usedUserId,
+                inviteCodeId = inviteCodes.id!!,
+            )
+        )
+
+        onboardingInfoRepository.save(UserOnboardingInfo.create(usedUserId))
+        onboardingInfoRepository.save(UserOnboardingInfo.create(inviteCodes.creatorId))
     }
 
-    private fun createOnboardingInfo(userId: Long): UserOnboardingInfo {
-        return onboardingInfoRepository.save(UserOnboardingInfo.create(userId))
+    @Transactional
+    fun setAnniversary(userId: Long, anniversaryDate: LocalDate) {
+        val coupleInfo = coupleInfoRepository.findByUserId(userId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
+
+        coupleInfo.setAnniversary(anniversaryDate)
+        coupleInfoRepository.save(coupleInfo)
+
+        updateOnboardingStatus(coupleInfo.user1Id, coupleInfo)
+        updateOnboardingStatus(coupleInfo.user2Id, coupleInfo)
+    }
+
+    private fun updateOnboardingStatus(userId: Long, coupleInfo: CoupleInfo) {
+        val onboardingInfo = onboardingInfoRepository.findByUserId(userId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "온보딩 정보를 찾을 수 없습니다.")
+        onboardingInfo.updateStatus(coupleInfo)
+        onboardingInfoRepository.save(onboardingInfo)
     }
 
     private fun createInviteCode(userId: Long): String {
