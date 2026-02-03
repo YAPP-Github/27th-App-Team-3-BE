@@ -20,6 +20,19 @@ class CoupleInfo(
     @Column(name = "invite_code_id", nullable = false, unique = true)
     val inviteCodeId: Long,
 
-    @Column(name = "anniversary_date", nullable = false)
-    var anniversaryDate: LocalDate,
-) : BaseEntity()
+    @Column(name = "anniversary_date")
+    var anniversaryDate: LocalDate? = null,
+) : BaseEntity() {
+
+    fun setAnniversary(date: LocalDate) {
+        anniversaryDate = date
+    }
+
+    companion object {
+        fun create(user1Id: Long, user2Id: Long, inviteCodeId: Long) = CoupleInfo(
+            user1Id = user1Id,
+            user2Id = user2Id,
+            inviteCodeId = inviteCodeId,
+        )
+    }
+}
