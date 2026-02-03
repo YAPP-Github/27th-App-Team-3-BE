@@ -36,3 +36,14 @@ CREATE TABLE user_onboarding_info
     updated_at   TIMESTAMP   NOT NULL,
     INDEX        idx_user_onboarding_info_user_id (user_id)
 );
+
+-- 사용자 추가 정보 테이블
+CREATE TABLE user_addition_info
+(
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT      NOT NULL UNIQUE,
+    nickname   VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX      idx_user_addition_info_user_id (user_id)
+);
