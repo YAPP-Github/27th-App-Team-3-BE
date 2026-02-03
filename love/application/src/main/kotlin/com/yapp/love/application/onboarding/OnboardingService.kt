@@ -20,6 +20,8 @@ class OnboardingService(
     private val inviteCodeRepository: InviteCodeRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
 ) {
+
+    @Transactional
     fun getOnboardingStatus(userId: Long): OnboardingStatus {
         return onboardingInfoRepository.findByUserId(userId)?.status
             ?:onboardingInfoRepository.save(UserOnboardingInfo.create(userId)).status
