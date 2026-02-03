@@ -87,3 +87,14 @@ CREATE TABLE photo_log
     INDEX idx_photo_log_user_date (user_id, verification_date),
 );
 
+
+-- 사용자 추가 정보 테이블
+CREATE TABLE user_addition_info
+(
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT      NOT NULL UNIQUE,
+    nickname   VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX      idx_user_addition_info_user_id (user_id)
+);

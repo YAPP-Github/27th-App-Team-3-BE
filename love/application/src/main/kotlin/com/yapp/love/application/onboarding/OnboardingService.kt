@@ -7,6 +7,8 @@ import com.yapp.love.domain.onboarding.OnboardingInfoRepository
 import com.yapp.love.domain.onboarding.model.InviteCodes
 import com.yapp.love.domain.onboarding.model.OnboardingStatus
 import com.yapp.love.domain.onboarding.model.UserOnboardingInfo
+import com.yapp.love.domain.user.UserAdditionInfoRepository
+import com.yapp.love.domain.user.model.UserAdditionInfo
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
@@ -19,7 +21,10 @@ class OnboardingService(
     private val onboardingInfoRepository: OnboardingInfoRepository,
     private val inviteCodeRepository: InviteCodeRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
+    private val userAdditionInfoRepository: UserAdditionInfoRepository,
 ) {
+
+    @Transactional
     fun getOnboardingStatus(userId: Long): OnboardingStatus {
         return onboardingInfoRepository.findByUserId(userId)?.status
             ?:onboardingInfoRepository.save(UserOnboardingInfo.create(userId)).status
@@ -52,6 +57,20 @@ class OnboardingService(
     }
 
     @Transactional
+    fun setProfile(userId: Long, nickname: String) {
+        userAdditionInfoRepository.save(UserAdditionInfo.create(userId, nickname))
+
+        val onboardingInfo = onboardingInfoRepository.findByUserId(userId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "온보딩 정보를 찾을 수 없습니다.")
+
+        val coupleInfo = coupleInfoRepository.findByUserId(userId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
+
+        onboardingInfo.updateStatus(coupleInfo)
+        onboardingInfoRepository.save(onboardingInfo)
+    }
+
+    @Transactional
     fun setAnniversary(userId: Long, anniversaryDate: LocalDate) {
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
@@ -59,8 +78,7 @@ class OnboardingService(
         coupleInfo.setAnniversary(anniversaryDate)
         coupleInfoRepository.save(coupleInfo)
 
-        updateOnboardingStatus(coupleInfo.user1Id, coupleInfo)
-        updateOnboardingStatus(coupleInfo.user2Id, coupleInfo)
+        updateOnboardingStatus(userId, coupleInfo)
     }
 
     private fun updateOnboardingStatus(userId: Long, coupleInfo: CoupleInfo) {
