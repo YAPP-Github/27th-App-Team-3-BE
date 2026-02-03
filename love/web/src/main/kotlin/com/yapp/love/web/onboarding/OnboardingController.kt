@@ -63,7 +63,7 @@ class OnboardingController(
         @AuthUser userId: Long,
         @Valid @RequestBody request: ProfileSetupRequest,
     ) {
-        // TODO: 프로필 설정 구현
+        onboardingService.setProfile(userId, request.nickname)
     }
 
     @Operation(summary = "기념일 설정")
