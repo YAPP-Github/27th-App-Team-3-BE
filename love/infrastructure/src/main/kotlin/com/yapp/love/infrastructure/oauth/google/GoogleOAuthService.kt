@@ -7,39 +7,33 @@ import com.yapp.love.application.auth.port.OAuthProvider
 import com.yapp.love.application.auth.port.OAuthUserInfo
 import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.infrastructure.oauth.google.config.GoogleOAuthProperties
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
-
-private val logger = KotlinLogging.logger {}
 
 @Component
 class GoogleOAuthService(
-    webClientBuilder: WebClient.Builder,
-    private val googleOAuthClient: GoogleOAuthClient,
     private val googleProperties: GoogleOAuthProperties,
 ) : OAuthProvider {
-    private val webClient: WebClient =
-        webClientBuilder
-            .baseUrl(GOOGLE_TOKENINFO_URI)
-            .build()
 
     private val verifier =
         GoogleIdTokenVerifier.Builder(
             NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
         )
-            .setAudience(listOf(googleProperties.clientId))
+            .setAudience(
+                listOf(
+                    googleProperties.clientId,
+                    googleProperties.iosClientId,
+                ) + googleProperties.androidClientIds
+            )
             .build()
 
     override fun getProviderType(): SocialProvider = SocialProvider.GOOGLE
 
-    override fun authenticate(code: String): OAuthUserInfo {
-        val tokenResponse = googleOAuthClient.exchangeCodeForToken(code)
-        return verifyIdToken(tokenResponse.idToken)
+    override fun authenticateWithIdToken(idToken: String): OAuthUserInfo {
+        return verifyAndExtractUserInfo(idToken)
     }
 
-    private fun verifyIdToken(idToken: String): OAuthUserInfo {
+    private fun verifyAndExtractUserInfo(idToken: String): OAuthUserInfo {
         val idToken =
             verifier.verify(idToken)
                 ?: throw IllegalStateException("Invalid Google ID token")
@@ -51,18 +45,4 @@ class GoogleOAuthService(
             email = payload.email,
         )
     }
-
-    companion object {
-        private const val GOOGLE_TOKENINFO_URI = "https://oauth2.googleapis.com/tokeninfo"
-    }
 }
-
-private data class GoogleTokenInfoResponse(
-    val sub: String,
-    val email: String?,
-    val name: String?,
-    val picture: String?,
-    val aud: String,
-    val iss: String,
-    val exp: Long,
-)

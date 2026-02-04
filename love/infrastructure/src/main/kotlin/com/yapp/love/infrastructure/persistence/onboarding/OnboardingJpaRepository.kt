@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface OnboardingInfoJpaRepository : OnboardingInfoRepository, JpaRepository<UserOnboardingInfo, Long>
+interface OnboardingInfoJpaRepository : OnboardingInfoRepository, JpaRepository<UserOnboardingInfo, Long> {
+    override fun deleteByUserId(userId: Long)
+}

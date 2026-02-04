@@ -27,4 +27,9 @@ interface PhotologRepository {
         startDate: LocalDate,
         endDate: LocalDate,
     ): Int
+
+    /**
+     * 여러 목표의 모든 포토로그 삭제
+     */
+    fun deleteByGoalIdIn(goalIds: List<Long>)
 }

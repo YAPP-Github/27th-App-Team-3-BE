@@ -12,4 +12,6 @@ interface UserRepository {
         oauthProvider: SocialProvider,
         oauthProviderId: String,
     ): User?
+
+    fun deleteById(id: Long)
 }

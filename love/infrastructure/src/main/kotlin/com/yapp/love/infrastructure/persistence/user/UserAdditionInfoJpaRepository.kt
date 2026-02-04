@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserAdditionInfoJpaRepository : UserAdditionInfoRepository, JpaRepository<UserAdditionInfo, Long>
+interface UserAdditionInfoJpaRepository : UserAdditionInfoRepository, JpaRepository<UserAdditionInfo, Long> {
+    override fun deleteByUserId(userId: Long)
+}

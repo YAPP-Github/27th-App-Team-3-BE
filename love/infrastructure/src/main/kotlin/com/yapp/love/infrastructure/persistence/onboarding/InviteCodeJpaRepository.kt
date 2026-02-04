@@ -13,6 +13,8 @@ interface InviteCodeJpaRepository : JpaRepository<InviteCodes, Long> {
     fun findByCode(code: String): InviteCodes?
 
     fun findByUsedById(usedById: Long): InviteCodes?
+
+    fun deleteByCreatorId(creatorId: Long)
 }
 
 @Repository
@@ -37,5 +39,9 @@ class InviteCodeRepositoryImpl(
 
     override fun save(inviteCode: InviteCodes): InviteCodes {
         return inviteCodeJpaRepository.save(inviteCode)
+    }
+
+    override fun deleteByCreatorId(creatorId: Long) {
+        inviteCodeJpaRepository.deleteByCreatorId(creatorId)
     }
 }

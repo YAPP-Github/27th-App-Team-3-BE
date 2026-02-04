@@ -6,4 +6,6 @@ interface OnboardingInfoRepository {
     fun findByUserId(userId: Long): UserOnboardingInfo?
 
     fun save(onboardingInfo: UserOnboardingInfo): UserOnboardingInfo
+
+    fun deleteByUserId(userId: Long)
 }

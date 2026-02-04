@@ -12,4 +12,6 @@ interface InviteCodeRepository {
     fun findUsedByUserId(userId: Long): InviteCodes?
 
     fun save(inviteCode: InviteCodes): InviteCodes
+
+    fun deleteByCreatorId(creatorId: Long)
 }

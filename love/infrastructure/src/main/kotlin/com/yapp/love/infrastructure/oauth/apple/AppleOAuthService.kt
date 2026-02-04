@@ -3,6 +3,7 @@ package com.yapp.love.infrastructure.oauth.apple
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.yapp.love.application.auth.port.OAuthProvider
 import com.yapp.love.application.auth.port.OAuthUserInfo
+import com.yapp.love.application.auth.port.SocialRefreshTokenProvider
 import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.infrastructure.oauth.apple.config.AppleOauthProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -14,15 +15,31 @@ private val logger = KotlinLogging.logger {}
 class AppleOAuthService(
     private val appleOauthClient: AppleOauthClient,
     private val appleProperties: AppleOauthProperties,
-) : OAuthProvider {
+) : OAuthProvider, SocialRefreshTokenProvider {
     override fun getProviderType(): SocialProvider = SocialProvider.APPLE
 
-    override fun authenticate(code: String): OAuthUserInfo {
-        val tokenResponse = appleOauthClient.exchangeCodeForToken(code)
-        return verifyIdToken(tokenResponse.idToken)
+    override fun revokeToken(refreshToken: String) {
+        appleOauthClient.revokeToken(refreshToken)
     }
 
-    private fun verifyIdToken(idToken: String): OAuthUserInfo {
+    override fun exchangeCodeForRefreshToken(authorizationCode: String): String? {
+        return try {
+            val tokenResponse = appleOauthClient.exchangeCodeForToken(authorizationCode)
+            tokenResponse.refreshToken
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to exchange authorization code for refresh token" }
+            null
+        }
+    }
+
+    override fun authenticateWithIdToken(idToken: String): OAuthUserInfo {
+        return verifyAndExtractUserInfo(idToken = idToken)
+    }
+
+    private fun verifyAndExtractUserInfo(
+        idToken: String,
+        socialRefreshToken: String? = null,
+    ): OAuthUserInfo {
         // JWT 디코딩 (서명 검증 없이 클레임만 추출)
         val parts = idToken.split(".")
         if (parts.size != 3) {
@@ -49,6 +66,7 @@ class AppleOAuthService(
         return OAuthUserInfo(
             providerId = claims["sub"] as String,
             email = claims["email"] as? String,
+            socialRefreshToken = socialRefreshToken,
         )
     }
 
