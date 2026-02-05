@@ -52,27 +52,28 @@ class OnboardingService(
             )
         )
 
-        getOrCreateOnboardingInfo(usedUserId)
-        getOrCreateOnboardingInfo(inviteCodes.creatorId)
+        val coupleInfo = coupleInfoRepository.findByUserId(usedUserId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
+
+        updateOrCreateOnboardingInfo(usedUserId, coupleInfo)
+        updateOrCreateOnboardingInfo(inviteCodes.creatorId, coupleInfo)
     }
 
-    private fun getOrCreateOnboardingInfo(userId: Long): UserOnboardingInfo {
-        return onboardingInfoRepository.findByUserId(userId)
+    private fun updateOrCreateOnboardingInfo(userId: Long, coupleInfo: CoupleInfo) {
+        val onboardingInfo = onboardingInfoRepository.findByUserId(userId)
             ?: onboardingInfoRepository.save(UserOnboardingInfo.create(userId))
+        onboardingInfo.updateStatus(coupleInfo)
+        onboardingInfoRepository.save(onboardingInfo)
     }
 
     @Transactional
     fun setProfile(userId: Long, nickname: String) {
         userAdditionInfoRepository.save(UserAdditionInfo.create(userId, nickname))
 
-        val onboardingInfo = onboardingInfoRepository.findByUserId(userId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "온보딩 정보를 찾을 수 없습니다.")
-
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
 
-        onboardingInfo.updateStatus(coupleInfo)
-        onboardingInfoRepository.save(onboardingInfo)
+        updateOnboardingStatus(userId, coupleInfo)
     }
 
     @Transactional
