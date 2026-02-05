@@ -50,7 +50,7 @@ class UserOnboardingInfo(
 ) : BaseEntity() {
 
     fun updateStatus(coupleInfo: CoupleInfo) {
-        check(status == OnboardingStatus.COMPLETED) { "이미 온보딩이 완료되었습니다." }
+        check(status != OnboardingStatus.COMPLETED) { "이미 온보딩이 완료되었습니다." }
 
         if (coupleInfo.anniversaryDate != null && status == OnboardingStatus.PROFILE_SETUP) {
             status = OnboardingStatus.COMPLETED
