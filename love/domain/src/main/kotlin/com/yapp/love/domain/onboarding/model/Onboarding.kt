@@ -25,9 +25,12 @@ class InviteCodes(
     var usedById: Long? = null,
 ) : BaseEntity() {
 
+    val isUsed: Boolean
+        get() = usedAt != null
+
     fun use(usedUserId: Long) {
         require(creatorId != usedUserId) { "자신의 초대 코드는 사용할 수 없습니다." }
-        check(usedAt != null) { "이미 사용된 초대 코드입니다." }
+        check(!isUsed) { "이미 사용된 초대 코드입니다." }
 
         usedAt = LocalDateTime.now()
         usedById = usedUserId
