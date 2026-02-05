@@ -52,8 +52,13 @@ class OnboardingService(
             )
         )
 
-        onboardingInfoRepository.save(UserOnboardingInfo.create(usedUserId))
-        onboardingInfoRepository.save(UserOnboardingInfo.create(inviteCodes.creatorId))
+        getOrCreateOnboardingInfo(usedUserId)
+        getOrCreateOnboardingInfo(inviteCodes.creatorId)
+    }
+
+    private fun getOrCreateOnboardingInfo(userId: Long): UserOnboardingInfo {
+        return onboardingInfoRepository.findByUserId(userId)
+            ?: onboardingInfoRepository.save(UserOnboardingInfo.create(userId))
     }
 
     @Transactional
