@@ -1,6 +1,8 @@
 package com.yapp.love.infrastructure.oauth.apple
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.nimbusds.jose.JWSVerifier
+import com.nimbusds.jose.crypto.RSASSAVerifier
+import com.nimbusds.jwt.SignedJWT
 import com.yapp.love.application.auth.port.OAuthProvider
 import com.yapp.love.application.auth.port.OAuthUserInfo
 import com.yapp.love.application.auth.port.SocialRefreshTokenProvider
@@ -8,6 +10,7 @@ import com.yapp.love.domain.user.model.SocialProvider
 import com.yapp.love.infrastructure.oauth.apple.config.AppleOauthProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import java.util.Date
 
 private val logger = KotlinLogging.logger {}
 
@@ -15,7 +18,13 @@ private val logger = KotlinLogging.logger {}
 class AppleOAuthService(
     private val appleOauthClient: AppleOauthClient,
     private val appleProperties: AppleOauthProperties,
+    private val applePublicKeyProvider: ApplePublicKeyProvider,
 ) : OAuthProvider, SocialRefreshTokenProvider {
+
+    companion object {
+        private const val APPLE_ISSUER = "https://appleid.apple.com"
+    }
+
     override fun getProviderType(): SocialProvider = SocialProvider.APPLE
 
     override fun revokeToken(refreshToken: String) {
@@ -33,45 +42,67 @@ class AppleOAuthService(
     }
 
     override fun authenticateWithIdToken(idToken: String): OAuthUserInfo {
-        return verifyAndExtractUserInfo(idToken = idToken)
+        return verifyAndExtractUserInfo(idToken)
     }
 
     private fun verifyAndExtractUserInfo(
         idToken: String,
         socialRefreshToken: String? = null,
     ): OAuthUserInfo {
-        // JWT 디코딩 (서명 검증 없이 클레임만 추출)
-        val parts = idToken.split(".")
-        if (parts.size != 3) {
+        val signedJWT = try {
+            SignedJWT.parse(idToken)
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to parse Apple ID token as JWT" }
             throw IllegalArgumentException("Invalid JWT format")
         }
 
-        val payloadJson = String(java.util.Base64.getUrlDecoder().decode(parts[1]))
-        val claims = parseJsonToClaims(payloadJson)
+        // 1. 서명 검증
+        verifySignature(signedJWT)
 
-        // audience 검증
-        val aud = claims["aud"] as? String
-        if (aud != appleProperties.clientId) {
-            logger.error { "Apple ID token audience mismatch: $aud" }
-            throw IllegalStateException("Invalid Apple ID token audience")
-        }
+        // 2. 클레임 검증
+        val claims = signedJWT.jwtClaimsSet
 
         // issuer 검증
-        val iss = claims["iss"] as? String
-        if (iss != "https://appleid.apple.com") {
-            logger.error { "Apple ID token issuer mismatch: $iss" }
+        if (claims.issuer != APPLE_ISSUER) {
+            logger.error { "Apple ID token issuer mismatch: ${claims.issuer}" }
             throw IllegalStateException("Invalid Apple ID token issuer")
         }
 
+        // audience 검증
+        if (!claims.audience.contains(appleProperties.clientId)) {
+            logger.error { "Apple ID token audience mismatch: ${claims.audience}" }
+            throw IllegalStateException("Invalid Apple ID token audience")
+        }
+
+        // 만료 검증
+        if (claims.expirationTime == null || claims.expirationTime.before(Date())) {
+            logger.error { "Apple ID token expired: ${claims.expirationTime}" }
+            throw IllegalStateException("Apple ID token has expired")
+        }
+
+        val providerId = claims.subject
+            ?: throw IllegalStateException("Apple ID token missing 'sub' claim")
+
         return OAuthUserInfo(
-            providerId = claims["sub"] as String,
-            email = claims["email"] as? String,
+            providerId = providerId,
+            email = claims.getStringClaim("email"),
             socialRefreshToken = socialRefreshToken,
         )
     }
 
-    private fun parseJsonToClaims(json: String): Map<String, Any> {
-        val mapper = ObjectMapper()
-        return mapper.readValue(json, Map::class.java) as Map<String, Any>
+    private fun verifySignature(signedJWT: SignedJWT) {
+        val header = signedJWT.header
+        val kid = header.keyID
+            ?: throw IllegalStateException("Apple ID token missing 'kid' in header")
+
+        val publicKey = applePublicKeyProvider.getPublicKey(kid)
+        val verifier: JWSVerifier = RSASSAVerifier(publicKey)
+
+        if (!signedJWT.verify(verifier)) {
+            logger.error { "Apple ID token signature verification failed" }
+            throw IllegalStateException("Invalid Apple ID token signature")
+        }
+
+        logger.debug { "Apple ID token signature verified successfully" }
     }
 }

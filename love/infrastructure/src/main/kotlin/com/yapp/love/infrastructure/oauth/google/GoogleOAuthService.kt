@@ -34,11 +34,11 @@ class GoogleOAuthService(
     }
 
     private fun verifyAndExtractUserInfo(idToken: String): OAuthUserInfo {
-        val idToken =
+        val verifiedToken =
             verifier.verify(idToken)
                 ?: throw IllegalStateException("Invalid Google ID token")
 
-        val payload = idToken.payload
+        val payload = verifiedToken.payload
 
         return OAuthUserInfo(
             providerId = payload.subject,

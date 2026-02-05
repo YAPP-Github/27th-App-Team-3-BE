@@ -77,10 +77,27 @@ class AuthService(
         val oauthProvider = getOAuthProvider(provider)
         var userInfo = oauthProvider.authenticateWithIdToken(idToken)
 
+        // 신규 유저인지 확인
+        val existingUser = userRepository.findByOauthProviderAndOauthProviderId(
+            oauthProvider = provider,
+            oauthProviderId = userInfo.providerId,
+        )
+        val isNewUser = existingUser == null
+
         // authorizationCode가 있으면 refresh_token 획득 (Apple용)
         authorizationCode?.let { code ->
             val socialRefreshToken = refreshTokenProviderMap[provider]
                 ?.exchangeCodeForRefreshToken(code)
+
+            // 신규 Apple 유저는 refresh token 필수 (회원탈퇴 시 revoke 필요)
+            if (isNewUser && provider == SocialProvider.APPLE && socialRefreshToken == null) {
+                logger.error { "Failed to obtain refresh token for new Apple user" }
+                throw GlobalException(
+                    GlobalErrorCode.INTERNAL_SERVER_ERROR,
+                    "Apple 로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+                )
+            }
+
             userInfo = userInfo.copy(socialRefreshToken = socialRefreshToken)
         }
 
@@ -228,30 +245,31 @@ class AuthService(
         refreshTokenRepository.delete(userId)
     }
 
+    companion object {
+        private const val APPLE_REVOKE_MAX_RETRIES = 3
+        private const val APPLE_REVOKE_RETRY_DELAY_MS = 1000L
+    }
+
     /**
      * 회원탈퇴
      *
-     * 1. Apple 토큰 revoke (App Store 정책 필수)
-     * 2. 커플 관계가 있으면 커플/목표/포토로그 모두 삭제
-     * 3. 사용자 관련 데이터 삭제
+     * 1. 커플 관계가 있으면 커플/목표/포토로그 모두 삭제
+     * 2. 사용자 관련 데이터 삭제
+     * 3. Apple 토큰 revoke (DB 삭제 성공 후 수행 - 트랜잭션 롤백 시 토큰만 revoke되는 상황 방지)
      */
     fun withdraw(userId: Long) {
         val user = userRepository.findById(userId)
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 유저입니다.")
 
-        // 1. Apple 소셜 토큰 revoke (App Store 정책 필수)
-        if (user.oauthProvider == SocialProvider.APPLE) {
-            val socialToken = socialTokenRepository.findByUserIdAndProvider(userId, SocialProvider.APPLE)
-            if (socialToken != null) {
-                try {
-                    refreshTokenProviderMap[SocialProvider.APPLE]?.revokeToken(socialToken.refreshToken)
-                } catch (e: Exception) {
-                    logger.error(e) { "Failed to revoke Apple token for user $userId" }
-                }
-            }
+        // Apple 유저인 경우 revoke용 토큰 미리 조회 (DB 삭제 전)
+        val appleRefreshToken = if (user.oauthProvider == SocialProvider.APPLE) {
+            socialTokenRepository.findByUserIdAndProvider(userId, SocialProvider.APPLE)?.refreshToken
+        } else {
+            null
         }
 
-        // 2. 커플 관계 확인 및 관련 데이터 삭제
+        // 1. 커플 관계 확인 및 관련 데이터 삭제
+        // TODO: 상대방에게 보낼 알림 추가해야 함
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
 
         transactionTemplate.execute {
@@ -266,7 +284,7 @@ class AuthService(
                 coupleInfoRepository.deleteById(coupleId)
             }
 
-            // 3. 사용자 관련 데이터 삭제 (FK 순서 고려)
+            // 2. 사용자 관련 데이터 삭제 (FK 순서 고려)
             inviteCodeRepository.deleteByCreatorId(userId)
             userAdditionInfoRepository.deleteByUserId(userId)
             onboardingInfoRepository.deleteByUserId(userId)
@@ -275,6 +293,44 @@ class AuthService(
             userRepository.deleteById(userId)
         }
 
+        // 3. Apple 토큰 revoke (DB 삭제 성공 후 수행)
+        if (appleRefreshToken != null) {
+            revokeAppleTokenWithRetry(userId, appleRefreshToken)
+        } else if (user.oauthProvider == SocialProvider.APPLE) {
+            logger.warn { "Apple user $userId has no stored social token for revocation" }
+        }
+
         logger.info { "User $userId withdrew successfully" }
+    }
+
+    private fun revokeAppleTokenWithRetry(userId: Long, refreshToken: String) {
+        val revokeProvider = refreshTokenProviderMap[SocialProvider.APPLE]
+        if (revokeProvider == null) {
+            logger.error { "Apple refresh token provider not found for user $userId" }
+            return
+        }
+
+        var lastException: Exception? = null
+
+        repeat(APPLE_REVOKE_MAX_RETRIES) { attempt ->
+            try {
+                revokeProvider.revokeToken(refreshToken)
+                logger.info { "Apple token revoked successfully for user $userId (attempt ${attempt + 1})" }
+                return
+            } catch (e: Exception) {
+                lastException = e
+                logger.warn { "Apple token revoke attempt ${attempt + 1}/$APPLE_REVOKE_MAX_RETRIES failed for user $userId: ${e.message}" }
+
+                if (attempt < APPLE_REVOKE_MAX_RETRIES - 1) {
+                    Thread.sleep(APPLE_REVOKE_RETRY_DELAY_MS)
+                }
+            }
+        }
+
+        // 모든 재시도 실패 - 로그 남기고 탈퇴는 진행
+        logger.error(lastException) {
+            "Failed to revoke Apple token after $APPLE_REVOKE_MAX_RETRIES attempts for user $userId. " +
+                "Proceeding with withdrawal. Manual cleanup may be required."
+        }
     }
 }
