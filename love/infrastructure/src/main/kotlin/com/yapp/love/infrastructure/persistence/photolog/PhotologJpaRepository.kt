@@ -50,4 +50,8 @@ interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Lo
         @Param("startDate") startDate: LocalDate,
         @Param("endDate") endDate: LocalDate,
     ): Int
+
+    @Modifying
+    @Query("DELETE FROM Photolog p WHERE p.goalId IN :goalIds")
+    override fun deleteByGoalIdIn(@Param("goalIds") goalIds: List<Long>)
 }

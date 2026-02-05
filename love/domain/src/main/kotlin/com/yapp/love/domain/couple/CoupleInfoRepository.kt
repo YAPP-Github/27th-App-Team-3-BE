@@ -8,4 +8,6 @@ interface CoupleInfoRepository {
     fun findById(coupleId: Long): CoupleInfo?
 
     fun findByUserId(userId: Long): CoupleInfo?
+
+    fun deleteById(coupleId: Long)
 }

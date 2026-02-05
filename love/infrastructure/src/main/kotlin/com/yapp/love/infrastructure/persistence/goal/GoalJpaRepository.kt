@@ -65,4 +65,11 @@ interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
     override fun updateInProgressToCompleted(
         @Param("today") today: LocalDate,
     ): Int
+
+    @Query("SELECT g.id FROM Goal g WHERE g.coupleId = :coupleId")
+    override fun findIdsByCoupleId(@Param("coupleId") coupleId: Long): List<Long>
+
+    @Modifying
+    @Query("DELETE FROM Goal g WHERE g.coupleId = :coupleId")
+    override fun deleteByCoupleId(@Param("coupleId") coupleId: Long)
 }

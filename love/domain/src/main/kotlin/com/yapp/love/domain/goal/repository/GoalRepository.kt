@@ -32,4 +32,14 @@ interface GoalRepository {
      * IN_PROGRESS 상태의 목표 중 종료일이 today 이전인 것들을 COMPLETED로 변경
      */
     fun updateInProgressToCompleted(today: LocalDate): Int
+
+    /**
+     * 커플의 모든 목표 ID 조회
+     */
+    fun findIdsByCoupleId(coupleId: Long): List<Long>
+
+    /**
+     * 커플의 모든 목표 삭제
+     */
+    fun deleteByCoupleId(coupleId: Long)
 }

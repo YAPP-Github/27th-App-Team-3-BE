@@ -27,4 +27,8 @@ class CoupleInfoRepositoryImpl(
     override fun findByUserId(userId: Long): CoupleInfo? {
         return coupleInfoJpaRepository.findByUser1IdOrUser2Id(userId)
     }
+
+    override fun deleteById(coupleId: Long) {
+        coupleInfoJpaRepository.deleteById(coupleId)
+    }
 }

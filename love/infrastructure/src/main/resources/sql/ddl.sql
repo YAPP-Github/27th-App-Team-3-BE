@@ -21,8 +21,8 @@ CREATE TABLE couple_info
     anniversary_date DATE NULL,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX            idx_couples_info_user1_id (user1_id),
-    INDEX            idx_couples_info_user2_id (user2_id)
+    INDEX            idx_couple_info_user1_id (user1_id),
+    INDEX            idx_couple_info_user2_id (user2_id)
 );
 
 -- 온보딩 온보딩테이블
@@ -78,13 +78,12 @@ CREATE TABLE photo_log
     verification_date DATE         NOT NULL,
     uploaded_at       TIMESTAMP    NOT NULL,
     image_url         VARCHAR(500) NOT NULL,
-    comment           TEXT NULL,
+    comment           VARCHAR(30) NULL,
     reaction          VARCHAR(20) NULL COMMENT 'EMOJI1, EMOJI2, EMOJI3, EMOJI4, EMOJI5',
     created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uk_photo_log_goal_user_date (goal_id, user_id, verification_date),
-    INDEX idx_photo_log_goal_date (goal_id, verification_date),
-    INDEX idx_photo_log_user_date (user_id, verification_date),
+    INDEX idx_photo_log_goal_date (goal_id, verification_date)
 );
 
 
@@ -98,3 +97,17 @@ CREATE TABLE user_addition_info
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX      idx_user_addition_info_user_id (user_id)
 );
+
+-- 소셜 토큰 테이블 (회원탈퇴 시 토큰 revoke용)
+CREATE TABLE social_tokens
+(
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id       BIGINT                            NOT NULL,
+    provider      ENUM ('APPLE', 'GOOGLE', 'KAKAO') NOT NULL,
+    refresh_token VARCHAR(1024)                     NOT NULL,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_social_tokens_user_provider (user_id, provider),
+    INDEX idx_social_tokens_user_id (user_id)
+);
+
