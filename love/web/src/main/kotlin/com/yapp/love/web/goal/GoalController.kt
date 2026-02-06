@@ -26,9 +26,10 @@ class GoalController(
         @AuthUser userId: Long,
         @Valid @RequestBody request: CreateGoalRequest,
     ): GoalResponse {
+        val coupleId = coupleService.getCoupleInfoByUserId(userId).id!!
         val command =
             CreateGoalCommand(
-                coupleId = request.coupleId,
+                coupleId = coupleId,
                 name = request.name,
                 icon = request.icon,
                 repeatCycle = request.repeatCycle,
