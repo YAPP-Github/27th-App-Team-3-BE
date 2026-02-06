@@ -11,6 +11,8 @@ import java.time.LocalDate
 
 @Repository
 interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Long> {
+    override fun findByGoalIdOrderByVerificationDateDesc(goalId: Long): List<Photolog>
+
     @Query(
         """
         SELECT p FROM Photolog p
