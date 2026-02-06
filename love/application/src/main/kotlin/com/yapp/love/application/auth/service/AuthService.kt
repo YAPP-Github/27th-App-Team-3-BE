@@ -14,6 +14,7 @@ import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.onboarding.InviteCodeRepository
 import com.yapp.love.domain.onboarding.OnboardingInfoRepository
+import com.yapp.love.domain.onboarding.model.OnboardingStatus
 import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.domain.user.model.SocialProvider
@@ -275,6 +276,16 @@ class AuthService(
         transactionTemplate.execute {
             if (coupleInfo != null) {
                 val coupleId = coupleInfo.id!!
+                val partnerId = if (coupleInfo.user1Id == userId) coupleInfo.user2Id else coupleInfo.user1Id
+
+                // 상대방 온보딩 상태 리셋 (커플 해제되므로 처음부터 다시)
+                onboardingInfoRepository.findByUserId(partnerId)?.let { partnerOnboarding ->
+                    partnerOnboarding.status = OnboardingStatus.COUPLE_CONNECTION
+                    partnerOnboarding.completedAt = null
+                    onboardingInfoRepository.save(partnerOnboarding)
+                }
+                userAdditionInfoRepository.deleteByUserId(partnerId)
+
                 // 포토로그 삭제 (goal FK 때문에 먼저)
                 val goalIds = goalRepository.findIdsByCoupleId(coupleId)
                 if (goalIds.isNotEmpty()) {
