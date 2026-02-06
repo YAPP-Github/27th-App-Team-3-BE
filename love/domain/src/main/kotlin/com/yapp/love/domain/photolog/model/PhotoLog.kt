@@ -32,8 +32,8 @@ class Photolog(
     val verificationDate: LocalDate,
     @Column(name = "uploaded_at", nullable = false)
     val uploadedAt: Instant,
-    @Column(name = "image_url", nullable = false)
-    var imageUrl: String,
+    @Column(name = "file_name", nullable = false)
+    var fileName: String,
     @Column(length = 30)
     var comment: String? = null,
     @Enumerated(EnumType.STRING)

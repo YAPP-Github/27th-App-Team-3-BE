@@ -1,5 +1,7 @@
 package com.yapp.love.application.photolog
 
+import com.yapp.love.application.storage.FileStoragePort
+import com.yapp.love.application.storage.PresignedUrlResult
 import com.yapp.love.domain.photolog.model.Photolog
 import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
@@ -8,12 +10,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDate
+import java.util.UUID
 
 @Service
 @Transactional(readOnly = true)
 class PhotologService(
     private val photologRepository: PhotologRepository,
+    private val fileStoragePort: FileStoragePort,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -59,5 +64,43 @@ class PhotologService(
                 "No photologs to delete for goalId=$goalId (from=$from is after to=$to)"
             }
         }
+    }
+
+    fun generateUploadUrl(
+        userId: Long,
+        goalId: Long,
+    ): PresignedUrlResult {
+        val key = "photolog/$goalId/${userId}_${UUID.randomUUID()}.jpg"
+        return fileStoragePort.generatePresignedUploadUrl(key)
+    }
+
+    @Transactional
+    fun createPhotolog(
+        goalId: Long,
+        userId: Long,
+        fileName: String,
+        comment: String?,
+        verificationDate: LocalDate,
+    ): Photolog {
+        val existingPhotolog =
+            photologRepository.findByGoalIdAndUserIdAndVerificationDate(
+                goalId,
+                userId,
+                verificationDate,
+            )
+        if (existingPhotolog != null) {
+            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.")
+        }
+
+        val photolog =
+            Photolog(
+                goalId = goalId,
+                userId = userId,
+                verificationDate = verificationDate,
+                uploadedAt = Instant.now(),
+                fileName = fileName,
+                comment = comment,
+            )
+        return photologRepository.save(photolog)
     }
 }
