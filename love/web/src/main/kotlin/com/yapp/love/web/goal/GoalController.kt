@@ -4,6 +4,7 @@ import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.goal.dto.CreateGoalCommand
 import com.yapp.love.application.goal.dto.UpdateGoalCommand
+import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.web.auth.AuthUser
 import com.yapp.love.web.goal.dto.*
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -17,6 +18,7 @@ import java.time.LocalDate
 class GoalController(
     private val goalService: GoalService,
     private val coupleService: CoupleService,
+    private val fileStoragePort: FileStoragePort,
 ) {
     @CreateGoalApiSpec
     @PostMapping
@@ -69,7 +71,7 @@ class GoalController(
                         goalWithPhotologs.myPhotolog?.let {
                             PhotologInfo(
                                 photologId = it.id!!,
-                                imageUrl = it.imageUrl,
+                                imageUrl = fileStoragePort.getPhotologUrl(it.goalId, it.fileName),
                                 comment = it.comment,
                                 reaction = it.reaction?.name,
                                 uploadedAt = it.uploadedAt.toString(),
@@ -79,7 +81,7 @@ class GoalController(
                         goalWithPhotologs.partnerPhotolog?.let {
                             PhotologInfo(
                                 photologId = it.id!!,
-                                imageUrl = it.imageUrl,
+                                imageUrl = fileStoragePort.getPhotologUrl(it.goalId, it.fileName),
                                 comment = it.comment,
                                 reaction = it.reaction?.name,
                                 uploadedAt = it.uploadedAt.toString(),
