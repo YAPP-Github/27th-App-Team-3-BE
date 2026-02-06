@@ -68,7 +68,10 @@ class OnboardingService(
 
     @Transactional
     fun setProfile(userId: Long, nickname: String) {
-        userAdditionInfoRepository.save(UserAdditionInfo.create(userId, nickname))
+        val userAdditionInfo = userAdditionInfoRepository.findByUserId(userId)
+            ?.apply { updateNickname(nickname) }
+            ?: UserAdditionInfo.create(userId, nickname)
+        userAdditionInfoRepository.save(userAdditionInfo)
 
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
             ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
