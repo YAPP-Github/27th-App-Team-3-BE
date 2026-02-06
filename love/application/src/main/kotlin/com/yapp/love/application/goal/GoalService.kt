@@ -28,11 +28,6 @@ class GoalService(
 
     @Transactional
     fun createGoal(command: CreateGoalCommand): GoalInfo {
-        // 커플 존재 여부 확인
-        if (!coupleService.existsById(command.coupleId)) {
-            throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 커플입니다.")
-        }
-
         val goal =
             try {
                 Goal.of(
