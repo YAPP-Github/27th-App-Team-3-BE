@@ -1,6 +1,7 @@
 package com.yapp.love.web.photolog
 
 import com.yapp.love.application.couple.CoupleService
+import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.photolog.PhotologService
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.domain.user.UserAdditionInfoRepository
@@ -22,6 +23,7 @@ class PhotologController(
     private val fileStoragePort: FileStoragePort,
     private val coupleService: CoupleService,
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
+    private val goalService: GoalService,
 ) {
     @Operation(summary = "인증샷 업로드 URL 발급")
     @GetMapping("/upload-url")
@@ -67,6 +69,7 @@ class PhotologController(
     ): PhotologListResponse {
         val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
         val partnerId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
+        val goal = goalService.getGoalById(userId, goalId)
 
         val myNickname = userAdditionInfoRepository.findByUserId(userId)?.nickname ?: "나"
         val partnerNickname = userAdditionInfoRepository.findByUserId(partnerId)?.nickname ?: "상대방"
@@ -77,6 +80,7 @@ class PhotologController(
             goalId = goalId,
             myNickname = myNickname,
             partnerNickname = partnerNickname,
+            goalTitle = goal.name,
             photologs = photologs.map { photolog ->
                 PhotologDetailResponse(
                     photologId = photolog.id!!,
@@ -130,5 +134,6 @@ data class PhotologListResponse(
     val goalId: Long,
     val myNickname: String,
     val partnerNickname: String,
-    val photologs: List<PhotologDetailResponse>,
+    val goalTitle: String,
+    val photologs: List<PhotologDetailResponse>?,
 )
