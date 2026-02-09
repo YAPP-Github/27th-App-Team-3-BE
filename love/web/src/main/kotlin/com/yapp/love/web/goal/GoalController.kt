@@ -41,6 +41,19 @@ class GoalController(
         return GoalResponse.from(goalInfo)
     }
 
+    @GetGoalDetailsApiSpec
+    @GetMapping("/detail")
+    fun getGoalDetails(
+        @AuthUser userId: Long,
+        @RequestParam date: LocalDate,
+    ): GoalDetailListResponse {
+        val coupleId = coupleService.getCoupleInfoByUserId(userId).id!!
+        val goals = goalService.getGoalsByDate(coupleId, date)
+        return GoalDetailListResponse(
+            goals = goals.map { GoalDetailItem.from(it) },
+        )
+    }
+
     @GetGoalsApiSpec
     @GetMapping
     fun getGoals(
@@ -160,4 +173,6 @@ class GoalController(
             completedAt = goalInfo.updatedAt,
         )
     }
+
+
 }

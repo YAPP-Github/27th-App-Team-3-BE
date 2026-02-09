@@ -97,6 +97,72 @@ annotation class CreateGoalApiSpec
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
+    summary = "목표 상세 목록 조회",
+    description = "특정 날짜의 목표 상세 목록을 조회합니다 (인증샷 미포함)",
+)
+@ApiResponses(
+    value = [
+        ApiResponse(
+            responseCode = "200",
+            description = "목표 상세 목록 조회 성공",
+            content = [Content(schema = Schema(implementation = GoalDetailListResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "날짜 형식 오류",
+                            value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "401",
+            description = "인증 실패",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "인증되지 않은 사용자",
+                            value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "500",
+            description = "서버 내부 오류",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "서버 오류",
+                            value = """{"status": 500, "code": "G5000", "message": "서버 내부 오류가 발생했습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ],
+)
+annotation class GetGoalDetailsApiSpec
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@Operation(
     summary = "목표 목록 조회",
     description = "특정 날짜의 목표 목록과 인증 정보를 조회합니다 : 홈  -> 목표 편집",
 )

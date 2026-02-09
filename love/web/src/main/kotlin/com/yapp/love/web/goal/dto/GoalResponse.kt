@@ -58,6 +58,32 @@ data class PhotologInfo(
     val uploadedAt: String,
 )
 
+data class GoalDetailListResponse(
+    val goals: List<GoalDetailItem>,
+)
+
+data class GoalDetailItem(
+    val goalId: Long,
+    val name: String,
+    val icon: GoalIcon,
+    val repeatCycle: RepeatCycle,
+    val startDate: String,
+    val endDate: String?,
+) {
+    companion object {
+        fun from(goalInfo: GoalInfo): GoalDetailItem {
+            return GoalDetailItem(
+                goalId = goalInfo.goalId,
+                name = goalInfo.name,
+                icon = goalInfo.icon,
+                repeatCycle = goalInfo.repeatCycle,
+                startDate = goalInfo.startDate,
+                endDate = goalInfo.endDate,
+            )
+        }
+    }
+}
+
 data class DeleteGoalResponse(
     val success: Boolean,
     val message: String,
