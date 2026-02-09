@@ -33,6 +33,83 @@ class GoalServiceTest : DescribeSpec({
         clearAllMocks()
     }
 
+    describe("getGoalsByDate") {
+
+        val coupleId = 100L
+        val targetDate = LocalDate.of(2026, 2, 9)
+
+        context("해당 날짜에 목표가 존재하는 경우") {
+
+            it("목표 목록을 GoalInfo로 변환하여 반환해야 함") {
+                // given
+                val goals =
+                    listOf(
+                        Goal(
+                            id = 1L,
+                            coupleId = coupleId,
+                            name = "운동하기",
+                            repeatCycle = RepeatCycle.DAILY,
+                            repeatCount = 1,
+                            startDate = LocalDate.of(2026, 2, 1),
+                            hasEndDate = true,
+                            endDate = LocalDate.of(2026, 3, 1),
+                            goalStatus = GoalStatus.IN_PROGRESS,
+                            icon = GoalIcon.ICON_EXERCISE,
+                        ),
+                        Goal(
+                            id = 2L,
+                            coupleId = coupleId,
+                            name = "독서",
+                            repeatCycle = RepeatCycle.WEEKLY,
+                            repeatCount = 3,
+                            startDate = LocalDate.of(2026, 2, 1),
+                            hasEndDate = false,
+                            endDate = null,
+                            goalStatus = GoalStatus.IN_PROGRESS,
+                            icon = GoalIcon.ICON_BOOK,
+                        ),
+                    )
+
+                every {
+                    goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+                } returns goals
+
+                // when
+                val result = goalService.getGoalsByDate(coupleId, targetDate)
+
+                // then
+                result.size shouldBe 2
+                result[0].goalId shouldBe 1L
+                result[0].name shouldBe "운동하기"
+                result[0].repeatCycle shouldBe RepeatCycle.DAILY
+                result[0].icon shouldBe GoalIcon.ICON_EXERCISE
+                result[0].endDate shouldBe "2026-03-01"
+
+                result[1].goalId shouldBe 2L
+                result[1].name shouldBe "독서"
+                result[1].repeatCycle shouldBe RepeatCycle.WEEKLY
+                result[1].icon shouldBe GoalIcon.ICON_BOOK
+                result[1].endDate shouldBe null
+            }
+        }
+
+        context("해당 날짜에 목표가 없는 경우") {
+
+            it("빈 리스트를 반환해야 함") {
+                // given
+                every {
+                    goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+                } returns emptyList()
+
+                // when
+                val result = goalService.getGoalsByDate(coupleId, targetDate)
+
+                // then
+                result shouldBe emptyList()
+            }
+        }
+    }
+
     describe("updateGoal - 포토로그 삭제 로직") {
 
         val userId = 1L

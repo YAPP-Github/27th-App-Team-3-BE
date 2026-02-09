@@ -48,6 +48,14 @@ class GoalService(
         return GoalInfo.from(savedGoal)
     }
 
+    fun getGoalsByDate(
+        coupleId: Long,
+        targetDate: LocalDate,
+    ): List<GoalInfo> {
+        return goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+            .map { GoalInfo.from(it) }
+    }
+
     fun getGoalsWithPhotologs(
         coupleId: Long,
         myUserId: Long,
