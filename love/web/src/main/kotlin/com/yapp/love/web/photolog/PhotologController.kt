@@ -8,8 +8,10 @@ import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import com.yapp.love.domain.photolog.model.ReactionType
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
@@ -95,6 +97,20 @@ class PhotologController(
             },
         )
     }
+
+    @AddReactionApiSpec
+    @PutMapping("/{photologId}/reaction")
+    fun addReaction(
+        @AuthUser userId: Long,
+        @PathVariable photologId: Long,
+        @Valid @RequestBody request: ReactionRequest,
+    ): ReactionResponse {
+        val result = photologService.addReaction(photologId, userId, request.reaction)
+        return ReactionResponse(
+            photologId = result.photologId,
+            reaction = result.reaction,
+        )
+    }
 }
 
 data class UploadUrlResponse(
@@ -136,4 +152,14 @@ data class PhotologListResponse(
     val partnerNickname: String,
     val goalTitle: String,
     val photologs: List<PhotologDetailResponse>?,
+)
+
+data class ReactionRequest(
+    @field:NotNull(message = "리액션은 필수입니다")
+    val reaction: ReactionType,
+)
+
+data class ReactionResponse(
+    val photologId: Long,
+    val reaction: ReactionType,
 )

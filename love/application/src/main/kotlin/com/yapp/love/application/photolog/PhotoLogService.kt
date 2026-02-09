@@ -1,8 +1,11 @@
 package com.yapp.love.application.photolog
 
+import com.yapp.love.application.couple.CoupleService
+import com.yapp.love.application.photolog.dto.ReactionInfo
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.application.storage.PresignedUrlResult
 import com.yapp.love.domain.photolog.model.Photolog
+import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
@@ -19,6 +22,7 @@ import java.util.UUID
 class PhotologService(
     private val photologRepository: PhotologRepository,
     private val fileStoragePort: FileStoragePort,
+    private val coupleService: CoupleService,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -106,5 +110,35 @@ class PhotologService(
                 comment = comment,
             )
         return photologRepository.save(photolog)
+    }
+
+    @Transactional
+    fun addReaction(
+        photologId: Long,
+        userId: Long,
+        reaction: ReactionType,
+    ): ReactionInfo {
+        val photolog =
+            photologRepository.findById(photologId)
+                ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "인증샷을 찾을 수 없습니다.")
+
+        if (photolog.userId == userId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "자신의 인증샷에는 리액션을 남길 수 없습니다.")
+        }
+
+        val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
+        val partnerUserId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
+
+        if (photolog.userId != partnerUserId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "상대방의 인증샷에만 리액션을 남길 수 있습니다.")
+        }
+
+        photolog.reaction = reaction
+        photologRepository.save(photolog)
+
+        return ReactionInfo(
+            photologId = photolog.id!!,
+            reaction = reaction,
+        )
     }
 }
