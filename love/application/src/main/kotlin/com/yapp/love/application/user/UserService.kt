@@ -16,7 +16,8 @@ class UserService(
     fun getUserById(id: Long): UserInfo {
         val user = userRepository.findById(id) ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 유저입니다.")
         val userAdditionInfo = userAdditionInfoRepository.findByUserId(id) ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 유저 정보입니다.")
-        val inviteCode = inviteCodeRepository.findByCreatorId(id)?.code
+        val inviteCode = (inviteCodeRepository.findByCreatorId(id)
+            ?: inviteCodeRepository.findUsedByUserId(id))?.code
 
         return UserInfo.from(user, userAdditionInfo, inviteCode)
     }
