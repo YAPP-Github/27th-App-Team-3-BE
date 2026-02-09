@@ -142,6 +142,21 @@ annotation class CreateGoalApiSpec
             ],
         ),
         ApiResponse(
+            responseCode = "404",
+            description = "리소스를 찾을 수 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "커플 정보 없음",
+                            value = """{"status": 404, "code": "G4040", "message": "커플을 찾을 수 없습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
             responseCode = "500",
             description = "서버 내부 오류",
             content = [

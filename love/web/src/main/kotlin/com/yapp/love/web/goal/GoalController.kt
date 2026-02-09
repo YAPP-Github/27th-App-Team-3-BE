@@ -173,6 +173,4 @@ class GoalController(
             completedAt = goalInfo.updatedAt,
         )
     }
-
-
 }
