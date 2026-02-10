@@ -111,10 +111,7 @@ class Goal(
         val date = endDate
         if (date != null) {
             require(!date.isBefore(startDate)) {
-                "종료일은 시작일 이후여야 합니다."
-            }
-            require(!date.isEqual(startDate)) {
-                "종료일은 시작일과 달라야 합니다."
+                "종료일은 시작일과 같거나 시작일 이후여야 합니다."
             }
         }
     }

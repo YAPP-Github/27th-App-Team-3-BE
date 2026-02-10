@@ -143,12 +143,12 @@ class GoalTest {
                 assertThrows<IllegalArgumentException> {
                     goal.updateEndDate(true, LocalDate.now().minusDays(1))
                 }
-            assertTrue(exception.message!!.contains("종료일은 시작일 이후여야 합니다"))
+            assertTrue(exception.message!!.contains("종료일은 시작일과 같거나 시작일 이후여야 합니다"))
         }
 
         @Test
-        @DisplayName("updateEndDate로 시작일과 같은 종료일 설정 시 예외 발생")
-        fun updateEndDateWithDateEqualToStartDateFails() {
+        @DisplayName("updateEndDate로 시작일과 같은 종료일 설정 시 성공")
+        fun updateEndDateWithDateEqualToStartDateSucceeds() {
             val startDate = LocalDate.now()
             val goal =
                 Goal.of(
@@ -162,11 +162,10 @@ class GoalTest {
                     endDate = null,
                 )
 
-            val exception =
-                assertThrows<IllegalArgumentException> {
-                    goal.updateEndDate(true, startDate)
-                }
-            assertTrue(exception.message!!.contains("종료일은 시작일과 달라야 합니다"))
+            goal.updateEndDate(true, startDate)
+
+            assertTrue(goal.hasEndDate)
+            assertEquals(startDate, goal.endDate)
         }
 
         @Test
