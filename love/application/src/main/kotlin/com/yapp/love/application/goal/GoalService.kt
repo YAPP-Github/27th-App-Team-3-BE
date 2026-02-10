@@ -119,6 +119,10 @@ class GoalService(
         val goal = getGoalEntityById(goalId)
         verifyUserOwnsGoal(userId, goal)
 
+        if (goal.goalStatus == GoalStatus.COMPLETED) {
+            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "종료된 목표는 수정할 수 없습니다.")
+        }
+
         // 종료일이 변경되고, 새 종료일이 오늘 이전으로 설정되면 인증 기록 삭제
         if (goal.endDate != command.endDate && command.endDate != null) {
             val today = LocalDate.now()
@@ -175,7 +179,10 @@ class GoalService(
             )
         }
 
+        val today = LocalDate.now()
         goal.goalStatus = GoalStatus.COMPLETED
+        goal.hasEndDate = true
+        goal.endDate = today
         goalRepository.save(goal)
 
         logger.info { "Goal $goalId completed by user $userId" }

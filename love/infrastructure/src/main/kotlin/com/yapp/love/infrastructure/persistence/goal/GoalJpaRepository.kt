@@ -17,14 +17,16 @@ interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
         WHERE g.coupleId = :coupleId
         AND g.deletedAt IS NULL
         AND g.startDate <= :targetDate
-        AND (g.hasEndDate = false OR g.endDate >= :targetDate)
+        AND (g.hasEndDate = false OR g.endDate > :targetDate
+            OR (g.endDate = :targetDate AND g.goalStatus != com.yapp.love.domain.goal.model.GoalStatus.COMPLETED))
         ORDER BY
             CASE g.repeatCycle
                 WHEN 'DAILY' THEN 1
                 WHEN 'WEEKLY' THEN 2
                 WHEN 'MONTHLY' THEN 3
             END,
-            g.startDate ASC
+            g.startDate ASC,
+            g.id ASC
     """,
     )
     override fun findActiveGoalsByCoupleIdAndDate(

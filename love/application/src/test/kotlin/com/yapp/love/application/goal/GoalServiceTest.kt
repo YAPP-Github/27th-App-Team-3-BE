@@ -436,7 +436,48 @@ class GoalServiceTest : DescribeSpec({
             }
         }
 
-        context("권한 검증") {
+        context("종료된 목표 수정 방지") {
+
+            it("COMPLETED 목표를 수정하면 예외가 발생해야 함") {
+                // given
+                val goal =
+                    Goal(
+                        id = goalId,
+                        coupleId = coupleId,
+                        name = "운동하기",
+                        repeatCycle = RepeatCycle.DAILY,
+                        repeatCount = 1,
+                        startDate = LocalDate.of(2026, 1, 1),
+                        hasEndDate = true,
+                        endDate = LocalDate.now(),
+                        goalStatus = GoalStatus.COMPLETED,
+                        icon = GoalIcon.ICON_DEFAULT,
+                    )
+
+                val command =
+                    UpdateGoalCommand(
+                        name = "운동하기 수정",
+                        icon = GoalIcon.ICON_DEFAULT,
+                        repeatCycle = RepeatCycle.DAILY,
+                        repeatCount = 1,
+                        endDate = LocalDate.now().plusMonths(1),
+                    )
+
+                every { goalRepository.findActiveGoalById(goalId) } returns goal
+                every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
+
+                // when & then
+                val exception =
+                    shouldThrow<GlobalException> {
+                        goalService.updateGoal(userId, goalId, command)
+                    }
+
+                exception.getCustomMessage() shouldBe "종료된 목표는 수정할 수 없습니다."
+                verify(exactly = 0) { goalRepository.save(any()) }
+            }
+        }
+
+        context("권한 검증 - updateGoal") {
 
             it("다른 커플의 목표 수정 시 예외가 발생해야 함") {
                 // given
@@ -487,6 +528,132 @@ class GoalServiceTest : DescribeSpec({
                 // 권한 없으면 포토로그 삭제도 시도하지 않아야 함
                 verify(exactly = 0) {
                     photologService.deleteByGoalIdAfterEndDate(any(), any())
+                }
+            }
+        }
+    }
+
+    describe("completeGoal") {
+
+        val userId = 1L
+        val coupleId = 100L
+        val goalId = 200L
+        val partnerId = 2L
+
+        val coupleInfo =
+            CoupleInfo(
+                id = coupleId,
+                user1Id = userId,
+                user2Id = partnerId,
+                inviteCodeId = 1L,
+                anniversaryDate = LocalDate.of(2024, 1, 1),
+            )
+
+        context("진행 중인 목표를 종료하는 경우") {
+
+            it("goalStatus가 COMPLETED로 변경되고 endDate가 오늘로 설정되어야 함") {
+                // given
+                val today = LocalDate.now()
+                val goal =
+                    Goal(
+                        id = goalId,
+                        coupleId = coupleId,
+                        name = "운동하기",
+                        repeatCycle = RepeatCycle.DAILY,
+                        repeatCount = 1,
+                        startDate = today.minusMonths(1),
+                        hasEndDate = true,
+                        endDate = today.plusMonths(1),
+                        goalStatus = GoalStatus.IN_PROGRESS,
+                        icon = GoalIcon.ICON_EXERCISE,
+                    )
+
+                every { goalRepository.findActiveGoalById(goalId) } returns goal
+                every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
+                every { goalRepository.save(goal) } returns goal
+
+                // when
+                val result = goalService.completeGoal(userId, goalId)
+
+                // then
+                goal.goalStatus shouldBe GoalStatus.COMPLETED
+                goal.hasEndDate shouldBe true
+                goal.endDate shouldBe today
+                result.goalId shouldBe goalId
+            }
+
+            it("종료일이 없는 목표를 종료하면 hasEndDate가 true로 바뀌어야 함") {
+                // given
+                val today = LocalDate.now()
+                val goal =
+                    Goal(
+                        id = goalId,
+                        coupleId = coupleId,
+                        name = "독서",
+                        repeatCycle = RepeatCycle.WEEKLY,
+                        repeatCount = 3,
+                        startDate = today.minusMonths(1),
+                        hasEndDate = false,
+                        endDate = null,
+                        goalStatus = GoalStatus.IN_PROGRESS,
+                        icon = GoalIcon.ICON_BOOK,
+                    )
+
+                every { goalRepository.findActiveGoalById(goalId) } returns goal
+                every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
+                every { goalRepository.save(goal) } returns goal
+
+                // when
+                goalService.completeGoal(userId, goalId)
+
+                // then
+                goal.goalStatus shouldBe GoalStatus.COMPLETED
+                goal.hasEndDate shouldBe true
+                goal.endDate shouldBe today
+            }
+        }
+
+        context("진행 중이 아닌 목표를 종료하는 경우") {
+
+            it("이미 COMPLETED인 목표를 종료하면 예외가 발생해야 함") {
+                // given
+                val goal =
+                    Goal(
+                        id = goalId,
+                        coupleId = coupleId,
+                        name = "운동하기",
+                        repeatCycle = RepeatCycle.DAILY,
+                        repeatCount = 1,
+                        startDate = LocalDate.now().minusMonths(1),
+                        hasEndDate = true,
+                        endDate = LocalDate.now(),
+                        goalStatus = GoalStatus.COMPLETED,
+                        icon = GoalIcon.ICON_EXERCISE,
+                    )
+
+                every { goalRepository.findActiveGoalById(goalId) } returns goal
+                every { coupleService.getCoupleInfoByUserId(userId) } returns coupleInfo
+
+                // when & then
+                val exception =
+                    shouldThrow<GlobalException> {
+                        goalService.completeGoal(userId, goalId)
+                    }
+
+                exception.getCustomMessage() shouldBe "진행 중인 목표만 완료할 수 있습니다. (현재 상태: COMPLETED)"
+                verify(exactly = 0) { goalRepository.save(any()) }
+            }
+        }
+
+        context("존재하지 않는 목표를 종료하는 경우") {
+
+            it("NOT_FOUND 예외가 발생해야 함") {
+                // given
+                every { goalRepository.findActiveGoalById(goalId) } returns null
+
+                // when & then
+                shouldThrow<GlobalException> {
+                    goalService.completeGoal(userId, goalId)
                 }
             }
         }

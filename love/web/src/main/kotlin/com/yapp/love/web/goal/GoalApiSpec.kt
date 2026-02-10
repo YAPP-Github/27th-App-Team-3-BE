@@ -353,7 +353,11 @@ annotation class GetGoalApiSpec
                         ExampleObject(
                             name = "필수 값 누락 또는 조건에 맞지 않는 값",
                             value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
-                        )
+                        ),
+                        ExampleObject(
+                            name = "종료된 목표 수정 불가",
+                            value = """{"status": 400, "code": "G4000", "message": "종료된 목표는 수정할 수 없습니다."}""",
+                        ),
                     ],
                 ),
             ],
