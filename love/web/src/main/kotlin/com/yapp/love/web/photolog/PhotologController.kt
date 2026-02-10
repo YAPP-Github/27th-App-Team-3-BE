@@ -73,8 +73,8 @@ class PhotologController(
         val partnerId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
         val goal = goalService.getGoalById(userId, goalId)
 
-        val myNickname = userAdditionInfoRepository.findByUserId(userId)?.nickname ?: "나"
-        val partnerNickname = userAdditionInfoRepository.findByUserId(partnerId)?.nickname ?: "상대방"
+        val myNickname = userAdditionInfoRepository.findByUserId(userId)!!.nickname
+        val partnerNickname = userAdditionInfoRepository.findByUserId(partnerId)!!.nickname
 
         val photologs = photologService.getPhotologsByGoalId(goalId)
 
@@ -83,17 +83,21 @@ class PhotologController(
             myNickname = myNickname,
             partnerNickname = partnerNickname,
             goalTitle = goal.name,
-            photologs = photologs.map { photolog ->
-                PhotologDetailResponse(
-                    photologId = photolog.id!!,
-                    goalId = photolog.goalId,
-                    imageUrl = fileStoragePort.getPhotologUrl(photolog.goalId, photolog.fileName),
-                    comment = photolog.comment,
-                    verificationDate = photolog.verificationDate,
-                    isMine = photolog.userId == userId,
-                    uploaderName = if (photolog.userId == userId) myNickname else partnerNickname,
-                    uploadedAt = photolog.uploadedAt,
-                )
+            photologs = if (photologs.isEmpty()) {
+                null
+            } else {
+                photologs.map { photolog ->
+                    PhotologDetailResponse(
+                        photologId = photolog.id!!,
+                        goalId = photolog.goalId,
+                        imageUrl = fileStoragePort.getPhotologUrl(photolog.goalId, photolog.fileName),
+                        comment = photolog.comment,
+                        verificationDate = photolog.verificationDate,
+                        isMine = photolog.userId == userId,
+                        uploaderName = if (photolog.userId == userId) myNickname else partnerNickname,
+                        uploadedAt = photolog.uploadedAt,
+                    )
+                }
             },
         )
     }
