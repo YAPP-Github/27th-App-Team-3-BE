@@ -8,6 +8,8 @@ interface PhotologRepository {
 
     fun findById(id: Long): Photolog?
 
+    fun delete(photolog: Photolog)
+
     fun findByGoalIdsAndVerificationDate(
         goalIds: List<Long>,
         verificationDate: LocalDate,

@@ -161,4 +161,16 @@ class PhotologService(
             reaction = reaction,
         )
     }
+
+    @Transactional
+    fun deletePhotolog(photologId: Long, userId: Long) {
+        val photolog = photologRepository.findById(photologId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "인증샷을 찾을 수 없습니다.")
+
+        if (photolog.userId != userId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "본인의 인증샷만 삭제할 수 있습니다.")
+        }
+
+        photologRepository.delete(photolog)
+    }
 }
