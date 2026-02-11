@@ -39,10 +39,6 @@ class PhotologService(
         return photologRepository.findByGoalIdsAndVerificationDate(goalIds, verificationDate)
     }
 
-    fun getPhotologsByGoalId(goalId: Long): List<Photolog> {
-        return photologRepository.findByGoalIdOrderByVerificationDateDesc(goalId)
-    }
-
     /**
      * 특정 날짜 이후의 인증 기록 삭제
      *

@@ -32,7 +32,7 @@ class GoalService(
             try {
                 Goal.of(
                     coupleId = command.coupleId,
-                    name = command.name,
+                    name = command.goalName,
                     icon = command.icon,
                     repeatCycle = command.repeatCycle,
                     repeatCount = command.repeatCount,
@@ -135,7 +135,7 @@ class GoalService(
         }
 
         try {
-            goal.name = command.name
+            goal.name = command.goalName
             goal.icon = command.icon
             goal.updateRepeatSettings(command.repeatCycle, command.repeatCount)
             goal.updateEndDate(command.endDate != null, command.endDate)

@@ -9,7 +9,7 @@ import java.time.LocalDate
 
 data class CreateGoalRequest(
     @field:NotBlank(message = "목표 이름은 필수입니다")
-    val name: String,
+    val goalName: String,
     @field:NotNull(message = "아이콘은 필수입니다")
     val icon: GoalIcon,
     @field:NotNull(message = "반복 주기는 필수입니다")
@@ -24,7 +24,7 @@ data class CreateGoalRequest(
 
 data class UpdateGoalRequest(
     @field:NotBlank(message = "목표 이름은 필수입니다")
-    val name: String,
+    val goalName: String,
     @field:NotNull(message = "아이콘은 필수입니다")
     val icon: GoalIcon,
     @field:NotNull(message = "반복 주기는 필수입니다")

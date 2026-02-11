@@ -8,8 +8,6 @@ interface PhotologRepository {
 
     fun findById(id: Long): Photolog?
 
-    fun findByGoalIdOrderByVerificationDateDesc(goalId: Long): List<Photolog>
-
     fun findByGoalIdsAndVerificationDate(
         goalIds: List<Long>,
         verificationDate: LocalDate,
