@@ -65,7 +65,7 @@ class PhotologController(
     }
 
     @Operation(summary = "날짜별 인증샷 목록 조회")
-    @GetMapping("/goals/{targetDate}")
+    @GetMapping
     fun getPhotologsByDate(
         @AuthUser userId: Long,
         @RequestParam targetDate: LocalDate,
