@@ -136,6 +136,15 @@ class PhotologController(
             reaction = result.reaction,
         )
     }
+
+    @Operation(summary = "인증샷 삭제")
+    @DeleteMapping("/{photologId}")
+    fun deletePhotolog(
+        @AuthUser userId: Long,
+        @PathVariable photologId: Long,
+    ) {
+        photologService.deletePhotolog(photologId, userId)
+    }
 }
 
 data class UploadUrlResponse(
