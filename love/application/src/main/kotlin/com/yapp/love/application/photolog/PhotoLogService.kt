@@ -173,4 +173,22 @@ class PhotologService(
 
         photologRepository.delete(photolog)
     }
+
+    @Transactional
+    fun updatePhotolog(
+        photologId: Long,
+        userId: Long,
+        fileName: String,
+        comment: String?,
+    ) {
+        val photolog = photologRepository.findById(photologId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "인증샷을 찾을 수 없습니다.")
+
+        if (photolog.userId != userId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "본인의 인증샷만 수정할 수 있습니다.")
+        }
+
+        photolog.updateContent(fileName, comment)
+        photologRepository.save(photolog)
+    }
 }

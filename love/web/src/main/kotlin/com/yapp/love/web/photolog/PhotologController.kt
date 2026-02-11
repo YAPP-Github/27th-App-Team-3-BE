@@ -137,6 +137,21 @@ class PhotologController(
         )
     }
 
+    @Operation(summary = "인증샷 수정")
+    @PutMapping("/{photologId}")
+    fun updatePhotolog(
+        @AuthUser userId: Long,
+        @PathVariable photologId: Long,
+        @Valid @RequestBody request: UpdatePhotologRequest,
+    ) {
+        photologService.updatePhotolog(
+            photologId = photologId,
+            userId = userId,
+            fileName = request.fileName,
+            comment = request.comment,
+        )
+    }
+
     @Operation(summary = "인증샷 삭제")
     @DeleteMapping("/{photologId}")
     fun deletePhotolog(
@@ -156,9 +171,16 @@ data class CreatePhotologRequest(
     val goalId: Long,
     @field:NotBlank(message = "파일명은 필수입니다.")
     val fileName: String,
-    @field:Size(max = 30, message = "코멘트는 5자 이내여야 합니다.")
+    @field:Size(max = 5, message = "코멘트는 5자 이내여야 합니다.")
     val comment: String? = null,
     val verificationDate: LocalDate? = null,
+)
+
+data class UpdatePhotologRequest(
+    @field:NotBlank(message = "파일명은 필수입니다.")
+    val fileName: String,
+    @field:Size(max = 5, message = "코멘트는 5자 이내여야 합니다.")
+    val comment: String? = null,
 )
 
 data class PhotologResponse(
