@@ -7,7 +7,7 @@ import com.yapp.love.domain.goal.model.RepeatCycle
 
 data class GoalResponse(
     val goalId: Long,
-    val name: String,
+    val goalName: String,
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
     val repeatCount: Int,
@@ -20,7 +20,7 @@ data class GoalResponse(
         fun from(goalInfo: GoalInfo): GoalResponse {
             return GoalResponse(
                 goalId = goalInfo.goalId,
-                name = goalInfo.name,
+                goalName = goalInfo.goalName,
                 icon = goalInfo.icon,
                 repeatCycle = goalInfo.repeatCycle,
                 repeatCount = goalInfo.repeatCount,
@@ -41,7 +41,7 @@ data class GoalListResponse(
 
 data class GoalItemResponse(
     val goalId: Long,
-    val name: String,
+    val goalName: String,
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
     val myCompleted: Boolean,
@@ -64,7 +64,7 @@ data class GoalDetailListResponse(
 
 data class GoalDetailItem(
     val goalId: Long,
-    val name: String,
+    val goalName: String,
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
     val startDate: String,
@@ -74,7 +74,7 @@ data class GoalDetailItem(
         fun from(goalInfo: GoalInfo): GoalDetailItem {
             return GoalDetailItem(
                 goalId = goalInfo.goalId,
-                name = goalInfo.name,
+                goalName = goalInfo.goalName,
                 icon = goalInfo.icon,
                 repeatCycle = goalInfo.repeatCycle,
                 startDate = goalInfo.startDate,
@@ -91,7 +91,7 @@ data class DeleteGoalResponse(
 
 data class CompleteGoalResponse(
     val goalId: Long,
-    val name: String,
+    val goalName: String,
     val goalStatus: GoalStatus,
     val completedAt: String,
 )

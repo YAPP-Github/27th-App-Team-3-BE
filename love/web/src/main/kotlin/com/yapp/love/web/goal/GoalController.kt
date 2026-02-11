@@ -30,7 +30,7 @@ class GoalController(
         val command =
             CreateGoalCommand(
                 coupleId = coupleId,
-                name = request.name,
+                goalName = request.goalName,
                 icon = request.icon,
                 repeatCycle = request.repeatCycle,
                 repeatCount = request.repeatCount,
@@ -76,7 +76,7 @@ class GoalController(
             goalsWithPhotologs.map { goalWithPhotologs ->
                 GoalItemResponse(
                     goalId = goalWithPhotologs.goal.id!!,
-                    name = goalWithPhotologs.goal.name,
+                    goalName = goalWithPhotologs.goal.name,
                     icon = goalWithPhotologs.goal.icon,
                     repeatCycle = goalWithPhotologs.goal.repeatCycle,
                     myCompleted = goalWithPhotologs.myPhotolog != null,
@@ -136,7 +136,7 @@ class GoalController(
     ): GoalResponse {
         val command =
             UpdateGoalCommand(
-                name = request.name,
+                goalName = request.goalName,
                 icon = request.icon,
                 repeatCycle = request.repeatCycle,
                 repeatCount = request.repeatCount,
@@ -168,7 +168,7 @@ class GoalController(
         val goalInfo = goalService.completeGoal(userId, goalId)
         return CompleteGoalResponse(
             goalId = goalInfo.goalId,
-            name = goalInfo.name,
+            goalName = goalInfo.goalName,
             goalStatus = goalInfo.goalStatus,
             completedAt = goalInfo.updatedAt,
         )

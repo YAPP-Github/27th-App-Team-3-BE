@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 data class CreateGoalCommand(
     val coupleId: Long,
-    val name: String,
+    val goalName: String,
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
     val repeatCount: Int,
@@ -15,7 +15,7 @@ data class CreateGoalCommand(
 )
 
 data class UpdateGoalCommand(
-    val name: String,
+    val goalName: String,
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
     val repeatCount: Int,

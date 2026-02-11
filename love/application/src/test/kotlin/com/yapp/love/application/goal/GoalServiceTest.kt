@@ -80,13 +80,13 @@ class GoalServiceTest : DescribeSpec({
                 // then
                 result.size shouldBe 2
                 result[0].goalId shouldBe 1L
-                result[0].name shouldBe "운동하기"
+                result[0].goalName shouldBe "운동하기"
                 result[0].repeatCycle shouldBe RepeatCycle.DAILY
                 result[0].icon shouldBe GoalIcon.ICON_EXERCISE
                 result[0].endDate shouldBe "2026-03-01"
 
                 result[1].goalId shouldBe 2L
-                result[1].name shouldBe "독서"
+                result[1].goalName shouldBe "독서"
                 result[1].repeatCycle shouldBe RepeatCycle.WEEKLY
                 result[1].icon shouldBe GoalIcon.ICON_BOOK
                 result[1].endDate shouldBe null
@@ -149,7 +149,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -191,7 +191,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -236,7 +236,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -277,7 +277,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -320,7 +320,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기 (수정)", // 이름만 변경
+                        goalName = "운동하기 (수정)", // 이름만 변경
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -363,7 +363,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -407,7 +407,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -456,7 +456,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기 수정",
+                        goalName = "운동하기 수정",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,
@@ -507,7 +507,7 @@ class GoalServiceTest : DescribeSpec({
 
                 val command =
                     UpdateGoalCommand(
-                        name = "운동하기",
+                        goalName = "운동하기",
                         icon = GoalIcon.ICON_DEFAULT,
                         repeatCycle = RepeatCycle.DAILY,
                         repeatCount = 1,

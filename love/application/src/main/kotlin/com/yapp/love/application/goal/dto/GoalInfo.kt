@@ -7,7 +7,7 @@ import com.yapp.love.domain.goal.model.RepeatCycle
 
 data class GoalInfo(
     val goalId: Long,
-    val name: String,
+    val goalName: String,
     val icon: GoalIcon,
     val goalStatus: GoalStatus,
     val repeatCycle: RepeatCycle,
@@ -21,7 +21,7 @@ data class GoalInfo(
         fun from(goal: Goal): GoalInfo {
             return GoalInfo(
                 goalId = goal.id!!,
-                name = goal.name,
+                goalName = goal.name,
                 icon = goal.icon,
                 repeatCycle = goal.repeatCycle,
                 repeatCount = goal.repeatCount,

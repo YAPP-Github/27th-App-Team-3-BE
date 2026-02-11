@@ -8,6 +8,7 @@ import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.photolog.model.ReactionType
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -63,36 +64,59 @@ class PhotologController(
         )
     }
 
-    @Operation(summary = "목표별 인증샷 목록 조회")
-    @GetMapping("/goals/{goalId}")
-    fun getPhotologsByGoal(
+    @Operation(summary = "날짜별 인증샷 목록 조회")
+    @GetMapping("/goals/{targetDate}")
+    fun getPhotologsByDate(
         @AuthUser userId: Long,
-        @PathVariable goalId: Long,
+        @RequestParam targetDate: LocalDate,
     ): PhotologListResponse {
         val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
+        val coupleId = coupleInfo.id!!
         val partnerId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
-        val goal = goalService.getGoalById(userId, goalId)
 
         val myNickname = userAdditionInfoRepository.findByUserId(userId)?.nickname ?: "나"
         val partnerNickname = userAdditionInfoRepository.findByUserId(partnerId)?.nickname ?: "상대방"
 
-        val photologs = photologService.getPhotologsByGoalId(goalId)
+        val goalsWithPhotologs = goalService.getGoalsWithPhotologs(
+            coupleId = coupleId,
+            myUserId = userId,
+            partnerUserId = partnerId,
+            targetDate = targetDate,
+        )
 
         return PhotologListResponse(
-            goalId = goalId,
+            targetDate = targetDate,
             myNickname = myNickname,
             partnerNickname = partnerNickname,
-            goalTitle = goal.name,
-            photologs = photologs.map { photolog ->
-                PhotologDetailResponse(
-                    photologId = photolog.id!!,
-                    goalId = photolog.goalId,
-                    imageUrl = fileStoragePort.getPhotologUrl(photolog.goalId, photolog.fileName),
-                    comment = photolog.comment,
-                    verificationDate = photolog.verificationDate,
-                    isMine = photolog.userId == userId,
-                    uploaderName = if (photolog.userId == userId) myNickname else partnerNickname,
-                    uploadedAt = photolog.uploadedAt,
+            photologs = goalsWithPhotologs.map { goalWithPhotologs ->
+                GoalPhotologPair(
+                    goalId = goalWithPhotologs.goal.id!!,
+                    goalName = goalWithPhotologs.goal.name,
+                    goalIcon = goalWithPhotologs.goal.icon,
+                    myPhotolog = goalWithPhotologs.myPhotolog?.let {
+                        PhotologDetailResponse(
+                            photologId = it.id!!,
+                            goalId = it.goalId,
+                            imageUrl = fileStoragePort.getPhotologUrl(it.goalId, it.fileName),
+                            comment = it.comment,
+                            verificationDate = it.verificationDate,
+                            uploaderName = myNickname,
+                            uploadedAt = it.uploadedAt,
+                            reaction = it.reaction,
+                        )
+                    },
+                    partnerPhotolog = goalWithPhotologs.partnerPhotolog?.let {
+                        PhotologDetailResponse(
+                            photologId = it.id!!,
+                            goalId = it.goalId,
+                            imageUrl = fileStoragePort.getPhotologUrl(it.goalId, it.fileName),
+                            comment = it.comment,
+                            verificationDate = it.verificationDate,
+                            uploaderName = partnerNickname,
+                            uploadedAt = it.uploadedAt,
+                            reaction = it.reaction,
+                        )
+                    },
                 )
             },
         )
@@ -135,23 +159,31 @@ data class PhotologResponse(
     val verificationDate: LocalDate,
 )
 
+
 data class PhotologDetailResponse(
     val photologId: Long,
     val goalId: Long,
     val imageUrl: String,
     val comment: String?,
     val verificationDate: LocalDate,
-    val isMine: Boolean,
     val uploaderName: String,
     val uploadedAt: Instant,
+    val reaction: ReactionType?,
 )
 
 data class PhotologListResponse(
-    val goalId: Long,
+    val targetDate: LocalDate,
     val myNickname: String,
     val partnerNickname: String,
-    val goalTitle: String,
-    val photologs: List<PhotologDetailResponse>?,
+    val photologs: List<GoalPhotologPair>,
+)
+
+data class GoalPhotologPair(
+    val goalId: Long,
+    val goalName: String,
+    val goalIcon: GoalIcon,
+    val myPhotolog: PhotologDetailResponse?,
+    val partnerPhotolog: PhotologDetailResponse?,
 )
 
 data class ReactionRequest(
