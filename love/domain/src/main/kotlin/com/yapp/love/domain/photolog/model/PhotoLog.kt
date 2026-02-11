@@ -39,4 +39,9 @@ class Photolog(
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     var reaction: ReactionType? = null,
-) : BaseEntity()
+) : BaseEntity() {
+    fun updateContent(fileName: String, comment: String?) {
+        this.fileName = fileName
+        comment?.let { this.comment = it }
+    }
+}
