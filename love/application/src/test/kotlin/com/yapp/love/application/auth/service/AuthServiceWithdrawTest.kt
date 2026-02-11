@@ -226,6 +226,7 @@ class AuthServiceWithdrawTest : DescribeSpec({
                 every { coupleInfoRepository.findByUserId(userId) } returns coupleInfo
                 every { onboardingInfoRepository.findByUserId(partnerId) } returns null
                 every { userAdditionInfoRepository.deleteByUserId(partnerId) } just Runs
+                every { inviteCodeRepository.deleteByCreatorId(partnerId) } just Runs
                 every { goalRepository.findIdsByCoupleId(coupleId) } returns goalIds
                 every { photologRepository.deleteByGoalIdIn(goalIds) } just Runs
                 every { goalRepository.deleteByCoupleId(coupleId) } just Runs
@@ -274,6 +275,7 @@ class AuthServiceWithdrawTest : DescribeSpec({
                 every { coupleInfoRepository.findByUserId(userId) } returns coupleInfo
                 every { onboardingInfoRepository.findByUserId(partnerId) } returns null
                 every { userAdditionInfoRepository.deleteByUserId(partnerId) } just Runs
+                every { inviteCodeRepository.deleteByCreatorId(partnerId) } just Runs
                 every { goalRepository.findIdsByCoupleId(coupleId) } returns emptyList()
                 every { goalRepository.deleteByCoupleId(coupleId) } just Runs
                 every { coupleInfoRepository.deleteById(coupleId) } just Runs

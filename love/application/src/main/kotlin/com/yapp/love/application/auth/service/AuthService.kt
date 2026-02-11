@@ -26,6 +26,7 @@ import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 
 /**
@@ -58,6 +59,7 @@ class AuthService(
     private val refreshTokenProviderMap: Map<SocialProvider, SocialRefreshTokenProvider> =
         socialRefreshTokenProviders.associateBy { it.getProviderType() }
 
+    @Transactional
     fun appleLoginWithIdToken(command: AppleIdTokenLoginCommand): OAuthLoginResult {
         return loginWithIdToken(
             provider = SocialProvider.APPLE,
@@ -66,6 +68,7 @@ class AuthService(
         )
     }
 
+    @Transactional
     fun googleLoginWithIdToken(command: GoogleIdTokenLoginCommand): OAuthLoginResult {
         return loginWithIdToken(provider = SocialProvider.GOOGLE, idToken = command.idToken)
     }
@@ -117,28 +120,20 @@ class AuthService(
         provider: SocialProvider,
         userInfo: OAuthUserInfo,
     ): OAuthLoginResult {
-        val result =
-            transactionTemplate.execute {
-                val (user, isNewUser) =
-                    findOrCreateUser(
-                        provider = provider,
-                        providerId = userInfo.providerId,
-                        email = userInfo.email,
-                        name = userInfo.email?.substringBefore("@"),
-                    )
+        val (user, isNewUser) =
+            findOrCreateUser(
+                provider = provider,
+                providerId = userInfo.providerId,
+                email = userInfo.email,
+                name = userInfo.email?.substringBefore("@"),
+            )
 
-                // 소셜 refresh token이 있으면 저장 (회원탈퇴 시 토큰 revoke용)
-                userInfo.socialRefreshToken?.let { socialRefreshToken ->
-                    saveSocialToken(user.id!!, provider, socialRefreshToken)
-                }
-
-                createLoginResult(user, isNewUser)
-            }
-
-        return result ?: run {
-            logger.error { "failed to login user: $provider" }
-            throw GlobalException(GlobalErrorCode.INTERNAL_SERVER_ERROR)
+        // 소셜 refresh token이 있으면 저장 (회원탈퇴 시 토큰 revoke용)
+        userInfo.socialRefreshToken?.let { socialRefreshToken ->
+            saveSocialToken(user.id!!, provider, socialRefreshToken)
         }
+
+        return createLoginResult(user, isNewUser)
     }
 
     private fun saveSocialToken(
@@ -285,6 +280,7 @@ class AuthService(
                     onboardingInfoRepository.save(partnerOnboarding)
                 }
                 userAdditionInfoRepository.deleteByUserId(partnerId)
+                inviteCodeRepository.deleteByCreatorId(partnerId)
 
                 // 포토로그 삭제 (goal FK 때문에 먼저)
                 val goalIds = goalRepository.findIdsByCoupleId(coupleId)
@@ -304,7 +300,7 @@ class AuthService(
             userRepository.deleteById(userId)
         }
 
-        // 3. Apple 토큰 revoke (DB 삭제 성공 후 수행)
+        // 3. Apple 토큰 revoke (DB 삭제 성공 후 수행. 롤백 불가)
         if (appleRefreshToken != null) {
             revokeAppleTokenWithRetry(userId, appleRefreshToken)
         } else if (user.oauthProvider == SocialProvider.APPLE) {
