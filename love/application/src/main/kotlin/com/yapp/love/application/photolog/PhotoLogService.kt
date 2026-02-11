@@ -4,6 +4,10 @@ import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.photolog.dto.ReactionInfo
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.application.storage.PresignedUrlResult
+import com.yapp.love.domain.couple.CoupleInfoRepository
+import com.yapp.love.domain.couple.model.CoupleInfo
+import com.yapp.love.domain.goal.model.Goal
+import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.photolog.model.Photolog
 import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.photolog.repository.PhotologRepository
@@ -23,6 +27,8 @@ class PhotologService(
     private val photologRepository: PhotologRepository,
     private val fileStoragePort: FileStoragePort,
     private val coupleService: CoupleService,
+    private val goalRepository: GoalRepository,
+    private val coupleInfoRepository: CoupleInfoRepository,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -86,17 +92,9 @@ class PhotologService(
         comment: String?,
         verificationDate: LocalDate,
     ): Photolog {
-        val existingPhotolog =
-            photologRepository.findByGoalIdAndUserIdAndVerificationDate(
-                goalId,
-                userId,
-                verificationDate,
-            )
-        if (existingPhotolog != null) {
-            throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.")
-        }
+        validatePhotologCreation(goalId, userId, verificationDate)
 
-        val photolog =
+        return photologRepository.save(
             Photolog(
                 goalId = goalId,
                 userId = userId,
@@ -105,7 +103,33 @@ class PhotologService(
                 fileName = fileName,
                 comment = comment,
             )
-        return photologRepository.save(photolog)
+        )
+    }
+
+    private fun validatePhotologCreation(goalId: Long, userId: Long, verificationDate: LocalDate) {
+        val goal = findGoalOrThrow(goalId)
+        val coupleInfo = findCoupleInfoOrThrow(userId)
+        validateGoalOwnership(goal, coupleInfo)
+        validateNoDuplicatePhotolog(goalId, userId, verificationDate)
+    }
+
+    private fun findGoalOrThrow(goalId: Long) =
+        goalRepository.findActiveGoalById(goalId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "존재하지 않는 목표입니다.")
+
+    private fun findCoupleInfoOrThrow(userId: Long) =
+        coupleInfoRepository.findByUserId(userId)
+            ?: throw GlobalException(GlobalErrorCode.FORBIDDEN, "커플 정보가 없습니다.")
+
+    private fun validateGoalOwnership(goal: Goal, coupleInfo: CoupleInfo) {
+        if (goal.coupleId != coupleInfo.id) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "해당 목표에 대한 권한이 없습니다.")
+        }
+    }
+
+    private fun validateNoDuplicatePhotolog(goalId: Long, userId: Long, verificationDate: LocalDate) {
+        photologRepository.findByGoalIdAndUserIdAndVerificationDate(goalId, userId, verificationDate)
+            ?.let { throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.") }
     }
 
     @Transactional

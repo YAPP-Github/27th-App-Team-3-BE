@@ -2,7 +2,9 @@ package com.yapp.love.application.photolog
 
 import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.storage.FileStoragePort
+import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.couple.model.CoupleInfo
+import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.photolog.model.Photolog
 import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.photolog.repository.PhotologRepository
@@ -10,7 +12,10 @@ import com.yapp.love.globalutils.exception.GlobalException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import java.time.Instant
 import java.time.LocalDate
 
@@ -19,12 +24,16 @@ class PhotologServiceTest : DescribeSpec({
     val photologRepository = mockk<PhotologRepository>()
     val fileStoragePort = mockk<FileStoragePort>()
     val coupleService = mockk<CoupleService>()
+    val goalRepository = mockk<GoalRepository>()
+    val coupleInfoRepository = mockk<CoupleInfoRepository>()
 
     val photologService =
         PhotologService(
             photologRepository = photologRepository,
             fileStoragePort = fileStoragePort,
             coupleService = coupleService,
+            goalRepository = goalRepository,
+            coupleInfoRepository = coupleInfoRepository,
         )
 
     beforeEach {
@@ -153,3 +162,4 @@ class PhotologServiceTest : DescribeSpec({
         }
     }
 })
+
