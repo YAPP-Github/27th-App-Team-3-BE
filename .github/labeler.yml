@@ -28,30 +28,17 @@ comments:
 #    - 'branches' is an optional array of branch names (or patterns) to limit labeling according to PR target branch
 labels:
   '✨ Feat':
-    include:
-      - '(?i)\bFeat:\b'
-      - '(?i)\bFeat :\b'
+    include: ['(?i)^\s*feat\s*:']
   '⚒️ Fix':
-    include:
-      - '(?i)\bFix:\b'
-      - '(?i)\bFix :\b'
+    include: ['(?i)^\s*fix\s*:']
   '✅ Test':
-    include:
-      - '(?i)\bTest:\b'
-      - '(?i)\bTest :\b'
+    include: ['(?i)^\s*test\s*:']
   '♻️ Refactor':
-    include:
-      - '(?i)\bRefactor:\b'
-      - '(?i)\bRefactor :\b'
+    include: ['(?i)^\s*refactor\s*:']
   '🎉 Release':
-    include:
-      - '(?i)\bRelease:\b'
-      - '(?i)\bRelease :\b'
+    include: ['(?i)^\s*release\s*:']
   '🧹 Chore':
-    include:
-      - '(?i)\bChore:\b'
-      - '(?i)\bChore :\b'
+    include: ['(?i)^\s*chore\s*:']
   '📄 Docs':
-    include:
-      - '(?i)\bDocs:\b'
-      - '(?i)\bDocs :\b'
+    include: ['(?i)^\s*docs\s*:']
+
