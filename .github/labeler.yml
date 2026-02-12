@@ -27,24 +27,24 @@ comments:
 #    - 'exclude' patterns will ignore this label if any of these patterns match
 #    - 'branches' is an optional array of branch names (or patterns) to limit labeling according to PR target branch
 labels:
-  'feat':
+  '✨ Feat':
     include:
-      - '\bFeat\b'
-  'fix':
+      - '(?i)\bFeat\b'
+  '⚒️ Fix':
     include:
-      - '\bFix\b'
-  'test':
+      - '(?i)\bFix\b'
+  '✅ Test':
     include:
-      - '\bTest\b'
-  'refactor':
+      - '(?i)\bTest\b'
+  '♻️ Refactor':
     include:
-      - '\bRefactor\b'
-  'release':
+      - '(?i)\bRefactor\b'
+  '🎉 Release':
     include:
-      - '\bRelease\b'
-  'chore':
+      - '(?i)\bRelease\b'
+  '🧹 Chore':
     include:
-      - '\bChore\b'
-  'docs':
+      - '(?i)\bChore\b'
+  '📄 Docs':
     include:
-      - '\bDocs\b'
+      - '(?i)\bDocs\b'
