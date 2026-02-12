@@ -74,8 +74,8 @@ class PhotologController(
         val coupleId = coupleInfo.id!!
         val partnerId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
 
-        val myNickname = userAdditionInfoRepository.findByUserId(userId)!!.nickname
-        val partnerNickname = userAdditionInfoRepository.findByUserId(partnerId)!!.nickname
+        val myNickname = userAdditionInfoRepository.findByUserId(userId)?.nickname ?: "나"
+        val partnerNickname = userAdditionInfoRepository.findByUserId(partnerId)?.nickname ?: "상대방"
 
         val goalsWithPhotologs = goalService.getGoalsWithPhotologs(
             coupleId = coupleId,
