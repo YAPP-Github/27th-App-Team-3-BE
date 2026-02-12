@@ -29,22 +29,29 @@ comments:
 labels:
   '✨ Feat':
     include:
-      - '(?i)\bFeat\b'
+      - '(?i)\bFeat:\b'
+      - '(?i)\bFeat :\b'
   '⚒️ Fix':
     include:
-      - '(?i)\bFix\b'
+      - '(?i)\bFix:\b'
+      - '(?i)\bFix :\b'
   '✅ Test':
     include:
-      - '(?i)\bTest\b'
+      - '(?i)\bTest:\b'
+      - '(?i)\bTest :\b'
   '♻️ Refactor':
     include:
-      - '(?i)\bRefactor\b'
+      - '(?i)\bRefactor:\b'
+      - '(?i)\bRefactor :\b'
   '🎉 Release':
     include:
-      - '(?i)\bRelease\b'
+      - '(?i)\bRelease:\b'
+      - '(?i)\bRelease :\b'
   '🧹 Chore':
     include:
-      - '(?i)\bChore\b'
+      - '(?i)\bChore:\b'
+      - '(?i)\bChore :\b'
   '📄 Docs':
     include:
-      - '(?i)\bDocs\b'
+      - '(?i)\bDocs:\b'
+      - '(?i)\bDocs :\b'
