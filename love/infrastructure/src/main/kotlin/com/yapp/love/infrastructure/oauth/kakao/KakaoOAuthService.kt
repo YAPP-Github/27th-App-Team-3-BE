@@ -1,20 +1,21 @@
 package com.yapp.love.infrastructure.oauth.kakao
 
+import com.nimbusds.jose.crypto.RSASSAVerifier
+import com.nimbusds.jwt.SignedJWT
 import com.yapp.love.application.auth.port.OAuthProvider
 import com.yapp.love.application.auth.port.OAuthUserInfo
 import com.yapp.love.domain.user.model.SocialProvider
-import com.yapp.love.globalutils.exception.GlobalErrorCode
-import com.yapp.love.globalutils.exception.GlobalException
 import com.yapp.love.infrastructure.oauth.kakao.config.KakaoOAuthProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import java.util.Date
 
 private val logger = KotlinLogging.logger {}
 
 @Component
 class KakaoOAuthService(
-    private val kakaoOAuthClient: KakaoOAuthClient,
     private val kakaoProperties: KakaoOAuthProperties,
+    private val kakaoPublicKeyProvider: KakaoPublicKeyProvider,
 ) : OAuthProvider {
     companion object {
         private const val KAKAO_ISSUER = "https://kauth.kakao.com"
@@ -22,33 +23,58 @@ class KakaoOAuthService(
 
     override fun getProviderType(): SocialProvider = SocialProvider.KAKAO
 
-    override fun authenticate(code: String): OAuthUserInfo {
-        val tokenResponse = kakaoOAuthClient.exchangeCodeForToken(code)
-        val tokenInfo = kakaoOAuthClient.verifyIdToken(tokenResponse.idToken)
+    override fun authenticateWithIdToken(idToken: String): OAuthUserInfo {
+        return verifyAndExtractUserInfo(idToken)
+    }
 
-        if (tokenInfo.aud != kakaoProperties.clientId) {
-            logger.error {
-                "Kakao ID token audience mismatch: expected=${kakaoProperties.clientId}, actual=${tokenInfo.aud}"
-            }
-            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "카카오 인증 토큰이 유효하지 않습니다.")
+    private fun verifyAndExtractUserInfo(idToken: String): OAuthUserInfo {
+        val signedJWT = try {
+            SignedJWT.parse(idToken)
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to parse Kakao ID token as JWT" }
+            throw IllegalArgumentException("Invalid JWT format")
         }
 
-        if (tokenInfo.iss != KAKAO_ISSUER) {
-            logger.error {
-                "Kakao ID token issuer mismatch: expected=$KAKAO_ISSUER, actual=${tokenInfo.iss}"
-            }
-            throw GlobalException(GlobalErrorCode.INVALID_TOKEN, "카카오 인증 토큰이 유효하지 않습니다.")
+        verifySignature(signedJWT)
+
+        val claims = signedJWT.jwtClaimsSet
+
+        if (claims.issuer != KAKAO_ISSUER) {
+            logger.error { "Kakao ID token issuer mismatch: ${claims.issuer}" }
+            throw IllegalStateException("Invalid Kakao ID token issuer")
         }
 
-        val currentTime = System.currentTimeMillis() / 1000
-        if (tokenInfo.exp < currentTime) {
-            logger.error { "Kakao ID token expired: exp=${tokenInfo.exp}, current=$currentTime" }
-            throw GlobalException(GlobalErrorCode.TOKEN_EXPIRED, "카카오 인증 토큰이 만료되었습니다.")
+        if (!claims.audience.contains(kakaoProperties.clientId)) {
+            logger.error { "Kakao ID token audience mismatch: ${claims.audience}" }
+            throw IllegalStateException("Invalid Kakao ID token audience")
         }
+
+        if (claims.expirationTime == null || claims.expirationTime.before(Date())) {
+            logger.error { "Kakao ID token expired: ${claims.expirationTime}" }
+            throw IllegalStateException("Kakao ID token has expired")
+        }
+
+        val providerId = claims.subject
+            ?: throw IllegalStateException("Kakao ID token missing 'sub' claim")
 
         return OAuthUserInfo(
-            providerId = tokenInfo.sub,
-            email = tokenInfo.email,
+            providerId = providerId,
+            email = claims.getStringClaim("email"),
         )
+    }
+
+    private fun verifySignature(signedJWT: SignedJWT) {
+        val kid = signedJWT.header.keyID
+            ?: throw IllegalStateException("Kakao ID token missing 'kid' in header")
+
+        val publicKey = kakaoPublicKeyProvider.getPublicKey(kid)
+        val verifier = RSASSAVerifier(publicKey)
+
+        if (!signedJWT.verify(verifier)) {
+            logger.error { "Kakao ID token signature verification failed" }
+            throw IllegalStateException("Invalid Kakao ID token signature")
+        }
+
+        logger.debug { "Kakao ID token signature verified successfully" }
     }
 }

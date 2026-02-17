@@ -2,6 +2,7 @@ package com.yapp.love.application.auth.service
 
 import com.yapp.love.application.auth.dto.AppleIdTokenLoginCommand
 import com.yapp.love.application.auth.dto.GoogleIdTokenLoginCommand
+import com.yapp.love.application.auth.dto.KakaoIdTokenLoginCommand
 import com.yapp.love.application.auth.dto.OAuthLoginResult
 import com.yapp.love.application.auth.dto.RefreshTokenCommand
 import com.yapp.love.application.auth.dto.TokenRefreshResult
@@ -71,6 +72,10 @@ class AuthService(
     @Transactional
     fun googleLoginWithIdToken(command: GoogleIdTokenLoginCommand): OAuthLoginResult {
         return loginWithIdToken(provider = SocialProvider.GOOGLE, idToken = command.idToken)
+    }
+
+    fun kakaoLoginWithIdToken(command: KakaoIdTokenLoginCommand): OAuthLoginResult {
+        return loginWithIdToken(provider = SocialProvider.KAKAO, idToken = command.idToken)
     }
 
     private fun loginWithIdToken(
