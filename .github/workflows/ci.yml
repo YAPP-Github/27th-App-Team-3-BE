@@ -1,6 +1,7 @@
 name: CI - Test and Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
