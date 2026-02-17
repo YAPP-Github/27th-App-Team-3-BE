@@ -218,7 +218,7 @@ class GoalServiceTest : DescribeSpec({
             it("포토로그를 삭제하지 않아야 함") {
                 // given
                 val originalEndDate = LocalDate.of(2026, 1, 25)
-                val newEndDate = LocalDate.of(2026, 2, 15) // 미래로 변경
+                val newEndDate = LocalDate.now().plusMonths(1) // 미래로 변경
 
                 val goal =
                     Goal(

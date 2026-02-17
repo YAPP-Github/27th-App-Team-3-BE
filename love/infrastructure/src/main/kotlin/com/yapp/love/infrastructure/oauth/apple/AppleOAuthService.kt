@@ -7,7 +7,8 @@ import com.yapp.love.application.auth.port.OAuthProvider
 import com.yapp.love.application.auth.port.OAuthUserInfo
 import com.yapp.love.application.auth.port.SocialRefreshTokenProvider
 import com.yapp.love.domain.user.model.SocialProvider
-import com.yapp.love.infrastructure.oauth.apple.config.AppleOauthProperties
+import com.yapp.love.infrastructure.oauth.apple.client.AppleOAuthClient
+import com.yapp.love.infrastructure.oauth.apple.config.AppleOAuthProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import java.util.Date
@@ -16,8 +17,8 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class AppleOAuthService(
-    private val appleOauthClient: AppleOauthClient,
-    private val appleProperties: AppleOauthProperties,
+    private val appleOauthClient: AppleOAuthClient,
+    private val appleProperties: AppleOAuthProperties,
     private val applePublicKeyProvider: ApplePublicKeyProvider,
 ) : OAuthProvider, SocialRefreshTokenProvider {
 

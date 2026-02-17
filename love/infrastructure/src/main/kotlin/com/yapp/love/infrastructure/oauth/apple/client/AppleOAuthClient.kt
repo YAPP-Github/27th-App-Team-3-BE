@@ -1,8 +1,6 @@
-package com.yapp.love.infrastructure.oauth.apple
+package com.yapp.love.infrastructure.oauth.apple.client
 
-import com.yapp.love.infrastructure.oauth.apple.config.AppleOauthProperties
-import com.yapp.love.infrastructure.oauth.apple.response.AppleTokenResponse
-import com.yapp.love.infrastructure.oauth.apple.service.AppleClientSecretService
+import com.yapp.love.infrastructure.oauth.apple.config.AppleOAuthProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -13,16 +11,17 @@ import org.springframework.web.client.RestClientResponseException
 private val logger = KotlinLogging.logger {}
 
 @Component
-class AppleOauthClient(
-    private val appleProperties: AppleOauthProperties,
+class AppleOAuthClient(
+    private val appleProperties: AppleOAuthProperties,
     private val clientSecretService: AppleClientSecretService,
+    restClientBuilder: RestClient.Builder,
 ) {
     companion object {
         private const val APPLE_TOKEN_ENDPOINT = "https://appleid.apple.com"
     }
 
     private val restClient: RestClient =
-        RestClient.builder()
+        restClientBuilder.clone()
             .baseUrl(APPLE_TOKEN_ENDPOINT)
             .build()
 
