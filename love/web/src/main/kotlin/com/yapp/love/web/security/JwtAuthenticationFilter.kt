@@ -2,6 +2,7 @@ package com.yapp.love.web.security
 
 import com.yapp.love.application.auth.port.TokenProvider
 import com.yapp.love.globalutils.exception.GlobalException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -12,6 +13,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 class JwtAuthenticationFilter(
