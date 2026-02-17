@@ -1,4 +1,4 @@
-package com.yapp.love.infrastructure.oauth.apple
+package com.yapp.love.infrastructure.oauth.apple.client
 
 import com.yapp.love.infrastructure.oauth.apple.config.AppleKeyProperties
 import org.springframework.core.io.ResourceLoader
@@ -8,12 +8,6 @@ import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.util.Base64
 
-/**
- * Apple AuthKey(.p8) 로더
- *
- * Apple Developer에서 발급받은 .p8 파일을 로드하여 EC KeyPair를 생성합니다.
- * client_secret JWT 서명에 사용됩니다.
- */
 @Component
 class ApplePrivateKeyLoader(
     private val keyProperties: AppleKeyProperties,

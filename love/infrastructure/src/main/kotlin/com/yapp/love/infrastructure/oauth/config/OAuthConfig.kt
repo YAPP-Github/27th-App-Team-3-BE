@@ -1,7 +1,7 @@
 package com.yapp.love.infrastructure.oauth.config
 
 import com.yapp.love.infrastructure.oauth.apple.config.AppleKeyProperties
-import com.yapp.love.infrastructure.oauth.apple.config.AppleOauthProperties
+import com.yapp.love.infrastructure.oauth.apple.config.AppleOAuthProperties
 import com.yapp.love.infrastructure.oauth.google.config.GoogleOAuthProperties
 import com.yapp.love.infrastructure.oauth.kakao.config.KakaoOAuthProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @EnableConfigurationProperties(
-    AppleOauthProperties::class,
+    AppleOAuthProperties::class,
     AppleKeyProperties::class,
     GoogleOAuthProperties::class,
     KakaoOAuthProperties::class,
