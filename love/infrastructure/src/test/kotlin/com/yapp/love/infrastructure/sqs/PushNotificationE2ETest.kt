@@ -140,6 +140,7 @@ class PushNotificationE2ETest {
 
         @JvmStatic
         @DynamicPropertySource
+        @Suppress("unused")
         fun overrideProperties(registry: DynamicPropertyRegistry) {
             val sqsClient = buildSqsClient()
             sqsClient.createQueue { it.queueName(QUEUE_NAME) }.get()

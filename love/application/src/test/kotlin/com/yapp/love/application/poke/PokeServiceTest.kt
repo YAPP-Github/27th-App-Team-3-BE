@@ -15,7 +15,6 @@ import com.yapp.love.domain.user.model.UserAdditionInfo
 import com.yapp.love.globalutils.exception.GlobalException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
 import io.mockk.*
 import org.springframework.context.ApplicationEventPublisher
 import java.time.LocalDate
