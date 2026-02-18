@@ -74,4 +74,17 @@ interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
     @Modifying
     @Query("DELETE FROM Goal g WHERE g.coupleId = :coupleId")
     override fun deleteByCoupleId(@Param("coupleId") coupleId: Long)
+
+    @Query(
+        """
+        SELECT g FROM Goal g
+        WHERE g.goalStatus = com.yapp.love.domain.goal.model.GoalStatus.IN_PROGRESS
+        AND g.hasEndDate = true
+        AND g.endDate < :today
+        AND g.deletedAt IS NULL
+    """,
+    )
+    override fun findGoalsEndingBefore(
+        @Param("today") today: LocalDate,
+    ): List<Goal>
 }

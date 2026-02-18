@@ -1,7 +1,9 @@
 package com.yapp.love.application.onboarding
 
+import com.yapp.love.application.notification.NotificationService
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.couple.model.CoupleInfo
+import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.domain.onboarding.InviteCodeRepository
 import com.yapp.love.domain.onboarding.OnboardingInfoRepository
 import com.yapp.love.domain.onboarding.model.InviteCodes
@@ -22,6 +24,7 @@ class OnboardingService(
     private val inviteCodeRepository: InviteCodeRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
+    private val notificationService: NotificationService,
 ) {
 
     @Transactional
@@ -57,6 +60,13 @@ class OnboardingService(
 
         updateOrCreateOnboardingInfo(usedUserId, coupleInfo)
         updateOrCreateOnboardingInfo(inviteCodes.creatorId, coupleInfo)
+
+        // 초대 코드를 보낸 사람에게 커플 연결 알림 전송
+        notificationService.sendNotification(
+            targetUserId = inviteCodes.creatorId,
+            type = NotificationType.PARTNER_CONNECTED,
+            titleArgs = arrayOf("상대방"),
+        )
     }
 
     private fun updateOrCreateOnboardingInfo(userId: Long, coupleInfo: CoupleInfo) {

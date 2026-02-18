@@ -42,4 +42,5 @@ out/
 ### Private Config (from submodule) ###
 application*.yml
 *.p8
+*-firebase-adminsdk-*.json
 love/infrastructure/src/main/resources/
