@@ -1,9 +1,8 @@
 package com.yapp.love.application.onboarding
 
-import com.yapp.love.application.notification.NotificationService
+import com.yapp.love.application.notification.event.PartnerConnectedEvent
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.couple.model.CoupleInfo
-import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.domain.onboarding.InviteCodeRepository
 import com.yapp.love.domain.onboarding.OnboardingInfoRepository
 import com.yapp.love.domain.onboarding.model.InviteCodes
@@ -13,6 +12,7 @@ import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.domain.user.model.UserAdditionInfo
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.SecureRandom
@@ -24,7 +24,7 @@ class OnboardingService(
     private val inviteCodeRepository: InviteCodeRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
-    private val notificationService: NotificationService,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional
@@ -61,12 +61,8 @@ class OnboardingService(
         updateOrCreateOnboardingInfo(usedUserId, coupleInfo)
         updateOrCreateOnboardingInfo(inviteCodes.creatorId, coupleInfo)
 
-        // 초대 코드를 보낸 사람에게 커플 연결 알림 전송
-        notificationService.sendNotification(
-            targetUserId = inviteCodes.creatorId,
-            type = NotificationType.PARTNER_CONNECTED,
-            titleArgs = arrayOf("상대방"),
-        )
+        // 초대 코드를 보낸 사람에게 커플 연결 알림 이벤트 발행
+        notificationEventPublisher.publishEvent(PartnerConnectedEvent(targetUserId = inviteCodes.creatorId))
     }
 
     private fun updateOrCreateOnboardingInfo(userId: Long, coupleInfo: CoupleInfo) {

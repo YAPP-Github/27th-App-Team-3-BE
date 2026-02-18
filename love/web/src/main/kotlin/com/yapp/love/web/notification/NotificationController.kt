@@ -1,7 +1,12 @@
 package com.yapp.love.web.notification
 
+import com.yapp.love.application.notification.FcmTokenService
 import com.yapp.love.application.notification.NotificationService
+import com.yapp.love.application.notification.NotificationSettingService
 import com.yapp.love.web.auth.AuthUser
+import com.yapp.love.web.notification.dto.request.FcmTokenRequest
+import com.yapp.love.web.notification.dto.request.InitNotificationSettingRequest
+import com.yapp.love.web.notification.dto.request.PushSettingRequest
 import com.yapp.love.web.notification.dto.response.NotificationListResponse
 import com.yapp.love.web.notification.dto.response.NotificationResponse
 import com.yapp.love.web.notification.dto.response.NotificationSettingResponse
@@ -10,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "Notification", description = "알림 API")
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/notifications")
 class NotificationController(
     private val notificationService: NotificationService,
+    private val notificationSettingService: NotificationSettingService,
+    private val fcmTokenService: FcmTokenService,
 ) {
     @Operation(summary = "FCM 토큰 등록")
     @PostMapping("/fcm-token")
@@ -25,7 +31,7 @@ class NotificationController(
         @AuthUser userId: Long,
         @Valid @RequestBody request: FcmTokenRequest,
     ) {
-        notificationService.registerFcmToken(userId, request.token, request.deviceId)
+        fcmTokenService.registerToken(userId, request.token, request.deviceId)
     }
 
     @Operation(summary = "알림 목록 조회")
@@ -62,61 +68,59 @@ class NotificationController(
         notificationService.markAllAsRead(userId)
     }
 
+    @Operation(summary = "알림 설정 초기화 (온보딩)")
+    @PostMapping("/settings/init")
+    fun initNotificationSettings(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: InitNotificationSettingRequest,
+    ): NotificationSettingResponse {
+        val setting = notificationSettingService.initSetting(
+            userId = userId,
+            isPokePushEnabled = request.isPushEnabled,
+            isMarketingPushEnabled = request.isMarketingPushEnabled,
+            isNightPushEnabled = request.isNightPushEnabled,
+        )
+        return NotificationSettingResponse.from(setting)
+    }
+
     @Operation(summary = "알림 설정 조회")
     @GetMapping("/settings")
     fun getNotificationSettings(
         @AuthUser userId: Long,
     ): NotificationSettingResponse {
-        val setting = notificationService.getNotificationSetting(userId)
-        return NotificationSettingResponse(
-            isNotificationEnabled = setting.isNightPushNotificationEnabled,
-            isNightNotificationsEnabled = setting.isNightPushNotificationEnabled,
-        )
+        val setting = notificationSettingService.getSetting(userId)
+        return NotificationSettingResponse.from(setting)
     }
 
-    @Operation(summary = "푸쉬 알림 동의")
-    @PostMapping("/settings")
-    fun updateNotificationSetting(
+    @Operation(summary = "푸쉬 알림 설정 변경")
+    @PatchMapping("/settings/poke")
+    fun updatePokePushSetting(
         @AuthUser userId: Long,
-        @Valid @RequestBody request: NotificationSettingRequest,
+        @Valid @RequestBody request: PushSettingRequest,
     ): NotificationSettingResponse {
-        val setting = notificationService.updatePushNotification(userId, request.isNotificationEnabled)
-        return NotificationSettingResponse(
-            isNotificationEnabled = setting.isNightPushNotificationEnabled,
-            isNightNotificationsEnabled = setting.isNightPushNotificationEnabled,
-        )
+        val setting = notificationSettingService.updatePokePush(userId, request.enabled)
+        return NotificationSettingResponse.from(setting)
+    }
+
+    @Operation(summary = "마케팅 알림 설정 변경")
+    @PatchMapping("/settings/marketing")
+    fun updateMarketingPushSetting(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: PushSettingRequest,
+    ): NotificationSettingResponse {
+        val setting = notificationSettingService.updateMarketingPush(userId, request.enabled)
+        return NotificationSettingResponse.from(setting)
     }
 
     @Operation(summary = "야간 알림 설정 변경")
     @PatchMapping("/settings/night")
-    fun updateNightNotificationSetting(
+    fun updateNightPushSetting(
         @AuthUser userId: Long,
-        @Valid @RequestBody request: NightNotificationSettingRequest,
+        @Valid @RequestBody request: PushSettingRequest,
     ): NotificationSettingResponse {
-        val setting = notificationService.updateNightPushNotification(userId, request.isNightNotificationEnabled)
-        return NotificationSettingResponse(
-            isNotificationEnabled = setting.isPushNotificationEnabled,
-            isNightNotificationEnabled = setting.isNightPushNotificationEnabled,
-        )
+        val setting = notificationSettingService.updateNightPush(userId, request.enabled)
+        return NotificationSettingResponse.from(setting)
     }
 }
 
-data class FcmTokenRequest(
-    @field:NotBlank(message = "FCM 토큰은 필수입니다.")
-    val token: String,
-    @field:NotBlank(message = "디바이스 ID는 필수입니다.")
-    val deviceId: String,
-)
 
-
-data class NotificationSettingRequest(
-    val isNotificationEnabled: Boolean,
-)
-
-data class NightNotificationSettingResponse(
-    val isNightNotificationEnabled: Boolean,
-)
-
-data class NightNotificationSettingRequest(
-    val isNightNotificationEnabled: Boolean,
-)

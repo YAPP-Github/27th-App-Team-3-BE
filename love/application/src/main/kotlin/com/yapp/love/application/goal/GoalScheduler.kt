@@ -1,10 +1,10 @@
 package com.yapp.love.application.goal
 
-import com.yapp.love.application.notification.NotificationService
+import com.yapp.love.application.notification.event.GoalEndedEvent
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.goal.repository.GoalRepository
-import com.yapp.love.domain.notification.model.NotificationType
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -16,7 +16,7 @@ private val logger = KotlinLogging.logger {}
 class GoalScheduler(
     private val goalRepository: GoalRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
-    private val notificationService: NotificationService,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -53,18 +53,13 @@ class GoalScheduler(
             }
 
             goals.forEach { goal ->
-                val goalName = goal.name
-
-                // 양쪽 모두에게 알림
-                notificationService.sendNotification(
-                    targetUserId = coupleInfo.user1Id,
-                    type = NotificationType.GOAL_ENDED,
-                    titleArgs = arrayOf(goalName),
-                )
-                notificationService.sendNotification(
-                    targetUserId = coupleInfo.user2Id,
-                    type = NotificationType.GOAL_ENDED,
-                    titleArgs = arrayOf(goalName),
+                notificationEventPublisher.publishEvent(
+                    GoalEndedEvent(
+                        user1Id = coupleInfo.user1Id,
+                        user2Id = coupleInfo.user2Id,
+                        goalId = goal.id!!,
+                        goalName = goal.name,
+                    )
                 )
             }
         }

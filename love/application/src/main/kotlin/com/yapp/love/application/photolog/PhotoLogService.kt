@@ -1,6 +1,7 @@
 package com.yapp.love.application.photolog
 
 import com.yapp.love.application.couple.CoupleService
+import com.yapp.love.application.notification.event.PhotologCreatedEvent
 import com.yapp.love.application.photolog.dto.ReactionInfo
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.application.storage.PresignedUrlResult
@@ -14,6 +15,7 @@ import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +31,7 @@ class PhotologService(
     private val coupleService: CoupleService,
     private val goalRepository: GoalRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -94,7 +97,7 @@ class PhotologService(
     ): Photolog {
         validatePhotologCreation(goalId, userId, verificationDate)
 
-        return photologRepository.save(
+        val saved = photologRepository.save(
             Photolog(
                 goalId = goalId,
                 userId = userId,
@@ -104,6 +107,10 @@ class PhotologService(
                 comment = comment,
             )
         )
+
+        notificationEventPublisher.publishEvent(PhotologCreatedEvent(userId = userId, goalId = goalId))
+
+        return saved
     }
 
     private fun validatePhotologCreation(goalId: Long, userId: Long, verificationDate: LocalDate) {

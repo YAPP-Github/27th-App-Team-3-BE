@@ -1,16 +1,16 @@
 package com.yapp.love.application.poke
 
-import com.yapp.love.application.notification.NotificationService
+import com.yapp.love.application.notification.event.PokedEvent
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.repository.GoalRepository
-import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.domain.poke.PokeRepository
 import com.yapp.love.domain.poke.model.Poke
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,7 +22,7 @@ class PokeService(
     private val coupleInfoRepository: CoupleInfoRepository,
     private val goalRepository: GoalRepository,
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
-    private val notificationService: NotificationService,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional
     fun poke(
@@ -63,16 +63,15 @@ class PokeService(
             )
         pokeRepository.save(poke)
 
-        // 6. 알림 전송
+        // 6. 알림 이벤트 발행
         val senderNickname = userAdditionInfoRepository.findByUserId(senderId)?.nickname ?: "상대방"
-        val goalName = goal.name
-
-        notificationService.sendNotification(
-            targetUserId = receiverId,
-            type = NotificationType.POKE,
-            titleArgs = arrayOf(senderNickname, goalName),
-            bodyArgs = arrayOf(senderNickname),
-            deepLinkParams = mapOf("goalId" to goalId.toString()),
+        notificationEventPublisher.publishEvent(
+            PokedEvent(
+                targetUserId = receiverId,
+                senderNickname = senderNickname,
+                goalId = goalId,
+                goalName = goal.name,
+            )
         )
     }
 }

@@ -11,19 +11,34 @@ class NotificationSetting(
     val id: Long? = null,
     @Column(name = "user_id", nullable = false, unique = true)
     val userId: Long,
-    @Column(name = "is_notification_enabled", nullable = false)
-    var isPushNotificationEnabled: Boolean = false,
-    @Column(name = "is_night_notification_enabled", nullable = false)
-    var isNightPushNotificationEnabled: Boolean = false,
+    @Column(name = "is_poke_push_enabled", nullable = false)
+    var isPokePushEnabled: Boolean = false,
+    @Column(name = "is_marketing_push_enabled", nullable = false)
+    var isMarketingPushEnabled: Boolean = false,
+    @Column(name = "is_night_push_enabled", nullable = false)
+    var isNightPushEnabled: Boolean = false,
 ) : BaseEntity() {
-    fun updatePushNotification(enabled: Boolean) {
-        isPushNotificationEnabled = enabled
+    fun updatePokePush(enabled: Boolean) {
+        isPokePushEnabled = enabled
     }
-    fun updateNightPushNotification(enabled: Boolean) {
-        isNightPushNotificationEnabled = enabled
+    fun updateMarketingPush(enabled: Boolean) {
+        isMarketingPushEnabled = enabled
+    }
+    fun updateNightPush(enabled: Boolean) {
+        isNightPushEnabled = enabled
     }
 
     companion object {
-        fun create(userId: Long) = NotificationSetting(userId = userId)
+        fun create(
+            userId: Long,
+            isPokePushEnabled: Boolean = false,
+            isMarketingPushEnabled: Boolean = false,
+            isNightPushEnabled: Boolean = false,
+        ) = NotificationSetting(
+            userId = userId,
+            isPokePushEnabled = isPokePushEnabled,
+            isMarketingPushEnabled = isMarketingPushEnabled,
+            isNightPushEnabled = isNightPushEnabled,
+        )
     }
 }

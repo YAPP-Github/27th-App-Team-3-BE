@@ -25,7 +25,7 @@ class Notification(
     @Column(nullable = false, length = 500)
     val body: String,
     @Column(name = "deep_link", length = 200)
-    val deepLink: String? = null,
+    var deepLink: String? = null,
     @Column(name = "is_read", nullable = false)
     var isRead: Boolean = false,
     @Column(name = "read_at")
@@ -94,6 +94,12 @@ enum class NotificationType(
         titleTemplate = "%s이 드디어 종료됐어요",
         bodyTemplate = "그동안 수고했어요",
         action = "goal-ended",
+    ),
+
+    MARKETING(
+        titleTemplate = "%s",
+        bodyTemplate = "%s",
+        action = "marketing",
     ),
     ;
 
