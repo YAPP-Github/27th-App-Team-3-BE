@@ -45,11 +45,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
                         summary = "목표 종료 — titleArgs[0]: 목표이름",
                         value = """{"targetUserId": 52, "type": "GOAL_ENDED", "titleArgs": ["운동하기"], "bodyArgs": [], "deepLinkParams": {"goalId": "10"}}""",
                     ),
-                    ExampleObject(
-                        name = "MARKETING",
-                        summary = "마케팅 — titleArgs[0]: 제목 / bodyArgs[0]: 내용",
-                        value = """{"targetUserId": 52, "type": "MARKETING", "titleArgs": ["이벤트 안내"], "bodyArgs": ["지금 바로 확인하세요!"], "deepLinkParams": {}}""",
-                    ),
+
                 ],
             ),
         ],
