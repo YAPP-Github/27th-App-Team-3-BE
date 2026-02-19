@@ -4,12 +4,12 @@ import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.photolog.PhotologService
 import com.yapp.love.application.storage.FileStoragePort
+import com.yapp.love.domain.goal.model.GoalIcon
+import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import com.yapp.love.domain.goal.model.GoalIcon
-import com.yapp.love.domain.photolog.model.ReactionType
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -118,7 +118,6 @@ class PhotologController(
                         )
                     },
                 )
-
             },
         )
     }
@@ -190,7 +189,6 @@ data class PhotologResponse(
     val comment: String?,
     val verificationDate: LocalDate,
 )
-
 
 data class PhotologDetailResponse(
     val photologId: Long,
