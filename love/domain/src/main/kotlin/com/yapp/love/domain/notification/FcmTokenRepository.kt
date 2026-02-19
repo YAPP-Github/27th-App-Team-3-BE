@@ -12,5 +12,7 @@ interface FcmTokenRepository {
         deviceId: String,
     ): FcmToken?
 
+    fun delete(fcmToken: FcmToken)
+
     fun deleteByUserId(userId: Long)
 }

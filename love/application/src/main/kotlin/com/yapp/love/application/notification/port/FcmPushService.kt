@@ -6,5 +6,5 @@ interface FcmPushService {
         title: String,
         body: String,
         deepLink: String? = null,
-    ): Boolean
+    )
 }

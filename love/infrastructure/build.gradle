@@ -41,17 +41,12 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/com.google.api-client/google-api-client
     implementation("com.google.api-client:google-api-client:2.8.1")
 
-    // AWS SQS
-    implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    implementation "io.awspring.cloud:spring-cloud-aws-starter-sqs"
-
     // Firebase
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.wiremock:wiremock-standalone:3.3.1'
     testImplementation 'io.mockk:mockk:1.13.8'
-    testImplementation 'org.testcontainers:localstack:1.19.7'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
 }
 

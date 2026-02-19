@@ -35,6 +35,10 @@ class FcmTokenJpaRepository(
         return jpaRepository.findByUserIdAndDeviceId(userId, deviceId)
     }
 
+    override fun delete(fcmToken: FcmToken) {
+        jpaRepository.delete(fcmToken)
+    }
+
     override fun deleteByUserId(userId: Long) {
         jpaRepository.deleteByUserId(userId)
     }

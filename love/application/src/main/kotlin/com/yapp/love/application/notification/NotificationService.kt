@@ -76,17 +76,12 @@ class NotificationService(
 
         // 3. FCM 푸시 전송
         if (notificationSettingService.shouldSendPush(targetUserId, type)) {
-            val sent =
-                fcmPushService.sendPushToUser(
-                    userId = targetUserId,
-                    title = title,
-                    body = body,
-                    deepLink = deepLink,
-                )
-
-            if (!sent) {
-                logger.warn { "FCM 푸시 전송 실패: userId=$targetUserId, type=$type" }
-            }
+            fcmPushService.sendPushToUser(
+                userId = targetUserId,
+                title = title,
+                body = body,
+                deepLink = deepLink,
+            )
         } else {
             logger.info { "푸시 설정에 의해 생략: userId=$targetUserId, type=$type" }
         }

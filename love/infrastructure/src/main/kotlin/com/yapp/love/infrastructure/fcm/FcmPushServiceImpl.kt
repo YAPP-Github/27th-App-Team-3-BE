@@ -1,36 +1,72 @@
 package com.yapp.love.infrastructure.fcm
 
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingException
+import com.google.firebase.messaging.Message
+import com.google.firebase.messaging.MessagingErrorCode
+import com.google.firebase.messaging.Notification
 import com.yapp.love.application.notification.port.FcmPushService
-import com.yapp.love.infrastructure.sqs.message.PushNotificationMessage
-import com.yapp.love.infrastructure.sqs.producer.PushNotificationProducer
+import com.yapp.love.domain.notification.FcmTokenRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
 @Service
 class FcmPushServiceImpl(
-    private val pushNotificationProducer: PushNotificationProducer,
+    private val firebaseMessaging: FirebaseMessaging,
+    private val fcmTokenRepository: FcmTokenRepository,
 ) : FcmPushService {
+    @Async("fcmTaskExecutor")
     override fun sendPushToUser(
         userId: Long,
         title: String,
         body: String,
         deepLink: String?,
-    ): Boolean {
-        return try {
-            pushNotificationProducer.sendPushNotification(
-                PushNotificationMessage(
-                    userId = userId,
-                    title = title,
-                    body = body,
-                    deepLink = deepLink,
-                ),
-            )
-            true
-        } catch (e: Exception) {
-            logger.error(e) { "푸시 알림 메시지 발행 실패: userId=$userId" }
-            false
+    ) {
+        val tokens = fcmTokenRepository.findByUserId(userId)
+        if (tokens.isEmpty()) {
+            logger.warn { "FCM 토큰이 없습니다: userId=$userId" }
+            return
         }
+
+        tokens.forEach { fcmToken ->
+            try {
+                val message = buildFcmMessage(fcmToken.token, title, body, deepLink)
+                val response = firebaseMessaging.send(message)
+                logger.info { "FCM 전송 성공: userId=$userId, messageId=$response" }
+            } catch (e: FirebaseMessagingException) {
+                if (e.messagingErrorCode == MessagingErrorCode.UNREGISTERED) {
+                    fcmTokenRepository.delete(fcmToken)
+                    logger.info { "만료 토큰 삭제: userId=$userId, token=${fcmToken.token}" }
+                } else {
+                    logger.error(e) { "FCM 전송 실패: userId=$userId, token=${fcmToken.token}" }
+                }
+            }
+        }
+    }
+
+    private fun buildFcmMessage(
+        token: String,
+        title: String,
+        body: String,
+        deepLink: String?,
+    ): Message {
+        val builder =
+            Message.builder()
+                .setToken(token)
+                .setNotification(
+                    Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build(),
+                )
+
+        if (deepLink != null) {
+            builder.putData("deepLink", deepLink)
+        }
+
+        return builder.build()
     }
 }
