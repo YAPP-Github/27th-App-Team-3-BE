@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*
 class NotificationTestController(
     private val notificationService: NotificationService,
 ) {
-    @Operation(summary = "알림 전송 테스트", description = "특정 유저에게 원하는 타입의 알림을 전송합니다.")
+    @SendTestNotificationApiSpec
     @PostMapping("/send")
     fun sendTestNotification(
         @RequestBody request: TestNotificationRequest,

@@ -10,9 +10,6 @@ import com.yapp.love.web.notification.dto.request.PushSettingRequest
 import com.yapp.love.web.notification.dto.response.NotificationListResponse
 import com.yapp.love.web.notification.dto.response.NotificationResponse
 import com.yapp.love.web.notification.dto.response.NotificationSettingResponse
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
@@ -25,7 +22,7 @@ class NotificationController(
     private val notificationSettingService: NotificationSettingService,
     private val fcmTokenService: FcmTokenService,
 ) {
-    @Operation(summary = "FCM 토큰 등록")
+    @RegisterFcmTokenApiSpec
     @PostMapping("/fcm-token")
     fun registerFcmToken(
         @AuthUser userId: Long,
@@ -34,7 +31,7 @@ class NotificationController(
         fcmTokenService.registerToken(userId, request.token, request.deviceId)
     }
 
-    @Operation(summary = "알림 목록 조회")
+    @GetNotificationsApiSpec
     @GetMapping
     fun getNotifications(
         @AuthUser userId: Long,
@@ -42,16 +39,11 @@ class NotificationController(
         val notifications = notificationService.getNotifications(userId)
 
         return NotificationListResponse(
-            notifications = notifications.map { NotificationResponse.from(it) }
+            notifications = notifications.map { NotificationResponse.from(it) },
         )
     }
 
-    @Operation(summary = "알림 읽음 처리")
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "읽음 처리 성공"),
-        ApiResponse(responseCode = "404", description = "알림을 찾을 수 없음"),
-        //TODO : 401
-    )
+    @MarkAsReadApiSpec
     @PatchMapping("/{notificationId}/read")
     fun markAsRead(
         @AuthUser userId: Long,
@@ -60,7 +52,7 @@ class NotificationController(
         notificationService.markAsRead(userId, notificationId)
     }
 
-    @Operation(summary = "모든 알림 읽음 처리")
+    @MarkAllAsReadApiSpec
     @PatchMapping("/read-all")
     fun markAllAsRead(
         @AuthUser userId: Long,
@@ -68,7 +60,7 @@ class NotificationController(
         notificationService.markAllAsRead(userId)
     }
 
-    @Operation(summary = "알림 설정 초기화 (온보딩)")
+    @InitNotificationSettingApiSpec
     @PostMapping("/settings/init")
     fun initNotificationSettings(
         @AuthUser userId: Long,
@@ -83,7 +75,7 @@ class NotificationController(
         return NotificationSettingResponse.from(setting)
     }
 
-    @Operation(summary = "알림 설정 조회")
+    @GetNotificationSettingApiSpec
     @GetMapping("/settings")
     fun getNotificationSettings(
         @AuthUser userId: Long,
@@ -92,7 +84,7 @@ class NotificationController(
         return NotificationSettingResponse.from(setting)
     }
 
-    @Operation(summary = "푸쉬 알림 설정 변경")
+    @UpdatePokePushSettingApiSpec
     @PatchMapping("/settings/poke")
     fun updatePokePushSetting(
         @AuthUser userId: Long,
@@ -102,7 +94,7 @@ class NotificationController(
         return NotificationSettingResponse.from(setting)
     }
 
-    @Operation(summary = "마케팅 알림 설정 변경")
+    @UpdateMarketingPushSettingApiSpec
     @PatchMapping("/settings/marketing")
     fun updateMarketingPushSetting(
         @AuthUser userId: Long,
@@ -112,7 +104,7 @@ class NotificationController(
         return NotificationSettingResponse.from(setting)
     }
 
-    @Operation(summary = "야간 알림 설정 변경")
+    @UpdateNightPushSettingApiSpec
     @PatchMapping("/settings/night")
     fun updateNightPushSetting(
         @AuthUser userId: Long,
@@ -122,5 +114,3 @@ class NotificationController(
         return NotificationSettingResponse.from(setting)
     }
 }
-
-
