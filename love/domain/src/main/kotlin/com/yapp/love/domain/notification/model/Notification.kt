@@ -96,11 +96,6 @@ enum class NotificationType(
         action = "goal-ended",
     ),
 
-    MARKETING(
-        titleTemplate = "%s",
-        bodyTemplate = "%s",
-        action = "marketing",
-    ),
     ;
 
     fun formatTitle(vararg args: Any): String = titleTemplate.format(*args)

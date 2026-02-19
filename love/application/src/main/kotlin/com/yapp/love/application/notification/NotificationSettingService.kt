@@ -1,5 +1,7 @@
 package com.yapp.love.application.notification
 
+import com.yapp.love.application.notification.port.FcmPushService
+import com.yapp.love.domain.notification.FcmTokenRepository
 import com.yapp.love.domain.notification.NotificationSettingRepository
 import com.yapp.love.domain.notification.model.NotificationSetting
 import com.yapp.love.domain.notification.model.NotificationType
@@ -12,6 +14,8 @@ import java.time.LocalTime
 @Service
 class NotificationSettingService(
     private val notificationSettingRepository: NotificationSettingRepository,
+    private val fcmTokenRepository: FcmTokenRepository,
+    private val fcmPushService: FcmPushService,
 ) {
     companion object {
         private const val NIGHT_START_HOUR = 21
@@ -50,7 +54,18 @@ class NotificationSettingService(
     fun updateMarketingPush(userId: Long, enabled: Boolean): NotificationSetting {
         val setting = findByUserId(userId)
         setting.updateMarketingPush(enabled)
-        return notificationSettingRepository.save(setting)
+        notificationSettingRepository.save(setting)
+
+        val tokens = fcmTokenRepository.findByUserId(userId).map { it.token }
+        tokens.forEach { token ->
+            if (enabled) {
+                fcmPushService.subscribeToTopic(token, FcmTokenService.MARKETING_TOPIC)
+            } else {
+                fcmPushService.unsubscribeFromTopic(token, FcmTokenService.MARKETING_TOPIC)
+            }
+        }
+
+        return setting
     }
 
     @Transactional
@@ -65,7 +80,6 @@ class NotificationSettingService(
 
         when (type) {
             NotificationType.POKE -> if (!setting.isPokePushEnabled) return false
-            NotificationType.MARKETING -> if (!setting.isMarketingPushEnabled) return false
             else -> {}
         }
 

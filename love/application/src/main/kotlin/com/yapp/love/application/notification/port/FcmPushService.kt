@@ -7,4 +7,15 @@ interface FcmPushService {
         body: String,
         deepLink: String? = null,
     )
+
+    fun subscribeToTopic(token: String, topic: String)
+
+    fun unsubscribeFromTopic(token: String, topic: String)
+
+    fun sendToTopic(
+        topic: String,
+        title: String,
+        body: String,
+        deepLink: String? = null,
+    )
 }

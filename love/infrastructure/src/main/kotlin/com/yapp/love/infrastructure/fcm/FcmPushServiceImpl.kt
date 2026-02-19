@@ -47,6 +47,49 @@ class FcmPushServiceImpl(
         }
     }
 
+    override fun sendToTopic(
+        topic: String,
+        title: String,
+        body: String,
+        deepLink: String?,
+    ) {
+        try {
+            val message =
+                Message.builder()
+                    .setTopic(topic)
+                    .setNotification(
+                        Notification.builder()
+                            .setTitle(title)
+                            .setBody(body)
+                            .build(),
+                    )
+                    .apply { if (deepLink != null) putData("deepLink", deepLink) }
+                    .build()
+            val response = firebaseMessaging.send(message)
+            logger.info { "토픽 푸시 전송 성공: topic=$topic, messageId=$response" }
+        } catch (e: FirebaseMessagingException) {
+            logger.error(e) { "토픽 푸시 전송 실패: topic=$topic" }
+        }
+    }
+
+    override fun subscribeToTopic(token: String, topic: String) {
+        try {
+            firebaseMessaging.subscribeToTopic(listOf(token), topic)
+            logger.info { "토픽 구독 완료: token=$token, topic=$topic" }
+        } catch (e: FirebaseMessagingException) {
+            logger.error(e) { "토픽 구독 실패: token=$token, topic=$topic" }
+        }
+    }
+
+    override fun unsubscribeFromTopic(token: String, topic: String) {
+        try {
+            firebaseMessaging.unsubscribeFromTopic(listOf(token), topic)
+            logger.info { "토픽 구독 해제 완료: token=$token, topic=$topic" }
+        } catch (e: FirebaseMessagingException) {
+            logger.error(e) { "토픽 구독 해제 실패: token=$token, topic=$topic" }
+        }
+    }
+
     private fun buildFcmMessage(
         token: String,
         title: String,
