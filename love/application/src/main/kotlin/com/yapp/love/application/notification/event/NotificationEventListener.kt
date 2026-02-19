@@ -6,8 +6,9 @@ import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import org.springframework.transaction.event.TransactionPhase
+import org.springframework.transaction.event.TransactionalEventListener
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
@@ -19,17 +20,17 @@ class NotificationEventListener(
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
     private val goalRepository: GoalRepository,
 ) {
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePartnerConnected(event: PartnerConnectedEvent) {
-        val myNickname = userAdditionInfoRepository.findByUserId(event.senderUserId)?.nickname ?: "상대방"
+        val nickname = userAdditionInfoRepository.findByUserId(event.senderUserId)?.nickname ?: "상대방"
         notificationService.sendNotification(
             targetUserId = event.targetUserId,
             type = NotificationType.PARTNER_CONNECTED,
-            titleArgs = arrayOf(myNickname),
+            titleArgs = arrayOf(nickname),
         )
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePoked(event: PokedEvent) {
         notificationService.sendNotification(
             targetUserId = event.targetUserId,
@@ -43,7 +44,7 @@ class NotificationEventListener(
         )
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePhotologCreated(event: PhotologCreatedEvent) {
         val coupleInfo = coupleInfoRepository.findByUserId(event.userId)
         if (coupleInfo == null) {
@@ -71,7 +72,7 @@ class NotificationEventListener(
         )
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleGoalEnded(event: GoalEndedEvent) {
         val deepLinkParams = mapOf("goalId" to event.goalId.toString())
         listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
@@ -84,7 +85,7 @@ class NotificationEventListener(
         }
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleReactionCreated(event: ReactionCreatedEvent) {
         val nickname = userAdditionInfoRepository.findByUserId(event.reactorUserId)?.nickname ?: "상대방"
         notificationService.sendNotification(
@@ -99,7 +100,7 @@ class NotificationEventListener(
         )
     }
 
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleDailyGoalAchieved(event: DailyGoalAchievedEvent) {
         listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
             notificationService.sendNotification(

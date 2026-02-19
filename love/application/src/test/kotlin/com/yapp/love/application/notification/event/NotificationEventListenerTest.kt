@@ -68,7 +68,7 @@ class NotificationEventListenerTest : DescribeSpec({
                     type = NotificationType.POKE,
                     titleArgs = arrayOf("철수", "운동하기"),
                     bodyArgs = arrayOf("철수"),
-                    deepLinkParams = mapOf("goalId" to "10"),
+                    deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
                 )
             }
         }
@@ -112,7 +112,7 @@ class NotificationEventListenerTest : DescribeSpec({
                         type = NotificationType.GOAL_COMPLETED,
                         titleArgs = arrayOf("철수", "운동하기"),
                         bodyArgs = arrayOf("철수"),
-                        deepLinkParams = mapOf("goalId" to "10"),
+                        deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
                     )
                 }
             }
@@ -139,7 +139,7 @@ class NotificationEventListenerTest : DescribeSpec({
                         type = NotificationType.GOAL_COMPLETED,
                         titleArgs = arrayOf("철수", "운동하기"),
                         bodyArgs = arrayOf("철수"),
-                        deepLinkParams = mapOf("goalId" to "10"),
+                        deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
                     )
                 }
             }
@@ -159,7 +159,7 @@ class NotificationEventListenerTest : DescribeSpec({
                         type = NotificationType.GOAL_COMPLETED,
                         titleArgs = arrayOf("상대방", "운동하기"),
                         bodyArgs = arrayOf("상대방"),
-                        deepLinkParams = mapOf("goalId" to "10"),
+                        deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
                     )
                 }
             }
