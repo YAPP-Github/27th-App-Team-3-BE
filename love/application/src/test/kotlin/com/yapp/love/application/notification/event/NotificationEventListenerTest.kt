@@ -35,7 +35,9 @@ class NotificationEventListenerTest : DescribeSpec({
 
     describe("handlePartnerConnected") {
         it("PARTNER_CONNECTED 알림을 전송한다") {
-            val event = PartnerConnectedEvent(targetUserId = 1L)
+            val event = PartnerConnectedEvent(targetUserId = 1L, senderUserId = 2L)
+            every { userAdditionInfoRepository.findByUserId(2L) } returns
+                mockk { every { nickname } returns "지수" }
 
             listener.handlePartnerConnected(event)
 
@@ -43,7 +45,7 @@ class NotificationEventListenerTest : DescribeSpec({
                 notificationService.sendNotification(
                     targetUserId = 1L,
                     type = NotificationType.PARTNER_CONNECTED,
-                    titleArgs = arrayOf("상대방"),
+                    titleArgs = arrayOf("지수"),
                 )
             }
         }

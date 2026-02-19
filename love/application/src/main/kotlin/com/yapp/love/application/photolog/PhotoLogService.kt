@@ -1,7 +1,9 @@
 package com.yapp.love.application.photolog
 
 import com.yapp.love.application.couple.CoupleService
+import com.yapp.love.application.notification.event.DailyGoalAchievedEvent
 import com.yapp.love.application.notification.event.PhotologCreatedEvent
+import com.yapp.love.application.notification.event.ReactionCreatedEvent
 import com.yapp.love.application.photolog.dto.ReactionInfo
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.application.storage.PresignedUrlResult
@@ -109,6 +111,7 @@ class PhotologService(
         )
 
         notificationEventPublisher.publishEvent(PhotologCreatedEvent(userId = userId, goalId = goalId))
+        checkAndPublishDailyGoalAchieved(userId, verificationDate)
 
         return saved
     }
@@ -139,6 +142,29 @@ class PhotologService(
             ?.let { throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.") }
     }
 
+    private fun checkAndPublishDailyGoalAchieved(userId: Long, verificationDate: LocalDate) {
+        val coupleInfo = coupleInfoRepository.findByUserId(userId) ?: return
+        val coupleId = coupleInfo.id ?: return
+
+        val allGoals = goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, verificationDate)
+        if (allGoals.isEmpty()) return
+
+        val allGoalIds = allGoals.map { it.id!! }
+        val allPhotologs = photologRepository.findByGoalIdsAndVerificationDate(allGoalIds, verificationDate)
+
+        val user1Completed = allGoalIds.all { goalId -> allPhotologs.any { it.goalId == goalId && it.userId == coupleInfo.user1Id } }
+        val user2Completed = allGoalIds.all { goalId -> allPhotologs.any { it.goalId == goalId && it.userId == coupleInfo.user2Id } }
+
+        if (user1Completed && user2Completed) {
+            notificationEventPublisher.publishEvent(
+                DailyGoalAchievedEvent(
+                    user1Id = coupleInfo.user1Id,
+                    user2Id = coupleInfo.user2Id,
+                ),
+            )
+        }
+    }
+
     @Transactional
     fun addReaction(
         photologId: Long,
@@ -162,6 +188,15 @@ class PhotologService(
 
         photolog.reaction = reaction
         photologRepository.save(photolog)
+
+        notificationEventPublisher.publishEvent(
+            ReactionCreatedEvent(
+                reactorUserId = userId,
+                photologOwnerId = photolog.userId,
+                goalId = photolog.goalId,
+                verificationDate = photolog.verificationDate,
+            ),
+        )
 
         return ReactionInfo(
             photologId = photolog.id!!,

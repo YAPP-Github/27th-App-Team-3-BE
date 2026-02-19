@@ -62,7 +62,12 @@ class OnboardingService(
         updateOrCreateOnboardingInfo(inviteCodes.creatorId, coupleInfo)
 
         // 초대 코드를 보낸 사람에게 커플 연결 알림 이벤트 발행
-        notificationEventPublisher.publishEvent(PartnerConnectedEvent(targetUserId = inviteCodes.creatorId))
+        notificationEventPublisher.publishEvent(
+            PartnerConnectedEvent(
+                targetUserId = inviteCodes.creatorId,
+                senderUserId = usedUserId,
+            ),
+        )
     }
 
     private fun updateOrCreateOnboardingInfo(userId: Long, coupleInfo: CoupleInfo) {

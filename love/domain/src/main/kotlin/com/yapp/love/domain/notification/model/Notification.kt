@@ -85,7 +85,7 @@ enum class NotificationType(
     ),
 
     DAILY_GOAL_ACHIEVED(
-        titleTemplate = "%s keep it luv 완료!",
+        titleTemplate = "keep it luv 완료!",
         bodyTemplate = "오늘 하루도 키피럽한 서로에게 박수를",
         action = "daily-goal-achieved",
     ),

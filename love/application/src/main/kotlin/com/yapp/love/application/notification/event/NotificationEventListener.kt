@@ -8,6 +8,7 @@ import com.yapp.love.domain.user.UserAdditionInfoRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -20,10 +21,11 @@ class NotificationEventListener(
 ) {
     @EventListener
     fun handlePartnerConnected(event: PartnerConnectedEvent) {
+        val myNickname = userAdditionInfoRepository.findByUserId(event.senderUserId)?.nickname ?: "상대방"
         notificationService.sendNotification(
             targetUserId = event.targetUserId,
             type = NotificationType.PARTNER_CONNECTED,
-            titleArgs = arrayOf("상대방"),
+            titleArgs = arrayOf(myNickname),
         )
     }
 
@@ -34,7 +36,10 @@ class NotificationEventListener(
             type = NotificationType.POKE,
             titleArgs = arrayOf(event.senderNickname, event.goalName),
             bodyArgs = arrayOf(event.senderNickname),
-            deepLinkParams = mapOf("goalId" to event.goalId.toString()),
+            deepLinkParams = mapOf(
+                "goalId" to event.goalId.toString(),
+                "date" to LocalDate.now().toString(),
+            ),
         )
     }
 
@@ -59,7 +64,10 @@ class NotificationEventListener(
             type = NotificationType.GOAL_COMPLETED,
             titleArgs = arrayOf(nickname, goal.name),
             bodyArgs = arrayOf(nickname),
-            deepLinkParams = mapOf("goalId" to event.goalId.toString()),
+            deepLinkParams = mapOf(
+                "goalId" to event.goalId.toString(),
+                "date" to LocalDate.now().toString(),
+            ),
         )
     }
 
@@ -72,6 +80,31 @@ class NotificationEventListener(
                 type = NotificationType.GOAL_ENDED,
                 titleArgs = arrayOf(event.goalName),
                 deepLinkParams = deepLinkParams,
+            )
+        }
+    }
+
+    @EventListener
+    fun handleReactionCreated(event: ReactionCreatedEvent) {
+        val nickname = userAdditionInfoRepository.findByUserId(event.reactorUserId)?.nickname ?: "상대방"
+        notificationService.sendNotification(
+            targetUserId = event.photologOwnerId,
+            type = NotificationType.REACTION,
+            titleArgs = arrayOf(nickname),
+            bodyArgs = arrayOf(nickname),
+            deepLinkParams = mapOf(
+                "goalId" to event.goalId.toString(),
+                "date" to event.verificationDate.toString(),
+            ),
+        )
+    }
+
+    @EventListener
+    fun handleDailyGoalAchieved(event: DailyGoalAchievedEvent) {
+        listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
+            notificationService.sendNotification(
+                targetUserId = targetUserId,
+                type = NotificationType.DAILY_GOAL_ACHIEVED,
             )
         }
     }
