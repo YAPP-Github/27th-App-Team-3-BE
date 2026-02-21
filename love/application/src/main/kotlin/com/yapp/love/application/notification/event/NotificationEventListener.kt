@@ -83,17 +83,17 @@ class NotificationEventListener(
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleGoalEnded(event: GoalEndedEvent) {
-        runCatching {
-            val deepLinkParams = mapOf("goalId" to event.goalId.toString())
-            listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
+        val deepLinkParams = mapOf("goalId" to event.goalId.toString())
+        listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
+            runCatching {
                 notificationService.sendNotification(
                     targetUserId = targetUserId,
                     type = NotificationType.GOAL_ENDED,
                     titleArgs = arrayOf(event.goalName),
                     deepLinkParams = deepLinkParams,
                 )
-            }
-        }.onFailure { logger.error(it) { "알림 처리 실패: $event" } }
+            }.onFailure { logger.error(it) { "알림 처리 실패: userId=$targetUserId, event=$event" } }
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -126,14 +126,14 @@ class NotificationEventListener(
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleDailyGoalAchieved(event: DailyGoalAchievedEvent) {
-        runCatching {
-            listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
+        listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
+            runCatching {
                 notificationService.sendNotification(
                     targetUserId = targetUserId,
                     type = NotificationType.DAILY_GOAL_ACHIEVED,
                     titleArgs = arrayOf(event.goalName),
                 )
-            }
-        }.onFailure { logger.error(it) { "알림 처리 실패: $event" } }
+            }.onFailure { logger.error(it) { "알림 처리 실패: userId=$targetUserId, event=$event" } }
+        }
     }
 }
