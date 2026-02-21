@@ -12,6 +12,8 @@ interface FcmPushService {
 
     fun unsubscribeFromTopic(token: String, topic: String)
 
+    fun unsubscribeFromTopicOrThrow(token: String, topic: String)
+
     fun sendToTopic(
         topic: String,
         title: String,

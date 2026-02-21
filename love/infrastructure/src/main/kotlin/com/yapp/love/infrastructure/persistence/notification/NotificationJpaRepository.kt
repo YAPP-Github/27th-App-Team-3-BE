@@ -15,6 +15,8 @@ interface NotificationJpaRepositoryInterface : JpaRepository<Notification, Long>
 
     fun findByUserIdAndIdLessThanOrderByIdDesc(userId: Long, id: Long, pageable: Pageable): List<Notification>
 
+    fun existsByUserIdAndIsReadFalse(userId: Long): Boolean
+
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true, n.readAt = CURRENT_TIMESTAMP WHERE n.userId = :userId AND n.isRead = false")
     fun markAllAsReadByUserId(userId: Long)
@@ -43,6 +45,10 @@ class NotificationJpaRepository(
         } else {
             jpaRepository.findByUserIdAndIdLessThanOrderByIdDesc(userId, lastId, pageable)
         }
+    }
+
+    override fun existsUnreadByUserId(userId: Long): Boolean {
+        return jpaRepository.existsByUserIdAndIsReadFalse(userId)
     }
 
     override fun markAllAsReadByUserId(userId: Long) {

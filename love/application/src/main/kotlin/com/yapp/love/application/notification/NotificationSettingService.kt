@@ -31,16 +31,15 @@ class NotificationSettingService(
         isMarketingPushEnabled: Boolean,
         isNightPushEnabled: Boolean,
     ): NotificationSetting {
-        val setting = NotificationSetting.create(
-            userId = userId,
-            isPokePushEnabled = isPokePushEnabled,
-            isMarketingPushEnabled = isMarketingPushEnabled,
-            isNightPushEnabled = isNightPushEnabled,
-        )
+        val setting = notificationSettingRepository.findByUserId(userId)
+            ?: NotificationSetting.create(userId = userId)
+        setting.updatePokePush(isPokePushEnabled)
+        setting.updateMarketingPush(isMarketingPushEnabled)
+        setting.updateNightPush(isNightPushEnabled)
         return notificationSettingRepository.save(setting)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun getSetting(userId: Long): NotificationSetting {
         return findByUserId(userId)
     }
@@ -92,7 +91,12 @@ class NotificationSettingService(
 
     private fun findByUserId(userId: Long): NotificationSetting {
         return notificationSettingRepository.findByUserId(userId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "알림 설정을 찾을 수 없습니다.")
+            ?: notificationSettingRepository.save(NotificationSetting.create(
+                userId = userId,
+                isPokePushEnabled = false,
+                isMarketingPushEnabled = false,
+                isNightPushEnabled = false,
+            ))
     }
 
     private fun isNightTime(): Boolean {

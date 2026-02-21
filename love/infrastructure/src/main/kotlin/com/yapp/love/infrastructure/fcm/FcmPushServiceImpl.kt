@@ -7,6 +7,8 @@ import com.google.firebase.messaging.MessagingErrorCode
 import com.google.firebase.messaging.Notification
 import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.domain.notification.FcmTokenRepository
+import com.yapp.love.globalutils.exception.GlobalErrorCode
+import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -85,6 +87,16 @@ class FcmPushServiceImpl(
             logger.info { "토픽 구독 해제 완료: token=$token, topic=$topic" }
         } catch (e: FirebaseMessagingException) {
             logger.error(e) { "토픽 구독 해제 실패: token=$token, topic=$topic" }
+        }
+    }
+
+    override fun unsubscribeFromTopicOrThrow(token: String, topic: String) {
+        try {
+            firebaseMessaging.unsubscribeFromTopic(listOf(token), topic)
+            logger.info { "토픽 구독 해제 완료: token=$token, topic=$topic" }
+        } catch (e: FirebaseMessagingException) {
+            logger.error(e) { "토픽 구독 해제 실패: token=$token, topic=$topic" }
+            throw GlobalException(GlobalErrorCode.FCM_UNSUBSCRIBE_FAILED)
         }
     }
 

@@ -10,6 +10,8 @@ interface NotificationRepository {
 
     fun findByUserIdWithCursor(userId: Long, lastId: Long?, size: Int): List<Notification>
 
+    fun existsUnreadByUserId(userId: Long): Boolean
+
     fun markAllAsReadByUserId(userId: Long)
 
     fun deleteCreatedBefore(threshold: LocalDateTime): Int
