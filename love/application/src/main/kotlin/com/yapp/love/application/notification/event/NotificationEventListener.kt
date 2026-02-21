@@ -25,19 +25,21 @@ class NotificationEventListener(
 ) {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePartnerConnected(event: PartnerConnectedEvent) {
-        runCatching {
+        try {
             val nickname = userAdditionInfoRepository.findByUserId(event.senderUserId)?.nickname ?: "상대방"
             notificationService.sendNotification(
                 targetUserId = event.targetUserId,
                 type = NotificationType.PARTNER_CONNECTED,
                 titleArgs = arrayOf(nickname),
             )
-        }.onFailure { logger.error(it) { "알림 처리 실패: $event" } }
+        } catch (e: Exception) {
+            logger.error(e) { "알림 처리 실패: $event" }
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePoked(event: PokedEvent) {
-        runCatching {
+        try {
             notificationService.sendNotification(
                 targetUserId = event.targetUserId,
                 type = NotificationType.POKE,
@@ -48,16 +50,18 @@ class NotificationEventListener(
                     "date" to LocalDate.now().toString(),
                 ),
             )
-        }.onFailure { logger.error(it) { "알림 처리 실패: $event" } }
+        } catch (e: Exception) {
+            logger.error(e) { "알림 처리 실패: $event" }
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePhotologCreated(event: PhotologCreatedEvent) {
-        runCatching {
+        try {
             val coupleInfo = coupleInfoRepository.findByUserId(event.userId)
             if (coupleInfo == null) {
                 logger.warn { "커플 정보를 찾을 수 없음: userId=${event.userId}" }
-                return@runCatching
+                return
             }
 
             val partnerId = if (coupleInfo.user1Id == event.userId) coupleInfo.user2Id else coupleInfo.user1Id
@@ -65,7 +69,7 @@ class NotificationEventListener(
             val goal = goalRepository.findById(event.goalId)
             if (goal == null) {
                 logger.warn { "목표를 찾을 수 없음: goalId=${event.goalId}" }
-                return@runCatching
+                return
             }
 
             notificationService.sendNotification(
@@ -78,27 +82,31 @@ class NotificationEventListener(
                     "date" to LocalDate.now().toString(),
                 ),
             )
-        }.onFailure { logger.error(it) { "알림 처리 실패: $event" } }
+        } catch (e: Exception) {
+            logger.error(e) { "알림 처리 실패: $event" }
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleGoalEnded(event: GoalEndedEvent) {
         val deepLinkParams = mapOf("goalId" to event.goalId.toString())
         listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
-            runCatching {
+            try {
                 notificationService.sendNotification(
                     targetUserId = targetUserId,
                     type = NotificationType.GOAL_ENDED,
                     titleArgs = arrayOf(event.goalName),
                     deepLinkParams = deepLinkParams,
                 )
-            }.onFailure { logger.error(it) { "알림 처리 실패: userId=$targetUserId, event=$event" } }
+            } catch (e: Exception) {
+                logger.error(e) { "알림 처리 실패: userId=$targetUserId, event=$event" }
+            }
         }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleReactionCreated(event: ReactionCreatedEvent) {
-        runCatching {
+        try {
             val nickname = userAdditionInfoRepository.findByUserId(event.reactorUserId)?.nickname ?: "상대방"
             notificationService.sendNotification(
                 targetUserId = event.photologOwnerId,
@@ -110,30 +118,38 @@ class NotificationEventListener(
                     "date" to event.verificationDate.toString(),
                 ),
             )
-        }.onFailure { logger.error(it) { "알림 처리 실패: $event" } }
+        } catch (e: Exception) {
+            logger.error(e) { "알림 처리 실패: $event" }
+        }
     }
 
     @Async("fcmTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleFcmPush(event: FcmPushEvent) {
-        fcmPushService.sendPushToUser(
-            userId = event.userId,
-            title = event.title,
-            body = event.body,
-            deepLink = event.deepLink,
-        )
+        try {
+            fcmPushService.sendPushToUser(
+                userId = event.userId,
+                title = event.title,
+                body = event.body,
+                deepLink = event.deepLink,
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "FCM 푸시 처리 실패: $event" }
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleDailyGoalAchieved(event: DailyGoalAchievedEvent) {
         listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
-            runCatching {
+            try {
                 notificationService.sendNotification(
                     targetUserId = targetUserId,
                     type = NotificationType.DAILY_GOAL_ACHIEVED,
                     titleArgs = arrayOf(event.goalName),
                 )
-            }.onFailure { logger.error(it) { "알림 처리 실패: userId=$targetUserId, event=$event" } }
+            } catch (e: Exception) {
+                logger.error(e) { "알림 처리 실패: userId=$targetUserId, event=$event" }
+            }
         }
     }
 }
