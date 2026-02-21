@@ -64,11 +64,12 @@ class PhotologController(
         )
     }
 
-    @Operation(summary = "날짜별 인증샷 목록 조회")
+    @GetPhotologsByDateApiSpec
     @GetMapping
-    fun getPhotologsByDate(
+    fun getPhotologsByDateAndGoalId(
         @AuthUser userId: Long,
         @RequestParam targetDate: LocalDate,
+        @RequestParam(required = false) goalId: Long?,
     ): PhotologListResponse {
         val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
         val coupleId = coupleInfo.id!!
@@ -82,6 +83,7 @@ class PhotologController(
             myUserId = userId,
             partnerUserId = partnerId,
             targetDate = targetDate,
+            goalId = goalId,
         )
 
         return PhotologListResponse(

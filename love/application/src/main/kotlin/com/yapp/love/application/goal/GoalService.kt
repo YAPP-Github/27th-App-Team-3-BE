@@ -64,8 +64,16 @@ class GoalService(
         myUserId: Long,
         partnerUserId: Long,
         targetDate: LocalDate,
+        goalId: Long? = null,
     ): List<GoalWithPhotoLogs> {
-        val goals = goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+        val goals = if (goalId != null) {
+            val goal = goalRepository.findActiveGoalById(goalId)
+                ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "목표를 찾을 수 없습니다.")
+            if (goal.coupleId != coupleId) throw GlobalException(GlobalErrorCode.FORBIDDEN, "해당 목표에 대한 권한이 없습니다.")
+            listOf(goal)
+        } else {
+            goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+        }
 
         if (goals.isEmpty()) {
             return emptyList()
