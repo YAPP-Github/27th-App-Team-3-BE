@@ -9,6 +9,7 @@ import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 import java.time.LocalTime
 
 @Service
@@ -16,6 +17,7 @@ class NotificationSettingService(
     private val notificationSettingRepository: NotificationSettingRepository,
     private val fcmTokenRepository: FcmTokenRepository,
     private val fcmPushService: FcmPushService,
+    private val clock: Clock = Clock.systemDefaultZone(),
 ) {
     companion object {
         private const val NIGHT_START_HOUR = 21
@@ -94,7 +96,7 @@ class NotificationSettingService(
     }
 
     private fun isNightTime(): Boolean {
-        val hour = LocalTime.now().hour
+        val hour = LocalTime.now(clock).hour
         return hour >= NIGHT_START_HOUR || hour < NIGHT_END_HOUR
     }
 }

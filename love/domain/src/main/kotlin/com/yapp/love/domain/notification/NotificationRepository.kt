@@ -14,5 +14,7 @@ interface NotificationRepository {
 
     fun countUnreadByUserId(userId: Long): Long
 
+    fun markAllAsReadByUserId(userId: Long): Int
+
     fun deleteCreatedBefore(threshold: LocalDateTime): Int
 }

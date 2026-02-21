@@ -38,11 +38,7 @@ class NotificationService(
 
     @Transactional
     fun markAllAsRead(userId: Long) {
-        val notifications = notificationRepository.findByUserId(userId)
-        notifications.filter { !it.isRead }.forEach { notification ->
-            notification.markAsRead()
-            notificationRepository.save(notification)
-        }
+        notificationRepository.markAllAsReadByUserId(userId)
     }
 
     @Transactional
@@ -73,7 +69,6 @@ class NotificationService(
         }
         val deepLink = type.makeDeepLink(allParams)
         saved.deepLink = deepLink
-        notificationRepository.save(saved)
 
         // 3. FCM 푸시 전송 (커밋 이후 이벤트로 발송)
         if (notificationSettingService.shouldSendPush(targetUserId, type)) {
