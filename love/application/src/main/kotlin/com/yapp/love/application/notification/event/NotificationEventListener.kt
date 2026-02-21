@@ -1,11 +1,13 @@
 package com.yapp.love.application.notification.event
 
 import com.yapp.love.application.notification.NotificationService
+import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
@@ -16,6 +18,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class NotificationEventListener(
     private val notificationService: NotificationService,
+    private val fcmPushService: FcmPushService,
     private val coupleInfoRepository: CoupleInfoRepository,
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
     private val goalRepository: GoalRepository,
@@ -100,12 +103,24 @@ class NotificationEventListener(
         )
     }
 
+    @Async("fcmTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleFcmPush(event: FcmPushEvent) {
+        fcmPushService.sendPushToUser(
+            userId = event.userId,
+            title = event.title,
+            body = event.body,
+            deepLink = event.deepLink,
+        )
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleDailyGoalAchieved(event: DailyGoalAchievedEvent) {
         listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
             notificationService.sendNotification(
                 targetUserId = targetUserId,
                 type = NotificationType.DAILY_GOAL_ACHIEVED,
+                titleArgs = arrayOf(event.goalName),
             )
         }
     }

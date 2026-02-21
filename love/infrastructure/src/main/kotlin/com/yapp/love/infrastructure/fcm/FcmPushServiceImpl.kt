@@ -8,7 +8,6 @@ import com.google.firebase.messaging.Notification
 import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.domain.notification.FcmTokenRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
@@ -18,7 +17,6 @@ class FcmPushServiceImpl(
     private val firebaseMessaging: FirebaseMessaging,
     private val fcmTokenRepository: FcmTokenRepository,
 ) : FcmPushService {
-    @Async("fcmTaskExecutor")
     override fun sendPushToUser(
         userId: Long,
         title: String,

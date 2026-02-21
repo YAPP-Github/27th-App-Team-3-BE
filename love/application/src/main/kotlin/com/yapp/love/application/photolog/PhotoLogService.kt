@@ -111,7 +111,7 @@ class PhotologService(
         )
 
         notificationEventPublisher.publishEvent(PhotologCreatedEvent(userId = userId, goalId = goalId))
-        checkAndPublishDailyGoalAchieved(userId, verificationDate)
+        checkAndPublishDailyGoalAchieved(userId, goalId, verificationDate)
 
         return saved
     }
@@ -142,24 +142,21 @@ class PhotologService(
             ?.let { throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.") }
     }
 
-    private fun checkAndPublishDailyGoalAchieved(userId: Long, verificationDate: LocalDate) {
+    private fun checkAndPublishDailyGoalAchieved(userId: Long, goalId: Long, verificationDate: LocalDate) {
         val coupleInfo = coupleInfoRepository.findByUserId(userId) ?: return
-        val coupleId = coupleInfo.id ?: return
+        val goal = goalRepository.findActiveGoalById(goalId) ?: return
 
-        val allGoals = goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, verificationDate)
-        if (allGoals.isEmpty()) return
+        val photologs = photologRepository.findByGoalIdsAndVerificationDate(listOf(goalId), verificationDate)
 
-        val allGoalIds = allGoals.map { it.id!! }
-        val allPhotologs = photologRepository.findByGoalIdsAndVerificationDate(allGoalIds, verificationDate)
-
-        val user1Completed = allGoalIds.all { goalId -> allPhotologs.any { it.goalId == goalId && it.userId == coupleInfo.user1Id } }
-        val user2Completed = allGoalIds.all { goalId -> allPhotologs.any { it.goalId == goalId && it.userId == coupleInfo.user2Id } }
+        val user1Completed = photologs.any { it.goalId == goalId && it.userId == coupleInfo.user1Id }
+        val user2Completed = photologs.any { it.goalId == goalId && it.userId == coupleInfo.user2Id }
 
         if (user1Completed && user2Completed) {
             notificationEventPublisher.publishEvent(
                 DailyGoalAchievedEvent(
                     user1Id = coupleInfo.user1Id,
                     user2Id = coupleInfo.user2Id,
+                    goalName = goal.name,
                 ),
             )
         }

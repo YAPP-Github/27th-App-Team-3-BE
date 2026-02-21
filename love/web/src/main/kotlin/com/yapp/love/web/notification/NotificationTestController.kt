@@ -30,7 +30,7 @@ class NotificationTestController(
             }
 
         return try {
-            notificationService.sendNotification(
+            val deepLink = notificationService.sendNotification(
                 targetUserId = request.targetUserId,
                 type = type,
                 titleArgs = request.titleArgs?.toTypedArray() ?: emptyArray(),
@@ -40,7 +40,7 @@ class NotificationTestController(
             TestNotificationResponse(
                 success = true,
                 message = "알림 전송 완료 (타입1: DB 저장, 타입2: FCM 푸시 시도)",
-                deepLink = type.makeDeepLink(request.deepLinkParams ?: emptyMap()),
+                deepLink = deepLink,
             )
         } catch (e: Exception) {
             TestNotificationResponse(

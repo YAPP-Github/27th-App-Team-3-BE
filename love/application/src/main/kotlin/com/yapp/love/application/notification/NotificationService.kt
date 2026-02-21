@@ -1,12 +1,13 @@
 package com.yapp.love.application.notification
 
-import com.yapp.love.application.notification.port.FcmPushService
+import com.yapp.love.application.notification.event.FcmPushEvent
 import com.yapp.love.domain.notification.NotificationRepository
 import com.yapp.love.domain.notification.model.Notification
 import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -16,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 class NotificationService(
     private val notificationRepository: NotificationRepository,
     private val notificationSettingService: NotificationSettingService,
-    private val fcmPushService: FcmPushService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional(readOnly = true)
     fun getNotifications(userId: Long): List<Notification> {
@@ -51,7 +52,7 @@ class NotificationService(
         titleArgs: Array<Any> = emptyArray(),
         bodyArgs: Array<Any> = emptyArray(),
         deepLinkParams: Map<String, String> = emptyMap(),
-    ) {
+    ): String {
         val title = type.formatTitle(*titleArgs)
         val body = type.formatBody(*bodyArgs)
 
@@ -74,16 +75,13 @@ class NotificationService(
         saved.deepLink = deepLink
         notificationRepository.save(saved)
 
-        // 3. FCM 푸시 전송
+        // 3. FCM 푸시 전송 (커밋 이후 이벤트로 발송)
         if (notificationSettingService.shouldSendPush(targetUserId, type)) {
-            fcmPushService.sendPushToUser(
-                userId = targetUserId,
-                title = title,
-                body = body,
-                deepLink = deepLink,
-            )
+            eventPublisher.publishEvent(FcmPushEvent(targetUserId, title, body, deepLink))
         } else {
             logger.info { "푸시 설정에 의해 생략: userId=$targetUserId, type=$type" }
         }
+
+        return deepLink
     }
 }
