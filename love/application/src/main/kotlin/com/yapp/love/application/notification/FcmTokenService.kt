@@ -30,16 +30,16 @@ class FcmTokenService(
             fcmTokenRepository.save(FcmToken.create(userId, token, deviceId))
         }
 
-        val isMarketingEnabled = runCatching { notificationSettingService.getSetting(userId).isMarketingPushEnabled }.getOrDefault(true)
+        val isMarketingEnabled = notificationSettingService.getSetting(userId).isMarketingPushEnabled
         if (isMarketingEnabled) {
             fcmPushService.subscribeToTopic(token, MARKETING_TOPIC)
         }
     }
 
     @Transactional
-    fun deleteToken(userId: Long, deviceId: String) {
-        val token = fcmTokenRepository.findByUserIdAndDeviceId(userId, deviceId) ?: return
-        fcmPushService.unsubscribeFromTopic(token.token, MARKETING_TOPIC)
-        fcmTokenRepository.delete(token)
+    fun deleteToken(userId: Long, token: String) {
+        val fcmToken = fcmTokenRepository.findByUserIdAndToken(userId, token) ?: return
+        fcmPushService.unsubscribeFromTopicOrThrow(token, MARKETING_TOPIC)
+        fcmTokenRepository.delete(fcmToken)
     }
 }

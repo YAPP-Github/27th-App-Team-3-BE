@@ -4,6 +4,7 @@ import com.yapp.love.application.notification.FcmTokenService
 import com.yapp.love.application.notification.NotificationService
 import com.yapp.love.application.notification.NotificationSettingService
 import com.yapp.love.web.auth.AuthUser
+import com.yapp.love.web.notification.dto.request.DeleteFcmTokenRequest
 import com.yapp.love.web.notification.dto.request.FcmTokenRequest
 import com.yapp.love.web.notification.dto.request.InitNotificationSettingRequest
 import com.yapp.love.web.notification.dto.request.PushSettingRequest
@@ -30,6 +31,15 @@ class NotificationController(
         @Valid @RequestBody request: FcmTokenRequest,
     ) {
         fcmTokenService.registerToken(userId, request.token, request.deviceId)
+    }
+
+    @DeleteFcmTokenApiSpec
+    @DeleteMapping("/fcm-token")
+    fun deleteFcmToken(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: DeleteFcmTokenRequest,
+    ) {
+        fcmTokenService.deleteToken(userId, request.token)
     }
 
     @HasUnreadApiSpec

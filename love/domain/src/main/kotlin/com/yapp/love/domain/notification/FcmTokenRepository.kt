@@ -12,6 +12,8 @@ interface FcmTokenRepository {
         deviceId: String,
     ): FcmToken?
 
+    fun findByUserIdAndToken(userId: Long, token: String): FcmToken?
+
     fun delete(fcmToken: FcmToken)
 
     fun deleteByTokenAndUserIdNot(token: String, userId: Long)

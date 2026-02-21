@@ -40,6 +40,11 @@ enum class GlobalErrorCode(
     // ======================================================================
     NOT_FOUND(HttpStatus.NOT_FOUND, "G4040", "요청한 리소스를 찾을 수 없습니다."),
     COUPLE_NOT_FOUND(HttpStatus.NOT_FOUND, "G4041", "커플을 찾을 수 없습니다."),
+
+    // ======================================================================
+    // 5. 외부 서비스
+    // ======================================================================
+    FCM_UNSUBSCRIBE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "G5001", "FCM 토픽 구독 해제에 실패했습니다. 잠시 후 다시 시도해주세요."),
     ;
 
     override fun getHttpStatus(): HttpStatus = httpStatus
