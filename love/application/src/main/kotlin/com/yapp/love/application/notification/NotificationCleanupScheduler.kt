@@ -23,7 +23,11 @@ class NotificationCleanupScheduler(
     @Transactional
     fun deleteOldNotifications() {
         val threshold = LocalDateTime.now().minusDays(RETENTION_DAYS)
-        val deleted = notificationRepository.deleteCreatedBefore(threshold)
-        logger.info { "오래된 알림 삭제 완료: ${deleted}건 (기준: $threshold)" }
+        try {
+            val deleted = notificationRepository.deleteCreatedBefore(threshold)
+            logger.info { "오래된 알림 삭제 완료: ${deleted}건 (기준: $threshold)" }
+        } catch (e: Exception) {
+            logger.error(e) { "오래된 알림 삭제 실패 (기준: $threshold)" }
+        }
     }
 }

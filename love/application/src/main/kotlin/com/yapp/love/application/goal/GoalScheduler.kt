@@ -27,15 +27,27 @@ class GoalScheduler(
         logger.info { "목표 스케줄러 시작: $today" }
 
         // 1. 종료 대상 목표 알림 전송 (상태 업데이트 전에 조회)
-        sendGoalEndedNotifications(today)
+        try {
+            sendGoalEndedNotifications(today)
+        } catch (e: Exception) {
+            logger.error(e) { "목표 종료 알림 전송 실패" }
+        }
 
         // 2. 시작일 도래 목표 활성화
-        val started = goalRepository.updateNotStartedToInProgress(today)
-        logger.info { "NOT_STARTED → IN_PROGRESS: ${started}건" }
+        try {
+            val started = goalRepository.updateNotStartedToInProgress(today)
+            logger.info { "NOT_STARTED → IN_PROGRESS: ${started}건" }
+        } catch (e: Exception) {
+            logger.error(e) { "NOT_STARTED → IN_PROGRESS 처리 실패" }
+        }
 
         // 3. 종료일 지난 목표 완료 처리
-        val completed = goalRepository.updateInProgressToCompleted(today)
-        logger.info { "IN_PROGRESS → COMPLETED: ${completed}건" }
+        try {
+            val completed = goalRepository.updateInProgressToCompleted(today)
+            logger.info { "IN_PROGRESS → COMPLETED: ${completed}건" }
+        } catch (e: Exception) {
+            logger.error(e) { "IN_PROGRESS → COMPLETED 처리 실패" }
+        }
     }
 
     private fun sendGoalEndedNotifications(today: LocalDate) {
