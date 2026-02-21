@@ -18,7 +18,12 @@ class FcmTokenService(
 
     @Transactional
     fun registerToken(userId: Long, token: String, deviceId: String) {
-        // 같은 토큰을 가진 다른 유저 레코드 삭제 (기기 계정 전환 대응)
+        // 같은 기기의 다른 유저 레코드 unsubscribe 후 삭제 (기기 계정 전환 대응)
+        val oldTokens = fcmTokenRepository.findByDeviceIdAndUserIdNot(deviceId, userId)
+        oldTokens.forEach { fcmPushService.unsubscribeFromTopic(it.token, MARKETING_TOPIC) }
+        fcmTokenRepository.deleteAll(oldTokens)
+
+        // 같은 토큰을 가진 다른 유저 레코드 삭제 (토큰 미갱신 케이스 대응)
         fcmTokenRepository.deleteByTokenAndUserIdNot(token, userId)
 
         val existingToken = fcmTokenRepository.findByUserIdAndDeviceId(userId, deviceId)

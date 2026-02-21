@@ -14,7 +14,11 @@ interface FcmTokenRepository {
 
     fun findByUserIdAndToken(userId: Long, token: String): FcmToken?
 
+    fun findByDeviceIdAndUserIdNot(deviceId: String, userId: Long): List<FcmToken>
+
     fun delete(fcmToken: FcmToken)
+
+    fun deleteAll(fcmTokens: List<FcmToken>)
 
     fun deleteByTokenAndUserIdNot(token: String, userId: Long)
 

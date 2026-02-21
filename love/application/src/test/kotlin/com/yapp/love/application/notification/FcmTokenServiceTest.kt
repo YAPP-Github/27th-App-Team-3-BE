@@ -28,6 +28,8 @@ class FcmTokenServiceTest : DescribeSpec({
 
     beforeEach {
         clearAllMocks()
+        every { fcmTokenRepository.findByDeviceIdAndUserIdNot(any(), any()) } returns emptyList()
+        every { fcmTokenRepository.deleteAll(any()) } just Runs
         every { fcmTokenRepository.deleteByTokenAndUserIdNot(any(), any()) } just Runs
         every { notificationSettingService.getSetting(any()) } returns NotificationSetting.create(userId = userId, isMarketingPushEnabled = true)
     }
@@ -61,6 +63,26 @@ class FcmTokenServiceTest : DescribeSpec({
                             it.token == token &&
                             it.deviceId == deviceId
                     })
+                }
+            }
+        }
+    }
+
+    describe("registerToken - 계정 전환") {
+
+        context("같은 기기에 다른 유저의 토큰이 존재하는 경우") {
+            it("이전 유저의 토큰을 unsubscribe 후 삭제한다") {
+                val otherUserId = 99L
+                val oldToken = FcmToken.create(userId = otherUserId, token = "old-token", deviceId = deviceId)
+                every { fcmTokenRepository.findByDeviceIdAndUserIdNot(deviceId, userId) } returns listOf(oldToken)
+                every { fcmTokenRepository.findByUserIdAndDeviceId(userId, deviceId) } returns null
+                every { fcmTokenRepository.save(any()) } answers { firstArg() }
+
+                fcmTokenService.registerToken(userId, token, deviceId)
+
+                verifyOrder {
+                    fcmPushService.unsubscribeFromTopic(oldToken.token, FcmTokenService.MARKETING_TOPIC)
+                    fcmTokenRepository.deleteAll(listOf(oldToken))
                 }
             }
         }
