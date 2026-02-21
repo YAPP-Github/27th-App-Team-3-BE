@@ -10,6 +10,10 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
+import com.yapp.love.domain.notification.model.FcmToken
 
 class NotificationSettingServiceTest : DescribeSpec({
 
@@ -17,11 +21,18 @@ class NotificationSettingServiceTest : DescribeSpec({
     val fcmTokenRepository = mockk<FcmTokenRepository>(relaxed = true)
     val fcmPushService = mockk<FcmPushService>(relaxed = true)
 
-    val service = NotificationSettingService(
-        notificationSettingRepository = notificationSettingRepository,
-        fcmTokenRepository = fcmTokenRepository,
-        fcmPushService = fcmPushService,
-    )
+    fun serviceWithHour(hour: Int): NotificationSettingService {
+        val instant = Instant.parse("2024-01-01T${hour.toString().padStart(2, '0')}:00:00Z")
+        val clock = Clock.fixed(instant, ZoneId.of("UTC"))
+        return NotificationSettingService(
+            notificationSettingRepository = notificationSettingRepository,
+            fcmTokenRepository = fcmTokenRepository,
+            fcmPushService = fcmPushService,
+            clock = clock,
+        )
+    }
+
+    val service = serviceWithHour(14) // 낮 시간(14시) 기본값
 
     val userId = 1L
 
@@ -104,6 +115,44 @@ class NotificationSettingServiceTest : DescribeSpec({
 
             result.isMarketingPushEnabled shouldBe true
         }
+
+        context("enabled = true이고 토큰이 있는 경우") {
+            it("모든 토큰을 마케팅 토픽에 구독한다") {
+                val setting = NotificationSetting.create(userId = userId, isMarketingPushEnabled = false)
+                val tokens = listOf(
+                    FcmToken.create(userId, "token-1", "device-1"),
+                    FcmToken.create(userId, "token-2", "device-2"),
+                )
+                every { notificationSettingRepository.findByUserId(userId) } returns setting
+                every { notificationSettingRepository.save(any()) } answers { firstArg() }
+                every { fcmTokenRepository.findByUserId(userId) } returns tokens
+
+                service.updateMarketingPush(userId, true)
+
+                verify(exactly = 1) { fcmPushService.subscribeToTopic("token-1", FcmTokenService.MARKETING_TOPIC) }
+                verify(exactly = 1) { fcmPushService.subscribeToTopic("token-2", FcmTokenService.MARKETING_TOPIC) }
+                verify(exactly = 0) { fcmPushService.unsubscribeFromTopic(any(), any()) }
+            }
+        }
+
+        context("enabled = false이고 토큰이 있는 경우") {
+            it("모든 토큰을 마케팅 토픽에서 구독 해제한다") {
+                val setting = NotificationSetting.create(userId = userId, isMarketingPushEnabled = true)
+                val tokens = listOf(
+                    FcmToken.create(userId, "token-1", "device-1"),
+                    FcmToken.create(userId, "token-2", "device-2"),
+                )
+                every { notificationSettingRepository.findByUserId(userId) } returns setting
+                every { notificationSettingRepository.save(any()) } answers { firstArg() }
+                every { fcmTokenRepository.findByUserId(userId) } returns tokens
+
+                service.updateMarketingPush(userId, false)
+
+                verify(exactly = 1) { fcmPushService.unsubscribeFromTopic("token-1", FcmTokenService.MARKETING_TOPIC) }
+                verify(exactly = 1) { fcmPushService.unsubscribeFromTopic("token-2", FcmTokenService.MARKETING_TOPIC) }
+                verify(exactly = 0) { fcmPushService.subscribeToTopic(any(), any()) }
+            }
+        }
     }
 
     describe("updateNightPush") {
@@ -146,9 +195,33 @@ class NotificationSettingServiceTest : DescribeSpec({
                 )
                 every { notificationSettingRepository.findByUserId(userId) } returns setting
 
-                // isNightTime()은 LocalTime.now()에 의존하므로 낮 시간에는 true가 나옴
-                // 야간 시간(21~08)이 아닌 시간에 테스트가 실행될 때만 true
-                // 정확한 테스트를 위해서는 시간을 주입받아야 하지만 현재 구조에서는 통합테스트로 검증
+                serviceWithHour(14).shouldSendPush(userId, NotificationType.POKE) shouldBe true
+            }
+        }
+
+        context("야간이고 야간 푸시가 꺼져 있는 경우") {
+            it("false를 반환한다") {
+                val setting = NotificationSetting.create(
+                    userId = userId,
+                    isPokePushEnabled = true,
+                    isNightPushEnabled = false,
+                )
+                every { notificationSettingRepository.findByUserId(userId) } returns setting
+
+                serviceWithHour(22).shouldSendPush(userId, NotificationType.POKE) shouldBe false
+            }
+        }
+
+        context("야간이지만 야간 푸시가 켜져 있는 경우") {
+            it("true를 반환한다") {
+                val setting = NotificationSetting.create(
+                    userId = userId,
+                    isPokePushEnabled = true,
+                    isNightPushEnabled = true,
+                )
+                every { notificationSettingRepository.findByUserId(userId) } returns setting
+
+                serviceWithHour(22).shouldSendPush(userId, NotificationType.POKE) shouldBe true
             }
         }
 

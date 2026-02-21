@@ -62,4 +62,44 @@ class FcmTokenServiceTest : DescribeSpec({
             }
         }
     }
+
+    describe("registerToken - 마케팅 구독") {
+
+        beforeEach {
+            every { fcmTokenRepository.findByUserIdAndDeviceId(userId, deviceId) } returns null
+            every { fcmTokenRepository.save(any()) } answers { firstArg() }
+        }
+
+        context("마케팅 푸시가 켜져 있는 경우") {
+            it("마케팅 토픽을 구독한다") {
+                every { notificationSettingService.getSetting(userId) } returns
+                    NotificationSetting.create(userId = userId, isMarketingPushEnabled = true)
+
+                fcmTokenService.registerToken(userId, token, deviceId)
+
+                verify(exactly = 1) { fcmPushService.subscribeToTopic(token, FcmTokenService.MARKETING_TOPIC) }
+            }
+        }
+
+        context("마케팅 푸시가 꺼져 있는 경우") {
+            it("마케팅 토픽을 구독하지 않는다") {
+                every { notificationSettingService.getSetting(userId) } returns
+                    NotificationSetting.create(userId = userId, isMarketingPushEnabled = false)
+
+                fcmTokenService.registerToken(userId, token, deviceId)
+
+                verify(exactly = 0) { fcmPushService.subscribeToTopic(any(), any()) }
+            }
+        }
+
+        context("알림 설정 조회가 실패하는 경우") {
+            it("기본값 true로 처리하여 마케팅 토픽을 구독한다") {
+                every { notificationSettingService.getSetting(userId) } throws RuntimeException("설정 조회 실패")
+
+                fcmTokenService.registerToken(userId, token, deviceId)
+
+                verify(exactly = 1) { fcmPushService.subscribeToTopic(token, FcmTokenService.MARKETING_TOPIC) }
+            }
+        }
+    }
 })

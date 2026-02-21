@@ -97,6 +97,13 @@ class NotificationEventListenerTest : DescribeSpec({
                 )
             }
         }
+
+        it("예외 발생 시 메서드가 정상 종료된다") {
+            val event = PokedEvent(targetUserId = 2L, senderNickname = "철수", goalId = 10L, goalName = "운동하기")
+            every { notificationService.sendNotification(any(), any(), any(), any(), any()) } throws RuntimeException("DB 오류")
+
+            listener.handlePoked(event)
+        }
     }
 
     describe("handlePhotologCreated") {
