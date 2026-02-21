@@ -3,8 +3,10 @@ package com.yapp.love.infrastructure.persistence.notification
 import com.yapp.love.domain.notification.NotificationRepository
 import com.yapp.love.domain.notification.model.Notification
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 interface NotificationJpaRepositoryInterface : JpaRepository<Notification, Long> {
     fun findByUserId(userId: Long): List<Notification>
@@ -13,6 +15,10 @@ interface NotificationJpaRepositoryInterface : JpaRepository<Notification, Long>
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.userId = :userId AND n.isRead = false")
     fun countUnreadByUserId(userId: Long): Long
+
+    @Modifying
+    @Query("DELETE FROM Notification n WHERE n.createdAt < :threshold")
+    fun deleteByCreatedAtBefore(threshold: LocalDateTime): Int
 }
 
 @Repository
@@ -37,5 +43,9 @@ class NotificationJpaRepository(
 
     override fun countUnreadByUserId(userId: Long): Long {
         return jpaRepository.countUnreadByUserId(userId)
+    }
+
+    override fun deleteCreatedBefore(threshold: LocalDateTime): Int {
+        return jpaRepository.deleteByCreatedAtBefore(threshold)
     }
 }

@@ -4,6 +4,7 @@ import com.yapp.love.application.notification.event.GoalEndedEvent
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.goal.repository.GoalRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -19,6 +20,7 @@ class GoalScheduler(
     private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     @Scheduled(cron = "0 0 0 * * *")
+    @SchedulerLock(name = "goalSchedulerProcessDaily", lockAtMostFor = "30m", lockAtLeastFor = "5m")
     @Transactional
     fun processDaily() {
         val today = LocalDate.now()
