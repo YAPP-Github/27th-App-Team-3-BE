@@ -72,12 +72,16 @@ class NotificationSettingServiceTest : DescribeSpec({
         }
 
         context("설정이 존재하지 않는 경우") {
-            it("예외가 발생한다") {
+            it("기본값(전부 false)으로 설정을 생성하고 반환한다") {
                 every { notificationSettingRepository.findByUserId(userId) } returns null
+                every { notificationSettingRepository.save(any()) } answers { firstArg() }
 
-                shouldThrow<GlobalException> {
-                    service.getSetting(userId)
-                }
+                val result = service.getSetting(userId)
+
+                result.isPokePushEnabled shouldBe false
+                result.isMarketingPushEnabled shouldBe false
+                result.isNightPushEnabled shouldBe false
+                verify { notificationSettingRepository.save(any()) }
             }
         }
     }
@@ -94,12 +98,13 @@ class NotificationSettingServiceTest : DescribeSpec({
         }
 
         context("설정이 존재하지 않는 경우") {
-            it("예외가 발생한다") {
+            it("기본값으로 설정을 생성한 뒤 변경한다") {
                 every { notificationSettingRepository.findByUserId(userId) } returns null
+                every { notificationSettingRepository.save(any()) } answers { firstArg() }
 
-                shouldThrow<GlobalException> {
-                    service.updatePokePush(userId, true)
-                }
+                val result = service.updatePokePush(userId, true)
+
+                result.isPokePushEnabled shouldBe true
             }
         }
     }

@@ -92,7 +92,12 @@ class NotificationSettingService(
 
     private fun findByUserId(userId: Long): NotificationSetting {
         return notificationSettingRepository.findByUserId(userId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "알림 설정을 찾을 수 없습니다.")
+            ?: notificationSettingRepository.save(NotificationSetting.create(
+                userId = userId,
+                isPokePushEnabled = false,
+                isMarketingPushEnabled = false,
+                isNightPushEnabled = false,
+            ))
     }
 
     private fun isNightTime(): Boolean {
