@@ -13,7 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "인증샷 목록 조회",
-    description = "날짜별 또는 목표별로 인증샷 목록을 조회합니다.",
+    description = "날짜별 또는 목표별로 인증샷 목록을 조회합니다.\n\n" +
+        "**하위 호환 안내**: `goalId` 없이 `targetDate`만 전달하면 이전 방식(날짜별 전체 목표 조회)과 동일하게 동작합니다.",
     parameters = [
         Parameter(
             name = "targetDate",
