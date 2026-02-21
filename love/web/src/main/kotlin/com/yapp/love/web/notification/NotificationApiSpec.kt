@@ -71,6 +71,42 @@ annotation class RegisterFcmTokenApiSpec
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
+    summary = "읽지 않은 알림 존재 여부 조회",
+    description = "읽지 않은 알림이 있으면 true, 없으면 false를 반환합니다. 알림 탭 뱃지 표시 등에 활용합니다.",
+)
+@ApiResponses(
+    value = [
+        ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = [Content(schema = Schema(implementation = com.yapp.love.web.notification.dto.response.HasUnreadResponse::class))],
+        ),
+        ApiResponse(
+            responseCode = "401",
+            description = "인증 실패",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "인증되지 않은 사용자",
+                            value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ],
+)
+annotation class HasUnreadApiSpec
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@Operation(
     summary = "알림 목록 조회",
     description = "내 알림 목록을 최신순으로 조회합니다. (커서 기반 페이지네이션)\n\n" +
         "- 첫 요청: 파라미터 없이 호출\n" +

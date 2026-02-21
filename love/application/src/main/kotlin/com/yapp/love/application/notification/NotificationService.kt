@@ -20,6 +20,11 @@ class NotificationService(
     private val eventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional(readOnly = true)
+    fun hasUnread(userId: Long): Boolean {
+        return notificationRepository.existsUnreadByUserId(userId)
+    }
+
+    @Transactional(readOnly = true)
     fun getNotifications(userId: Long, lastId: Long?, size: Int): NotificationPage {
         val results = notificationRepository.findByUserIdWithCursor(userId, lastId, size)
         val hasNext = results.size > size
