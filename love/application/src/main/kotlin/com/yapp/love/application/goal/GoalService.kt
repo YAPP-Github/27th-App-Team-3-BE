@@ -5,6 +5,7 @@ import com.yapp.love.application.goal.dto.CreateGoalCommand
 import com.yapp.love.application.goal.dto.GoalInfo
 import com.yapp.love.application.goal.dto.GoalWithPhotoLogs
 import com.yapp.love.application.goal.dto.UpdateGoalCommand
+import com.yapp.love.application.notification.event.GoalEndedEvent
 import com.yapp.love.application.photolog.PhotologService
 import com.yapp.love.domain.goal.model.Goal
 import com.yapp.love.domain.goal.model.GoalStatus
@@ -12,6 +13,7 @@ import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -23,6 +25,7 @@ class GoalService(
     private val photologService: PhotologService,
     private val coupleService: CoupleService,
     private val goalRepository: GoalRepository,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -61,8 +64,16 @@ class GoalService(
         myUserId: Long,
         partnerUserId: Long,
         targetDate: LocalDate,
+        goalId: Long? = null,
     ): List<GoalWithPhotoLogs> {
-        val goals = goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+        val goals = if (goalId != null) {
+            val goal = goalRepository.findActiveGoalById(goalId)
+                ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "목표를 찾을 수 없습니다.")
+            if (goal.coupleId != coupleId) throw GlobalException(GlobalErrorCode.FORBIDDEN, "해당 목표에 대한 권한이 없습니다.")
+            listOf(goal)
+        } else {
+            goalRepository.findActiveGoalsByCoupleIdAndDate(coupleId, targetDate)
+        }
 
         if (goals.isEmpty()) {
             return emptyList()
@@ -186,7 +197,17 @@ class GoalService(
         goalRepository.save(goal)
 
         logger.info { "Goal $goalId completed by user $userId" }
-        // TODO: 통계가 구현되면 통계에 반영하는 로직 추가
+
+        val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
+        notificationEventPublisher.publishEvent(
+            GoalEndedEvent(
+                user1Id = coupleInfo.user1Id,
+                user2Id = coupleInfo.user2Id,
+                goalId = goalId,
+                goalName = goal.name,
+            )
+        )
+
         return GoalInfo.from(goal)
     }
 }

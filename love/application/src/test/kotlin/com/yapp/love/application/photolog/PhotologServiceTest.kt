@@ -16,6 +16,7 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.springframework.context.ApplicationEventPublisher
 import java.time.Instant
 import java.time.LocalDate
 
@@ -26,6 +27,7 @@ class PhotologServiceTest : DescribeSpec({
     val coupleService = mockk<CoupleService>()
     val goalRepository = mockk<GoalRepository>()
     val coupleInfoRepository = mockk<CoupleInfoRepository>()
+    val eventPublisher = mockk<ApplicationEventPublisher>(relaxed = true)
 
     val photologService =
         PhotologService(
@@ -34,6 +36,7 @@ class PhotologServiceTest : DescribeSpec({
             coupleService = coupleService,
             goalRepository = goalRepository,
             coupleInfoRepository = coupleInfoRepository,
+            notificationEventPublisher = eventPublisher,
         )
 
     beforeEach {

@@ -1,6 +1,9 @@
 package com.yapp.love.application.photolog
 
 import com.yapp.love.application.couple.CoupleService
+import com.yapp.love.application.notification.event.DailyGoalAchievedEvent
+import com.yapp.love.application.notification.event.PhotologCreatedEvent
+import com.yapp.love.application.notification.event.ReactionCreatedEvent
 import com.yapp.love.application.photolog.dto.ReactionInfo
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.application.storage.PresignedUrlResult
@@ -14,6 +17,7 @@ import com.yapp.love.domain.photolog.repository.PhotologRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +33,7 @@ class PhotologService(
     private val coupleService: CoupleService,
     private val goalRepository: GoalRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -94,7 +99,7 @@ class PhotologService(
     ): Photolog {
         validatePhotologCreation(goalId, userId, verificationDate)
 
-        return photologRepository.save(
+        val saved = photologRepository.save(
             Photolog(
                 goalId = goalId,
                 userId = userId,
@@ -104,6 +109,11 @@ class PhotologService(
                 comment = comment,
             )
         )
+
+        notificationEventPublisher.publishEvent(PhotologCreatedEvent(userId = userId, goalId = goalId))
+        checkAndPublishDailyGoalAchieved(userId, goalId, verificationDate)
+
+        return saved
     }
 
     private fun validatePhotologCreation(goalId: Long, userId: Long, verificationDate: LocalDate) {
@@ -132,6 +142,26 @@ class PhotologService(
             ?.let { throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.") }
     }
 
+    private fun checkAndPublishDailyGoalAchieved(userId: Long, goalId: Long, verificationDate: LocalDate) {
+        val coupleInfo = coupleInfoRepository.findByUserId(userId) ?: return
+        val goal = goalRepository.findActiveGoalById(goalId) ?: return
+
+        val photologs = photologRepository.findByGoalIdsAndVerificationDate(listOf(goalId), verificationDate)
+
+        val user1Completed = photologs.any { it.goalId == goalId && it.userId == coupleInfo.user1Id }
+        val user2Completed = photologs.any { it.goalId == goalId && it.userId == coupleInfo.user2Id }
+
+        if (user1Completed && user2Completed) {
+            notificationEventPublisher.publishEvent(
+                DailyGoalAchievedEvent(
+                    user1Id = coupleInfo.user1Id,
+                    user2Id = coupleInfo.user2Id,
+                    goalName = goal.name,
+                ),
+            )
+        }
+    }
+
     @Transactional
     fun addReaction(
         photologId: Long,
@@ -155,6 +185,15 @@ class PhotologService(
 
         photolog.reaction = reaction
         photologRepository.save(photolog)
+
+        notificationEventPublisher.publishEvent(
+            ReactionCreatedEvent(
+                reactorUserId = userId,
+                photologOwnerId = photolog.userId,
+                goalId = photolog.goalId,
+                verificationDate = photolog.verificationDate,
+            ),
+        )
 
         return ReactionInfo(
             photologId = photolog.id!!,

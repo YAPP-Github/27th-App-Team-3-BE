@@ -139,11 +139,12 @@ class GlobalExceptionHandler {
 
         logger.warn(ex) { "Domain validation failed: ${ex.message}" }
 
-        val error = ErrorResponse(
-            status = globalErrorCode.getHttpStatus().value(),
-            code = globalErrorCode.getCode(),
-            message = ex.message ?: globalErrorCode.getMessage(),
-        )
+        val error =
+            ErrorResponse(
+                status = globalErrorCode.getHttpStatus().value(),
+                code = globalErrorCode.getCode(),
+                message = ex.message ?: globalErrorCode.getMessage(),
+            )
 
         return ResponseEntity(error, globalErrorCode.getHttpStatus())
     }

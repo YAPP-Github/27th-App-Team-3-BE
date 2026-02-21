@@ -111,3 +111,55 @@ CREATE TABLE social_tokens
     INDEX idx_social_tokens_user_id (user_id)
 );
 
+
+-- 알림 테이블
+CREATE TABLE notifications
+(
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT       NOT NULL,
+    type       VARCHAR(50)  NOT NULL COMMENT 'PARTNER_CONNECTED, POKE, GOAL_COMPLETED, REACTION, DAILY_GOAL_ACHIEVED, GOAL_ENDED',
+    title      VARCHAR(255) NOT NULL,
+    body       VARCHAR(500) NOT NULL,
+    deep_link  VARCHAR(200) NULL,
+    is_read    BOOLEAN      NOT NULL DEFAULT FALSE,
+    read_at    TIMESTAMP NULL,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_notifications_user_read (user_id, is_read, created_at)
+);
+
+-- FCM 토큰 테이블
+CREATE TABLE fcm_tokens
+(
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id    BIGINT       NOT NULL,
+    token      VARCHAR(500) NOT NULL,
+    device_id  VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_fcm_tokens_user (user_id),
+    UNIQUE KEY uk_fcm_tokens_user_device (user_id, device_id)
+);
+
+-- 알림 설정 테이블
+CREATE TABLE notification_settings
+(
+    id                             BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id                        BIGINT  NOT NULL UNIQUE,
+    is_night_notification_enabled  BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at                     TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
+    updated_at                     TIMESTAMP        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_notification_settings_user (user_id)
+);
+
+-- 찌르기 테이블
+CREATE TABLE pokes
+(
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    sender_id   BIGINT    NOT NULL,
+    receiver_id BIGINT    NOT NULL,
+    goal_id     BIGINT    NOT NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pokes_sender_goal (sender_id, goal_id, created_at)
+);

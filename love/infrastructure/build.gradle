@@ -41,14 +41,23 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/com.google.api-client/google-api-client
     implementation("com.google.api-client:google-api-client:2.8.1")
 
+    // Firebase
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // ShedLock
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:6.0.2'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:6.0.2'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.wiremock:wiremock-standalone:3.3.1'
+    testImplementation 'io.mockk:mockk:1.13.8'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
 }
 
 tasks.register('copyPrivate', Copy) {
     copy {
         from "${rootProject.projectDir}/twix-submodule"
-        include "*.yml", "*.p8"
+        include "*.yml", "*.p8", "*.json"
         into 'src/main/resources'
     }
 }

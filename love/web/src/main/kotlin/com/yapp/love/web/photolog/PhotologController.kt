@@ -4,12 +4,12 @@ import com.yapp.love.application.couple.CoupleService
 import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.photolog.PhotologService
 import com.yapp.love.application.storage.FileStoragePort
+import com.yapp.love.domain.goal.model.GoalIcon
+import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import com.yapp.love.domain.goal.model.GoalIcon
-import com.yapp.love.domain.photolog.model.ReactionType
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -64,11 +64,12 @@ class PhotologController(
         )
     }
 
-    @Operation(summary = "날짜별 인증샷 목록 조회")
+    @GetPhotologsByDateApiSpec
     @GetMapping
-    fun getPhotologsByDate(
+    fun getPhotologsByDateAndGoalId(
         @AuthUser userId: Long,
         @RequestParam targetDate: LocalDate,
+        @RequestParam(required = false) goalId: Long?,
     ): PhotologListResponse {
         val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
         val coupleId = coupleInfo.id!!
@@ -82,6 +83,7 @@ class PhotologController(
             myUserId = userId,
             partnerUserId = partnerId,
             targetDate = targetDate,
+            goalId = goalId,
         )
 
         return PhotologListResponse(
@@ -118,7 +120,6 @@ class PhotologController(
                         )
                     },
                 )
-
             },
         )
     }
@@ -190,7 +191,6 @@ data class PhotologResponse(
     val comment: String?,
     val verificationDate: LocalDate,
 )
-
 
 data class PhotologDetailResponse(
     val photologId: Long,

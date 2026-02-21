@@ -14,7 +14,7 @@ class CoupleService(
 ) {
     fun getCoupleInfoByUserId(userId: Long): CoupleInfo {
         return coupleRepository.findByUserId(userId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플을 찾을 수 없습니다.")
+            ?: throw GlobalException(GlobalErrorCode.COUPLE_NOT_FOUND, "커플을 찾을 수 없습니다.")
     }
 
     fun getPartnerUserIdByCoupleInfo(

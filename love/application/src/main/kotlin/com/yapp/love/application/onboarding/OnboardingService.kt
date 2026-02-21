@@ -1,5 +1,6 @@
 package com.yapp.love.application.onboarding
 
+import com.yapp.love.application.notification.event.PartnerConnectedEvent
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.couple.model.CoupleInfo
 import com.yapp.love.domain.onboarding.InviteCodeRepository
@@ -11,6 +12,7 @@ import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.domain.user.model.UserAdditionInfo
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.SecureRandom
@@ -22,6 +24,7 @@ class OnboardingService(
     private val inviteCodeRepository: InviteCodeRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
+    private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
 
     @Transactional
@@ -53,10 +56,18 @@ class OnboardingService(
         )
 
         val coupleInfo = coupleInfoRepository.findByUserId(usedUserId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
+            ?: throw GlobalException(GlobalErrorCode.COUPLE_NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
 
         updateOrCreateOnboardingInfo(usedUserId, coupleInfo)
         updateOrCreateOnboardingInfo(inviteCodes.creatorId, coupleInfo)
+
+        // 초대 코드를 보낸 사람에게 커플 연결 알림 이벤트 발행
+        notificationEventPublisher.publishEvent(
+            PartnerConnectedEvent(
+                targetUserId = inviteCodes.creatorId,
+                senderUserId = usedUserId,
+            ),
+        )
     }
 
     private fun updateOrCreateOnboardingInfo(userId: Long, coupleInfo: CoupleInfo) {
@@ -74,7 +85,7 @@ class OnboardingService(
         userAdditionInfoRepository.save(userAdditionInfo)
 
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
+            ?: throw GlobalException(GlobalErrorCode.COUPLE_NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
 
         updateOnboardingStatus(userId, coupleInfo)
     }
@@ -82,7 +93,7 @@ class OnboardingService(
     @Transactional
     fun setAnniversary(userId: Long, anniversaryDate: LocalDate) {
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
-            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
+            ?: throw GlobalException(GlobalErrorCode.COUPLE_NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
 
         coupleInfo.setAnniversary(anniversaryDate)
         coupleInfoRepository.save(coupleInfo)

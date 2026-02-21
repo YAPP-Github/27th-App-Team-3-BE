@@ -42,4 +42,9 @@ interface GoalRepository {
      * 커플의 모든 목표 삭제
      */
     fun deleteByCoupleId(coupleId: Long)
+
+    /**
+     * 종료 대상 목표 조회 (상태 업데이트 전에 호출하여 알림 대상 파악)
+     */
+    fun findGoalsEndingBefore(today: LocalDate): List<Goal>
 }

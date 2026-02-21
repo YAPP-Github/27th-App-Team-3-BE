@@ -13,4 +13,5 @@ ktlint_code_style = ktlint_official
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_package-name = disabled
 ktlint_standard_filename = disabled
+ktlint_standard_multiline-expression-wrapping = disabled
 max_line_length = 120

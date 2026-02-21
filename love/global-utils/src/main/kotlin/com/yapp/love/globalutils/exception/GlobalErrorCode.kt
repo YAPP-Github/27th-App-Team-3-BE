@@ -39,6 +39,7 @@ enum class GlobalErrorCode(
     // 4. 리소스 및 상태
     // ======================================================================
     NOT_FOUND(HttpStatus.NOT_FOUND, "G4040", "요청한 리소스를 찾을 수 없습니다."),
+    COUPLE_NOT_FOUND(HttpStatus.NOT_FOUND, "G4041", "커플을 찾을 수 없습니다."),
     ;
 
     override fun getHttpStatus(): HttpStatus = httpStatus

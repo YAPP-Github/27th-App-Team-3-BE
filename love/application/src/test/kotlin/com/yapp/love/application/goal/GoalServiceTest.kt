@@ -14,6 +14,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import org.springframework.context.ApplicationEventPublisher
 import java.time.LocalDate
 
 class GoalServiceTest : DescribeSpec({
@@ -21,12 +22,14 @@ class GoalServiceTest : DescribeSpec({
     val goalRepository = mockk<GoalRepository>()
     val photologService = mockk<PhotologService>()
     val coupleService = mockk<CoupleService>()
+    val eventPublisher = mockk<ApplicationEventPublisher>(relaxed = true)
 
     val goalService =
         GoalService(
             goalRepository = goalRepository,
             photologService = photologService,
             coupleService = coupleService,
+            notificationEventPublisher = eventPublisher,
         )
 
     beforeEach {
