@@ -72,7 +72,11 @@ annotation class RegisterFcmTokenApiSpec
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "알림 목록 조회",
-    description = "내 알림 목록을 최신순으로 조회합니다.",
+    description = "내 알림 목록을 최신순으로 조회합니다. (커서 기반 페이지네이션)\n\n" +
+        "- 첫 요청: 파라미터 없이 호출\n" +
+        "- 다음 페이지: 마지막 알림의 id를 `lastId`로 전달\n" +
+        "- `hasNext`가 false이면 마지막 페이지\n" +
+        "- `size` 기본값: 20",
 )
 @ApiResponses(
     value = [

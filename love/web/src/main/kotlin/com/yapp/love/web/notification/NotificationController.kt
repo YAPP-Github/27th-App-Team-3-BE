@@ -35,11 +35,14 @@ class NotificationController(
     @GetMapping
     fun getNotifications(
         @AuthUser userId: Long,
+        @RequestParam(required = false) lastId: Long?,
+        @RequestParam(defaultValue = "20") size: Int,
     ): NotificationListResponse {
-        val notifications = notificationService.getNotifications(userId)
+        val page = notificationService.getNotifications(userId, lastId, size)
 
         return NotificationListResponse(
-            notifications = notifications.map { NotificationResponse.from(it) },
+            notifications = page.notifications.map { NotificationResponse.from(it) },
+            hasNext = page.hasNext,
         )
     }
 

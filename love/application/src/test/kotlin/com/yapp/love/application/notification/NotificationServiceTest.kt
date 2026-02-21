@@ -31,17 +31,30 @@ class NotificationServiceTest : DescribeSpec({
     }
 
     describe("getNotifications") {
-        it("사용자의 알림 목록을 최신순으로 반환한다") {
+        it("첫 페이지 조회 시 lastId 없이 호출하고 hasNext를 반환한다") {
+            val notifications = (1..21).map {
+                Notification.create(userId = userId, type = NotificationType.POKE, title = "찌르기$it", body = "body$it")
+            }
+            every { notificationRepository.findByUserIdWithCursor(userId, null, 20) } returns notifications
+
+            val result = notificationService.getNotifications(userId, lastId = null, size = 20)
+
+            result.notifications.size shouldBe 20
+            result.hasNext shouldBe true
+            verify { notificationRepository.findByUserIdWithCursor(userId, null, 20) }
+        }
+
+        it("마지막 페이지 조회 시 hasNext가 false이다") {
             val notifications = listOf(
                 Notification.create(userId = userId, type = NotificationType.POKE, title = "찌르기", body = "body1"),
-                Notification.create(userId = userId, type = NotificationType.GOAL_ENDED, title = "종료", body = "body2"),
             )
-            every { notificationRepository.findByUserIdOrderByCreatedAtDesc(userId) } returns notifications
+            every { notificationRepository.findByUserIdWithCursor(userId, 10L, 20) } returns notifications
 
-            val result = notificationService.getNotifications(userId)
+            val result = notificationService.getNotifications(userId, lastId = 10L, size = 20)
 
-            result shouldBe notifications
-            verify { notificationRepository.findByUserIdOrderByCreatedAtDesc(userId) }
+            result.notifications.size shouldBe 1
+            result.hasNext shouldBe false
+            verify { notificationRepository.findByUserIdWithCursor(userId, 10L, 20) }
         }
     }
 

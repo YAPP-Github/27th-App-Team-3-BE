@@ -20,8 +20,13 @@ class NotificationService(
     private val eventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional(readOnly = true)
-    fun getNotifications(userId: Long): List<Notification> {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+    fun getNotifications(userId: Long, lastId: Long?, size: Int): NotificationPage {
+        val results = notificationRepository.findByUserIdWithCursor(userId, lastId, size)
+        val hasNext = results.size > size
+        return NotificationPage(
+            notifications = if (hasNext) results.dropLast(1) else results,
+            hasNext = hasNext,
+        )
     }
 
     @Transactional
@@ -80,3 +85,8 @@ class NotificationService(
         return deepLink
     }
 }
+
+data class NotificationPage(
+    val notifications: List<Notification>,
+    val hasNext: Boolean,
+)

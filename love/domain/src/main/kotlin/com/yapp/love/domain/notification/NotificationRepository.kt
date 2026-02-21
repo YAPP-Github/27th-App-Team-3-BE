@@ -8,9 +8,7 @@ interface NotificationRepository {
 
     fun findById(id: Long): Notification?
 
-    fun findByUserId(userId: Long): List<Notification>
-
-    fun findByUserIdOrderByCreatedAtDesc(userId: Long): List<Notification>
+    fun findByUserIdWithCursor(userId: Long, lastId: Long?, size: Int): List<Notification>
 
     fun markAllAsReadByUserId(userId: Long)
 
