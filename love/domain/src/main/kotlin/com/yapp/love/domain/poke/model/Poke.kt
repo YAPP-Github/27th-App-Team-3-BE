@@ -34,10 +34,5 @@ class Poke(
             receiverId = receiverId,
             goalId = goalId,
         )
-
-        fun canPoke(lastPokeTime: LocalDateTime?): Boolean {
-            if (lastPokeTime == null) return true
-            return LocalDateTime.now().isAfter(lastPokeTime.plusHours(COOLDOWN_HOURS))
-        }
     }
 }
