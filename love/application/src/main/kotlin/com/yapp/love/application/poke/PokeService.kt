@@ -32,7 +32,7 @@ class PokeService(
         // 1. 커플 정보 확인
         val coupleInfo =
             coupleInfoRepository.findByUserId(senderId)
-                ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "커플 정보가 없습니다.")
+                ?: throw GlobalException(GlobalErrorCode.COUPLE_NOT_FOUND, "커플 정보가 없습니다.")
 
         // 2. 상대방 ID 확인
         val receiverId =
