@@ -42,6 +42,7 @@ class NotificationSettingServiceTest : DescribeSpec({
 
     describe("initSetting") {
         it("알림 설정을 생성하고 저장한다") {
+            every { notificationSettingRepository.findByUserId(userId) } returns null
             every { notificationSettingRepository.save(any()) } answers { firstArg() }
 
             val result = service.initSetting(

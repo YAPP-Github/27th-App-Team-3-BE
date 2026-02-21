@@ -31,12 +31,11 @@ class NotificationSettingService(
         isMarketingPushEnabled: Boolean,
         isNightPushEnabled: Boolean,
     ): NotificationSetting {
-        val setting = NotificationSetting.create(
-            userId = userId,
-            isPokePushEnabled = isPokePushEnabled,
-            isMarketingPushEnabled = isMarketingPushEnabled,
-            isNightPushEnabled = isNightPushEnabled,
-        )
+        val setting = notificationSettingRepository.findByUserId(userId)
+            ?: NotificationSetting.create(userId = userId)
+        setting.updatePokePush(isPokePushEnabled)
+        setting.updateMarketingPush(isMarketingPushEnabled)
+        setting.updateNightPush(isNightPushEnabled)
         return notificationSettingRepository.save(setting)
     }
 
