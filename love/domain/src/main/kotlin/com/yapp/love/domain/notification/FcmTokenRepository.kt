@@ -14,5 +14,7 @@ interface FcmTokenRepository {
 
     fun delete(fcmToken: FcmToken)
 
+    fun deleteByTokenAndUserIdNot(token: String, userId: Long)
+
     fun deleteByUserId(userId: Long)
 }

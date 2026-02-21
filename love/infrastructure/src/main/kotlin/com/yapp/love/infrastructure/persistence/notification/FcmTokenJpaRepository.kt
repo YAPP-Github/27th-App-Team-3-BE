@@ -13,6 +13,8 @@ interface FcmTokenJpaRepositoryInterface : JpaRepository<FcmToken, Long> {
         deviceId: String,
     ): FcmToken?
 
+    fun deleteByTokenAndUserIdNot(token: String, userId: Long)
+
     fun deleteByUserId(userId: Long)
 }
 
@@ -37,6 +39,10 @@ class FcmTokenJpaRepository(
 
     override fun delete(fcmToken: FcmToken) {
         jpaRepository.delete(fcmToken)
+    }
+
+    override fun deleteByTokenAndUserIdNot(token: String, userId: Long) {
+        jpaRepository.deleteByTokenAndUserIdNot(token, userId)
     }
 
     override fun deleteByUserId(userId: Long) {

@@ -18,6 +18,9 @@ class FcmTokenService(
 
     @Transactional
     fun registerToken(userId: Long, token: String, deviceId: String) {
+        // 같은 토큰을 가진 다른 유저 레코드 삭제 (기기 계정 전환 대응)
+        fcmTokenRepository.deleteByTokenAndUserIdNot(token, userId)
+
         val existingToken = fcmTokenRepository.findByUserIdAndDeviceId(userId, deviceId)
 
         if (existingToken != null) {
@@ -31,5 +34,12 @@ class FcmTokenService(
         if (isMarketingEnabled) {
             fcmPushService.subscribeToTopic(token, MARKETING_TOPIC)
         }
+    }
+
+    @Transactional
+    fun deleteToken(userId: Long, deviceId: String) {
+        val token = fcmTokenRepository.findByUserIdAndDeviceId(userId, deviceId) ?: return
+        fcmPushService.unsubscribeFromTopic(token.token, MARKETING_TOPIC)
+        fcmTokenRepository.delete(token)
     }
 }

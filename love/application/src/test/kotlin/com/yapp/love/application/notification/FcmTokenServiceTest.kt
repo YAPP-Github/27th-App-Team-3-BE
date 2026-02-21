@@ -26,6 +26,7 @@ class FcmTokenServiceTest : DescribeSpec({
 
     beforeEach {
         clearAllMocks()
+        every { fcmTokenRepository.deleteByTokenAndUserIdNot(any(), any()) } just Runs
         every { notificationSettingService.getSetting(any()) } returns NotificationSetting.create(userId = userId, isMarketingPushEnabled = true)
     }
 
