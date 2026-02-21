@@ -208,7 +208,7 @@ annotation class MarkAllAsReadApiSpec
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "알림 설정 초기화 (온보딩)",
-    description = "온보딩 시 알림 설정을 초기화합니다.",
+    description = "온보딩 시 !!!!반드시!!!! 알림 설정을 초기화해야 합니다",
 )
 @ApiResponses(
     value = [
@@ -314,7 +314,7 @@ annotation class GetNotificationSettingApiSpec
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "찌르기 푸시 알림 설정 변경",
-    description = "파트너 찌르기 푸시 알림 수신 여부를 변경합니다.",
+    description = "파트너 찌르기 푸시 알림 수신 여부를 변경합니다. 쿨타임 체크(3시간)은 클라이언트단에서 적용해야 합니다. 서버에는 연속 찌르기와 관련된 검증 로직이 없습니다.",
 )
 @ApiResponses(
     value = [
