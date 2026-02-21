@@ -1,5 +1,7 @@
 package com.yapp.love.application.notification
 
+import com.yapp.love.application.notification.port.FcmPushService
+import com.yapp.love.domain.notification.FcmTokenRepository
 import com.yapp.love.domain.notification.NotificationSettingRepository
 import com.yapp.love.domain.notification.model.NotificationSetting
 import com.yapp.love.domain.notification.model.NotificationType
@@ -12,9 +14,13 @@ import io.mockk.*
 class NotificationSettingServiceTest : DescribeSpec({
 
     val notificationSettingRepository = mockk<NotificationSettingRepository>()
+    val fcmTokenRepository = mockk<FcmTokenRepository>(relaxed = true)
+    val fcmPushService = mockk<FcmPushService>(relaxed = true)
 
     val service = NotificationSettingService(
         notificationSettingRepository = notificationSettingRepository,
+        fcmTokenRepository = fcmTokenRepository,
+        fcmPushService = fcmPushService,
     )
 
     val userId = 1L
@@ -92,6 +98,7 @@ class NotificationSettingServiceTest : DescribeSpec({
             val setting = NotificationSetting.create(userId = userId, isMarketingPushEnabled = false)
             every { notificationSettingRepository.findByUserId(userId) } returns setting
             every { notificationSettingRepository.save(any()) } answers { firstArg() }
+            every { fcmTokenRepository.findByUserId(userId) } returns emptyList()
 
             val result = service.updateMarketingPush(userId, true)
 
@@ -127,15 +134,6 @@ class NotificationSettingServiceTest : DescribeSpec({
                 every { notificationSettingRepository.findByUserId(userId) } returns setting
 
                 service.shouldSendPush(userId, NotificationType.POKE) shouldBe false
-            }
-        }
-
-        context("MARKETING 타입이고 마케팅 푸시가 꺼져 있는 경우") {
-            it("false를 반환한다") {
-                val setting = NotificationSetting.create(userId = userId, isMarketingPushEnabled = false)
-                every { notificationSettingRepository.findByUserId(userId) } returns setting
-
-                service.shouldSendPush(userId, NotificationType.MARKETING) shouldBe false
             }
         }
 

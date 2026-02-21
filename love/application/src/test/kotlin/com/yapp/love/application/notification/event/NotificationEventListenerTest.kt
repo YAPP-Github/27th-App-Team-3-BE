@@ -1,6 +1,7 @@
 package com.yapp.love.application.notification.event
 
 import com.yapp.love.application.notification.NotificationService
+import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.domain.couple.CoupleInfoRepository
 import com.yapp.love.domain.couple.model.CoupleInfo
 import com.yapp.love.domain.goal.model.Goal
@@ -18,12 +19,14 @@ import java.time.LocalDate
 class NotificationEventListenerTest : DescribeSpec({
 
     val notificationService = mockk<NotificationService>(relaxed = true)
+    val fcmPushService = mockk<FcmPushService>(relaxed = true)
     val coupleInfoRepository = mockk<CoupleInfoRepository>()
     val userAdditionInfoRepository = mockk<UserAdditionInfoRepository>()
     val goalRepository = mockk<GoalRepository>()
 
     val listener = NotificationEventListener(
         notificationService = notificationService,
+        fcmPushService = fcmPushService,
         coupleInfoRepository = coupleInfoRepository,
         userAdditionInfoRepository = userAdditionInfoRepository,
         goalRepository = goalRepository,
@@ -48,6 +51,28 @@ class NotificationEventListenerTest : DescribeSpec({
                     titleArgs = arrayOf("지수"),
                 )
             }
+        }
+
+        it("닉네임이 없으면 '상대방'으로 전송한다") {
+            val event = PartnerConnectedEvent(targetUserId = 1L, senderUserId = 2L)
+            every { userAdditionInfoRepository.findByUserId(2L) } returns null
+
+            listener.handlePartnerConnected(event)
+
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 1L,
+                    type = NotificationType.PARTNER_CONNECTED,
+                    titleArgs = arrayOf("상대방"),
+                )
+            }
+        }
+
+        it("예외 발생 시 메서드가 정상 종료된다") {
+            val event = PartnerConnectedEvent(targetUserId = 1L, senderUserId = 2L)
+            every { userAdditionInfoRepository.findByUserId(2L) } throws RuntimeException("DB 오류")
+
+            listener.handlePartnerConnected(event) // 예외 전파 없이 종료되어야 함
         }
     }
 
@@ -191,12 +216,7 @@ class NotificationEventListenerTest : DescribeSpec({
 
     describe("handleGoalEnded") {
         it("양쪽 사용자에게 GOAL_ENDED 알림을 전송한다") {
-            val event = GoalEndedEvent(
-                user1Id = 1L,
-                user2Id = 2L,
-                goalId = 10L,
-                goalName = "운동하기",
-            )
+            val event = GoalEndedEvent(user1Id = 1L, user2Id = 2L, goalId = 10L, goalName = "운동하기")
 
             listener.handleGoalEnded(event)
 
@@ -214,6 +234,120 @@ class NotificationEventListenerTest : DescribeSpec({
                     type = NotificationType.GOAL_ENDED,
                     titleArgs = arrayOf("운동하기"),
                     deepLinkParams = mapOf("goalId" to "10"),
+                )
+            }
+        }
+
+        it("user1 알림 전송 실패 시 user2에게는 정상 전송된다") {
+            val event = GoalEndedEvent(user1Id = 1L, user2Id = 2L, goalId = 10L, goalName = "운동하기")
+            every {
+                notificationService.sendNotification(
+                    targetUserId = 1L,
+                    type = any(),
+                    titleArgs = any(),
+                    deepLinkParams = any(),
+                )
+            } throws RuntimeException("user1 DB 오류")
+
+            listener.handleGoalEnded(event) // 예외 전파 없이 종료되어야 함
+
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 2L,
+                    type = NotificationType.GOAL_ENDED,
+                    titleArgs = arrayOf("운동하기"),
+                    deepLinkParams = mapOf("goalId" to "10"),
+                )
+            }
+        }
+    }
+
+    describe("handleDailyGoalAchieved") {
+        it("양쪽 사용자에게 DAILY_GOAL_ACHIEVED 알림을 전송한다") {
+            val event = DailyGoalAchievedEvent(user1Id = 1L, user2Id = 2L, goalName = "운동하기")
+
+            listener.handleDailyGoalAchieved(event)
+
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 1L,
+                    type = NotificationType.DAILY_GOAL_ACHIEVED,
+                    titleArgs = arrayOf("운동하기"),
+                )
+            }
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 2L,
+                    type = NotificationType.DAILY_GOAL_ACHIEVED,
+                    titleArgs = arrayOf("운동하기"),
+                )
+            }
+        }
+
+        it("user1 알림 전송 실패 시 user2에게는 정상 전송된다") {
+            val event = DailyGoalAchievedEvent(user1Id = 1L, user2Id = 2L, goalName = "운동하기")
+            every {
+                notificationService.sendNotification(
+                    targetUserId = 1L,
+                    type = any(),
+                    titleArgs = any(),
+                )
+            } throws RuntimeException("user1 DB 오류")
+
+            listener.handleDailyGoalAchieved(event) // 예외 전파 없이 종료되어야 함
+
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 2L,
+                    type = NotificationType.DAILY_GOAL_ACHIEVED,
+                    titleArgs = arrayOf("운동하기"),
+                )
+            }
+        }
+    }
+
+    describe("handleReactionCreated") {
+        it("포토로그 소유자에게 REACTION 알림을 전송한다") {
+            val event = ReactionCreatedEvent(
+                reactorUserId = 1L,
+                photologOwnerId = 2L,
+                goalId = 10L,
+                verificationDate = LocalDate.of(2026, 2, 21),
+            )
+            every { userAdditionInfoRepository.findByUserId(1L) } returns
+                UserAdditionInfo(userId = 1L, nickname = "철수")
+
+            listener.handleReactionCreated(event)
+
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 2L,
+                    type = NotificationType.REACTION,
+                    titleArgs = arrayOf("철수"),
+                    bodyArgs = arrayOf("철수"),
+                    deepLinkParams = mapOf("goalId" to "10", "date" to "2026-02-21"),
+                )
+            }
+        }
+
+        it("닉네임이 없으면 '상대방'으로 전송한다") {
+            val event = ReactionCreatedEvent(
+                reactorUserId = 1L,
+                photologOwnerId = 2L,
+                goalId = 10L,
+                verificationDate = LocalDate.of(2026, 2, 21),
+            )
+            every { userAdditionInfoRepository.findByUserId(1L) } returns null
+
+            listener.handleReactionCreated(event)
+
+            verify {
+                notificationService.sendNotification(
+                    targetUserId = 2L,
+                    type = NotificationType.REACTION,
+                    titleArgs = arrayOf("상대방"),
+                    bodyArgs = arrayOf("상대방"),
+                    deepLinkParams = mapOf("goalId" to "10", "date" to "2026-02-21"),
                 )
             }
         }

@@ -1,7 +1,9 @@
 package com.yapp.love.application.notification
 
+import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.domain.notification.FcmTokenRepository
 import com.yapp.love.domain.notification.model.FcmToken
+import com.yapp.love.domain.notification.model.NotificationSetting
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.*
@@ -9,9 +11,13 @@ import io.mockk.*
 class FcmTokenServiceTest : DescribeSpec({
 
     val fcmTokenRepository = mockk<FcmTokenRepository>()
+    val fcmPushService = mockk<FcmPushService>(relaxed = true)
+    val notificationSettingService = mockk<NotificationSettingService>(relaxed = true)
 
     val fcmTokenService = FcmTokenService(
         fcmTokenRepository = fcmTokenRepository,
+        fcmPushService = fcmPushService,
+        notificationSettingService = notificationSettingService,
     )
 
     val userId = 1L
@@ -20,6 +26,7 @@ class FcmTokenServiceTest : DescribeSpec({
 
     beforeEach {
         clearAllMocks()
+        every { notificationSettingService.getSetting(any()) } returns NotificationSetting.create(userId = userId, isMarketingPushEnabled = true)
     }
 
     describe("registerToken") {

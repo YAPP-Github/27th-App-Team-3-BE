@@ -1,6 +1,6 @@
 package com.yapp.love.application.notification
 
-import com.yapp.love.application.notification.port.FcmPushService
+import com.yapp.love.application.notification.event.FcmPushEvent
 import com.yapp.love.domain.notification.NotificationRepository
 import com.yapp.love.domain.notification.model.Notification
 import com.yapp.love.domain.notification.model.NotificationType
@@ -8,18 +8,20 @@ import com.yapp.love.globalutils.exception.GlobalException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.mockk.*
+import org.springframework.context.ApplicationEventPublisher
 
 class NotificationServiceTest : DescribeSpec({
 
     val notificationRepository = mockk<NotificationRepository>()
     val notificationSettingService = mockk<NotificationSettingService>()
-    val fcmPushService = mockk<FcmPushService>()
+    val eventPublisher = mockk<ApplicationEventPublisher>(relaxed = true)
 
     val notificationService = NotificationService(
         notificationRepository = notificationRepository,
         notificationSettingService = notificationSettingService,
-        fcmPushService = fcmPushService,
+        eventPublisher = eventPublisher,
     )
 
     val userId = 1L
@@ -120,7 +122,7 @@ class NotificationServiceTest : DescribeSpec({
         val targetUserId = 2L
 
         context("푸시 설정이 켜져 있는 경우") {
-            it("알림을 저장하고 FCM 푸시를 전송한다") {
+            it("알림을 저장하고 FCM 푸시 이벤트를 발행한다") {
                 val savedNotification = Notification(
                     id = 100L,
                     userId = targetUserId,
@@ -130,7 +132,6 @@ class NotificationServiceTest : DescribeSpec({
                 )
                 every { notificationRepository.save(any()) } returns savedNotification
                 every { notificationSettingService.shouldSendPush(targetUserId, NotificationType.POKE) } returns true
-                every { fcmPushService.sendPushToUser(any(), any(), any(), any()) } returns true
 
                 notificationService.sendNotification(
                     targetUserId = targetUserId,
@@ -141,19 +142,40 @@ class NotificationServiceTest : DescribeSpec({
                 )
 
                 verify(exactly = 2) { notificationRepository.save(any()) }
-                verify {
-                    fcmPushService.sendPushToUser(
-                        userId = targetUserId,
-                        title = "철수님이 '운동하기' 찔렀어요",
-                        body = "아직이신가요? 철수님이 궁금해 해요",
-                        deepLink = match { it != null && it.contains("notificationId=100") && it.contains("goalId=10") },
-                    )
-                }
+                verify { eventPublisher.publishEvent(any<FcmPushEvent>()) }
+            }
+
+            it("발행된 FcmPushEvent에 notificationId와 deepLink가 포함된다") {
+                val savedNotification = Notification(
+                    id = 100L,
+                    userId = targetUserId,
+                    type = NotificationType.POKE,
+                    title = "철수님이 '운동하기' 찔렀어요",
+                    body = "아직이신가요? 철수님이 궁금해 해요",
+                )
+                every { notificationRepository.save(any()) } returns savedNotification
+                every { notificationSettingService.shouldSendPush(targetUserId, NotificationType.POKE) } returns true
+
+                val eventSlot = slot<FcmPushEvent>()
+                every { eventPublisher.publishEvent(capture(eventSlot)) } just Runs
+
+                notificationService.sendNotification(
+                    targetUserId = targetUserId,
+                    type = NotificationType.POKE,
+                    titleArgs = arrayOf("철수", "운동하기"),
+                    bodyArgs = arrayOf("철수"),
+                    deepLinkParams = mapOf("goalId" to "10"),
+                )
+
+                val event = eventSlot.captured
+                event.userId shouldBe targetUserId
+                event.deepLink shouldContain "notificationId=100"
+                event.deepLink shouldContain "goalId=10"
             }
         }
 
         context("푸시 설정이 꺼져 있는 경우") {
-            it("알림은 저장하지만 FCM 푸시는 전송하지 않는다") {
+            it("알림은 저장하지만 FCM 푸시 이벤트를 발행하지 않는다") {
                 val savedNotification = Notification(
                     id = 100L,
                     userId = targetUserId,
@@ -172,31 +194,7 @@ class NotificationServiceTest : DescribeSpec({
                 )
 
                 verify(exactly = 2) { notificationRepository.save(any()) }
-                verify(exactly = 0) { fcmPushService.sendPushToUser(any(), any(), any(), any()) }
-            }
-        }
-
-        context("FCM 전송이 실패한 경우") {
-            it("예외 없이 정상 종료된다") {
-                val savedNotification = Notification(
-                    id = 100L,
-                    userId = targetUserId,
-                    type = NotificationType.POKE,
-                    title = "t",
-                    body = "b",
-                )
-                every { notificationRepository.save(any()) } returns savedNotification
-                every { notificationSettingService.shouldSendPush(targetUserId, NotificationType.POKE) } returns true
-                every { fcmPushService.sendPushToUser(any(), any(), any(), any()) } returns false
-
-                notificationService.sendNotification(
-                    targetUserId = targetUserId,
-                    type = NotificationType.POKE,
-                    titleArgs = arrayOf("철수", "운동하기"),
-                    bodyArgs = arrayOf("철수"),
-                )
-
-                verify { fcmPushService.sendPushToUser(any(), any(), any(), any()) }
+                verify(exactly = 0) { eventPublisher.publishEvent(any<FcmPushEvent>()) }
             }
         }
     }
