@@ -39,7 +39,7 @@ class NotificationSettingService(
         return notificationSettingRepository.save(setting)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun getSetting(userId: Long): NotificationSetting {
         return findByUserId(userId)
     }
