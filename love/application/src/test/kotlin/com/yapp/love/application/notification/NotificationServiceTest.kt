@@ -94,27 +94,12 @@ class NotificationServiceTest : DescribeSpec({
     }
 
     describe("markAllAsRead") {
-        it("읽지 않은 알림만 읽음 처리한다") {
-            val unread = Notification.create(userId = userId, type = NotificationType.POKE, title = "t1", body = "b1")
-            val alreadyRead = Notification.create(userId = userId, type = NotificationType.POKE, title = "t2", body = "b2")
-            alreadyRead.markAsRead()
-
-            every { notificationRepository.findByUserId(userId) } returns listOf(unread, alreadyRead)
-            every { notificationRepository.save(any()) } answers { firstArg() }
+        it("markAllAsReadByUserId를 호출한다") {
+            every { notificationRepository.markAllAsReadByUserId(userId) } just Runs
 
             notificationService.markAllAsRead(userId)
 
-            unread.isRead shouldBe true
-            verify(exactly = 1) { notificationRepository.save(unread) }
-            verify(exactly = 0) { notificationRepository.save(alreadyRead) }
-        }
-
-        it("읽지 않은 알림이 없으면 저장하지 않는다") {
-            every { notificationRepository.findByUserId(userId) } returns emptyList()
-
-            notificationService.markAllAsRead(userId)
-
-            verify(exactly = 0) { notificationRepository.save(any()) }
+            verify { notificationRepository.markAllAsReadByUserId(userId) }
         }
     }
 
@@ -141,7 +126,7 @@ class NotificationServiceTest : DescribeSpec({
                     deepLinkParams = mapOf("goalId" to "10"),
                 )
 
-                verify(exactly = 2) { notificationRepository.save(any()) }
+                verify(exactly = 1) { notificationRepository.save(any()) }
                 verify { eventPublisher.publishEvent(any<FcmPushEvent>()) }
             }
 
@@ -193,7 +178,7 @@ class NotificationServiceTest : DescribeSpec({
                     bodyArgs = arrayOf("철수"),
                 )
 
-                verify(exactly = 2) { notificationRepository.save(any()) }
+                verify(exactly = 1) { notificationRepository.save(any()) }
                 verify(exactly = 0) { eventPublisher.publishEvent(any<FcmPushEvent>()) }
             }
         }

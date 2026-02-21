@@ -12,9 +12,7 @@ interface NotificationRepository {
 
     fun findByUserIdOrderByCreatedAtDesc(userId: Long): List<Notification>
 
-    fun countUnreadByUserId(userId: Long): Long
-
-    fun markAllAsReadByUserId(userId: Long): Int
+    fun markAllAsReadByUserId(userId: Long)
 
     fun deleteCreatedBefore(threshold: LocalDateTime): Int
 }
