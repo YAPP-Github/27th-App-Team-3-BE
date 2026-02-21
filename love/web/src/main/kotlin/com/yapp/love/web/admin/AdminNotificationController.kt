@@ -5,6 +5,7 @@ import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import com.yapp.love.web.admin.dto.MarketingPushRequest
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@Hidden
 @Tag(name = "Admin Notification", description = "어드민 알림 API")
 @RestController
 @RequestMapping("/api/admin/notifications")
