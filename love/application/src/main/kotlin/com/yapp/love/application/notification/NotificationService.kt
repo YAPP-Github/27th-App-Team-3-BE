@@ -9,6 +9,7 @@ import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {}
@@ -51,7 +52,7 @@ class NotificationService(
         notificationRepository.markAllAsReadByUserId(userId)
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun sendNotification(
         targetUserId: Long,
         type: NotificationType,
