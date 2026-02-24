@@ -91,8 +91,71 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.blue.arn
+    target_group_arn = aws_lb_target_group.green.arn
   }
 
   depends_on = [aws_acm_certificate_validation.main]
+}
+
+# ALB Listener Rule - Invite Link Fallback
+resource "aws_lb_listener_rule" "invite_redirect" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 10
+
+  action {
+    type = "redirect"
+
+    redirect {
+      protocol    = "HTTPS"
+      host        = "keepiluv.framer.website"
+      port        = "443"
+      path        = "/"
+      query       = ""
+      status_code = "HTTP_302"
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/invite", "/invite/*"]
+    }
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-invite-redirect"
+  }
+}
+
+# ALB Listener Rule - Apple App Site Association
+resource "aws_lb_listener_rule" "apple_app_site_association" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 5
+
+  action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "application/json"
+      status_code  = "200"
+      message_body = jsonencode({
+        applinks = {
+          apps = []
+          details = [{
+            appID = "VZC79KP79S.org.yapp.twix"
+            paths = ["/invite", "/invite/*"]
+          }]
+        }
+      })
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/.well-known/apple-app-site-association"]
+    }
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-aasa"
+  }
 }
