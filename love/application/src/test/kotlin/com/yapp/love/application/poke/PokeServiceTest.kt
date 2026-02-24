@@ -8,6 +8,7 @@ import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
 import com.yapp.love.domain.goal.repository.GoalRepository
+import com.yapp.love.domain.stamp.model.StampType
 import com.yapp.love.domain.poke.PokeRepository
 import com.yapp.love.domain.poke.model.Poke
 import com.yapp.love.domain.user.UserAdditionInfoRepository
@@ -58,6 +59,7 @@ class PokeServiceTest : DescribeSpec({
         endDate = LocalDate.of(2026, 3, 1),
         goalStatus = GoalStatus.IN_PROGRESS,
         icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
     )
 
     beforeEach {
@@ -152,6 +154,7 @@ class PokeServiceTest : DescribeSpec({
                     startDate = LocalDate.of(2026, 1, 1),
                     goalStatus = GoalStatus.IN_PROGRESS,
                     icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
 
                 every { coupleInfoRepository.findByUserId(senderId) } returns coupleInfo
@@ -174,6 +177,7 @@ class PokeServiceTest : DescribeSpec({
                     startDate = LocalDate.of(2026, 1, 1),
                     goalStatus = GoalStatus.COMPLETED,
                     icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
 
                 every { coupleInfoRepository.findByUserId(senderId) } returns coupleInfo

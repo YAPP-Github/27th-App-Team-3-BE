@@ -47,4 +47,9 @@ interface GoalRepository {
      * 종료 대상 목표 조회 (상태 업데이트 전에 호출하여 알림 대상 파악)
      */
     fun findGoalsEndingBefore(today: LocalDate): List<Goal>
+
+    /**
+     * 특정 커플의 모든 활성 목표 조회 (삭제되지 않은 목표만)
+     */
+    fun findActiveByCoupleId(coupleId: Long): List<Goal>
 }

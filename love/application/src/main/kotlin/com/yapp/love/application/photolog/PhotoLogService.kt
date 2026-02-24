@@ -14,6 +14,8 @@ import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.photolog.model.Photolog
 import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.photolog.repository.PhotologRepository
+import com.yapp.love.domain.stamp.model.StampHistory
+import com.yapp.love.domain.stamp.repository.StampHistoryRepository
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,6 +35,7 @@ class PhotologService(
     private val coupleService: CoupleService,
     private val goalRepository: GoalRepository,
     private val coupleInfoRepository: CoupleInfoRepository,
+    private val stampHistoryRepository: StampHistoryRepository,
     private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
     private val logger = KotlinLogging.logger {}
@@ -107,6 +110,16 @@ class PhotologService(
                 uploadedAt = Instant.now(),
                 fileName = fileName,
                 comment = comment,
+            )
+        )
+
+        // 스탬프 히스토리 저장
+        stampHistoryRepository.save(
+            StampHistory.of(
+                photologId = saved.id!!,
+                goalId = goalId,
+                userId = userId,
+                stampDate = verificationDate,
             )
         )
 
@@ -210,6 +223,8 @@ class PhotologService(
             throw GlobalException(GlobalErrorCode.FORBIDDEN, "본인의 인증샷만 삭제할 수 있습니다.")
         }
 
+        // 스탬프 히스토리 먼저 삭제
+        stampHistoryRepository.deleteByPhotologId(photologId)
         photologRepository.delete(photolog)
     }
 

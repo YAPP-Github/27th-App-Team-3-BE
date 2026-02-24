@@ -62,6 +62,7 @@ CREATE TABLE goals
     deleted_at   TIMESTAMP NULL,
     goal_status  VARCHAR(50)  NOT NULL COMMENT 'NOT_STARTED, IN_PROGRESS, COMPLETED, DELETED',
     goal_icon    VARCHAR(20)  NOT NULL,
+    stamp_type   ENUM('CLOVER', 'FLOWER', 'HEART', 'MOON', 'NOTE') NOT NULL,
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_goals_couple_deleted_start (couple_id, deleted_at, start_date),
@@ -162,4 +163,19 @@ CREATE TABLE pokes
     created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_pokes_sender_goal (sender_id, goal_id, created_at)
+);
+
+-- 스탬프 히스토리 테이블
+CREATE TABLE stamp_history
+(
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    photolog_id BIGINT      NOT NULL UNIQUE,
+    goal_id     BIGINT      NOT NULL,
+    user_id     BIGINT      NOT NULL,
+    stamp_date  DATE        NOT NULL,
+    stamp_color VARCHAR(20) NOT NULL COMMENT 'GREEN400, BLUE400, YELLOW400, PINK400, PINK300, PINK200, ORANGE400, PURPLE400',
+    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_stamp_history_photolog (photolog_id),
+    INDEX idx_stamp_history_goal_user_date (goal_id, user_id, stamp_date)
 );

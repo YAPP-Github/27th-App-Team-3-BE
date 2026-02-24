@@ -1,6 +1,7 @@
 package com.yapp.love.domain.goal.model
 
 import com.yapp.love.domain.common.BaseEntity
+import com.yapp.love.domain.stamp.model.StampType
 import jakarta.persistence.*
 import java.time.Instant
 import java.time.LocalDate
@@ -43,6 +44,9 @@ class Goal(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20, name = "goal_icon")
     var icon: GoalIcon,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, name = "stamp_type")
+    val stampType: StampType,
 ) : BaseEntity() {
     init {
         validateRepeatCycle()
@@ -126,6 +130,7 @@ class Goal(
             startDate: LocalDate,
             hasEndDate: Boolean,
             endDate: LocalDate?,
+            stampType: StampType = StampType.entries.random(),
         ): Goal {
             val today = LocalDate.now()
             val initialStatus =
@@ -146,6 +151,7 @@ class Goal(
                     hasEndDate = hasEndDate,
                     endDate = endDate,
                     goalStatus = initialStatus,
+                    stampType = stampType,
                     deletedAt = null,
                 )
 

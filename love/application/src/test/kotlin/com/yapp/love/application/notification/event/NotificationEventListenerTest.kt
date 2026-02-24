@@ -9,6 +9,7 @@ import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
 import com.yapp.love.domain.goal.repository.GoalRepository
+import com.yapp.love.domain.stamp.model.StampType
 import com.yapp.love.domain.notification.model.NotificationType
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.domain.user.model.UserAdditionInfo
@@ -127,6 +128,7 @@ class NotificationEventListenerTest : DescribeSpec({
             startDate = LocalDate.of(2026, 1, 1),
             goalStatus = GoalStatus.IN_PROGRESS,
             icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
         )
 
         context("정상적인 경우") {
