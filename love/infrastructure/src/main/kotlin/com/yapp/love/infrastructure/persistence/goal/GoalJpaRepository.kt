@@ -87,4 +87,9 @@ interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
     override fun findGoalsEndingBefore(
         @Param("today") today: LocalDate,
     ): List<Goal>
+
+    @Query("SELECT g FROM Goal g WHERE g.coupleId = :coupleId AND g.deletedAt IS NULL")
+    override fun findActiveByCoupleId(
+        @Param("coupleId") coupleId: Long,
+    ): List<Goal>
 }
