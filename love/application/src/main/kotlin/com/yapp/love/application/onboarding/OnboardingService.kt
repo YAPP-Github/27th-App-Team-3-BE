@@ -91,6 +91,14 @@ class OnboardingService(
     }
 
     @Transactional
+    fun updateProfile(userId: Long, nickname: String) {
+        val userAdditionInfo = userAdditionInfoRepository.findByUserId(userId)
+            ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "프로필 정보를 찾을 수 없습니다.")
+        userAdditionInfo.updateNickname(nickname)
+        userAdditionInfoRepository.save(userAdditionInfo)
+    }
+
+    @Transactional
     fun setAnniversary(userId: Long, anniversaryDate: LocalDate) {
         val coupleInfo = coupleInfoRepository.findByUserId(userId)
             ?: throw GlobalException(GlobalErrorCode.COUPLE_NOT_FOUND, "커플 정보를 찾을 수 없습니다.")
