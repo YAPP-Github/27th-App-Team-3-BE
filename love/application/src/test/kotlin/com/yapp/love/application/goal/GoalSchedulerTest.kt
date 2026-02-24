@@ -8,6 +8,7 @@ import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
 import com.yapp.love.domain.goal.repository.GoalRepository
+import com.yapp.love.domain.stamp.model.StampType
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.*
@@ -58,6 +59,7 @@ class GoalSchedulerTest : DescribeSpec({
                     startDate = LocalDate.now().minusDays(30),
                     goalStatus = GoalStatus.IN_PROGRESS,
                     icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
                 val coupleInfo = CoupleInfo(id = 100L, user1Id = 1L, user2Id = 2L, inviteCodeId = 1L)
 
@@ -82,12 +84,14 @@ class GoalSchedulerTest : DescribeSpec({
                     repeatCycle = RepeatCycle.DAILY, repeatCount = 1,
                     startDate = LocalDate.now().minusDays(30),
                     goalStatus = GoalStatus.IN_PROGRESS, icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
                 val goal2 = Goal(
                     id = 2L, coupleId = 100L, name = "독서하기",
                     repeatCycle = RepeatCycle.DAILY, repeatCount = 1,
                     startDate = LocalDate.now().minusDays(30),
                     goalStatus = GoalStatus.IN_PROGRESS, icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
                 val coupleInfo = CoupleInfo(id = 100L, user1Id = 1L, user2Id = 2L, inviteCodeId = 1L)
 
@@ -105,12 +109,14 @@ class GoalSchedulerTest : DescribeSpec({
                     repeatCycle = RepeatCycle.DAILY, repeatCount = 1,
                     startDate = LocalDate.now().minusDays(30),
                     goalStatus = GoalStatus.IN_PROGRESS, icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
                 val goal2 = Goal(
                     id = 2L, coupleId = 200L, name = "독서하기",
                     repeatCycle = RepeatCycle.DAILY, repeatCount = 1,
                     startDate = LocalDate.now().minusDays(30),
                     goalStatus = GoalStatus.IN_PROGRESS, icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
                 every { goalRepository.findGoalsEndingBefore(any()) } returns listOf(goal1, goal2)
                 every { coupleInfoRepository.findById(100L) } returns CoupleInfo(id = 100L, user1Id = 1L, user2Id = 2L, inviteCodeId = 1L)
@@ -129,6 +135,7 @@ class GoalSchedulerTest : DescribeSpec({
                     repeatCycle = RepeatCycle.DAILY, repeatCount = 1,
                     startDate = LocalDate.now().minusDays(30),
                     goalStatus = GoalStatus.IN_PROGRESS, icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                 )
                 every { goalRepository.findGoalsEndingBefore(any()) } returns listOf(goal)
                 every { coupleInfoRepository.findById(100L) } returns null

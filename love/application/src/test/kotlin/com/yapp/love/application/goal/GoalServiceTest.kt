@@ -9,6 +9,7 @@ import com.yapp.love.domain.goal.model.GoalIcon
 import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.goal.model.RepeatCycle
 import com.yapp.love.domain.goal.repository.GoalRepository
+import com.yapp.love.domain.stamp.model.StampType
 import com.yapp.love.globalutils.exception.GlobalException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -58,6 +59,7 @@ class GoalServiceTest : DescribeSpec({
                             endDate = LocalDate.of(2026, 3, 1),
                             goalStatus = GoalStatus.IN_PROGRESS,
                             icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                         ),
                         Goal(
                             id = 2L,
@@ -70,6 +72,7 @@ class GoalServiceTest : DescribeSpec({
                             endDate = null,
                             goalStatus = GoalStatus.IN_PROGRESS,
                             icon = GoalIcon.ICON_BOOK,
+                    stampType = StampType.CLOVER,
                         ),
                     )
 
@@ -148,6 +151,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = originalEndDate,
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -190,6 +194,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = today.plusDays(10), // 원래 종료일은 미래
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -235,6 +240,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = originalEndDate,
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -276,6 +282,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = today.minusDays(10),
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -319,6 +326,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = endDate,
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -362,6 +370,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = null,
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -406,6 +415,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = LocalDate.now().plusDays(10),
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -455,6 +465,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = LocalDate.now(),
                         goalStatus = GoalStatus.COMPLETED,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -506,6 +517,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = LocalDate.of(2026, 2, 15),
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_DEFAULT,
+                    stampType = StampType.CLOVER,
                     )
 
                 val command =
@@ -569,6 +581,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = today.plusMonths(1),
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                     )
 
                 every { goalRepository.findActiveGoalById(goalId) } returns goal
@@ -600,6 +613,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = null,
                         goalStatus = GoalStatus.IN_PROGRESS,
                         icon = GoalIcon.ICON_BOOK,
+                    stampType = StampType.CLOVER,
                     )
 
                 every { goalRepository.findActiveGoalById(goalId) } returns goal
@@ -632,6 +646,7 @@ class GoalServiceTest : DescribeSpec({
                         endDate = LocalDate.now(),
                         goalStatus = GoalStatus.COMPLETED,
                         icon = GoalIcon.ICON_EXERCISE,
+                    stampType = StampType.CLOVER,
                     )
 
                 every { goalRepository.findActiveGoalById(goalId) } returns goal

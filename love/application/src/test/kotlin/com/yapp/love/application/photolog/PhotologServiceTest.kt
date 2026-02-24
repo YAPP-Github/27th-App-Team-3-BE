@@ -8,6 +8,7 @@ import com.yapp.love.domain.goal.repository.GoalRepository
 import com.yapp.love.domain.photolog.model.Photolog
 import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.photolog.repository.PhotologRepository
+import com.yapp.love.domain.stamp.repository.StampHistoryRepository
 import com.yapp.love.globalutils.exception.GlobalException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -27,6 +28,7 @@ class PhotologServiceTest : DescribeSpec({
     val coupleService = mockk<CoupleService>()
     val goalRepository = mockk<GoalRepository>()
     val coupleInfoRepository = mockk<CoupleInfoRepository>()
+    val stampHistoryRepository = mockk<StampHistoryRepository>(relaxed = true)
     val eventPublisher = mockk<ApplicationEventPublisher>(relaxed = true)
 
     val photologService =
@@ -36,6 +38,7 @@ class PhotologServiceTest : DescribeSpec({
             coupleService = coupleService,
             goalRepository = goalRepository,
             coupleInfoRepository = coupleInfoRepository,
+            stampHistoryRepository = stampHistoryRepository,
             notificationEventPublisher = eventPublisher,
         )
 
