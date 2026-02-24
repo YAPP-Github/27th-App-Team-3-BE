@@ -7,6 +7,8 @@ interface FcmTokenRepository {
 
     fun findByUserId(userId: Long): List<FcmToken>
 
+    fun findByUserIdIn(userIds: List<Long>): List<FcmToken>
+
     fun findByUserIdAndDeviceId(
         userId: Long,
         deviceId: String,

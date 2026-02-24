@@ -42,7 +42,7 @@ dependencies {
     implementation("com.google.api-client:google-api-client:2.8.1")
 
     // Firebase
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
+    implementation 'com.google.firebase:firebase-admin:9.5.0'
 
     // ShedLock
     implementation 'net.javacrumbs.shedlock:shedlock-spring:6.0.2'

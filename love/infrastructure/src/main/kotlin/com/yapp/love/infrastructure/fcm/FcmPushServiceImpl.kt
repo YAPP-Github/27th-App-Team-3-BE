@@ -4,11 +4,11 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingException
 import com.google.firebase.messaging.Message
 import com.google.firebase.messaging.MessagingErrorCode
+import com.google.firebase.messaging.MulticastMessage
 import com.google.firebase.messaging.Notification
 import com.yapp.love.application.notification.port.FcmPushService
 import com.yapp.love.domain.notification.FcmTokenRepository
-import com.yapp.love.globalutils.exception.GlobalErrorCode
-import com.yapp.love.globalutils.exception.GlobalException
+import com.yapp.love.domain.notification.model.FcmToken
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -19,6 +19,53 @@ class FcmPushServiceImpl(
     private val firebaseMessaging: FirebaseMessaging,
     private val fcmTokenRepository: FcmTokenRepository,
 ) : FcmPushService {
+    override fun sendMulticast(
+        tokens: List<FcmToken>,
+        title: String,
+        body: String,
+        deepLink: String?,
+        dryRun: Boolean,
+    ) {
+        if (tokens.isEmpty()) return
+
+        val notification = Notification.builder()
+            .setTitle(title)
+            .setBody(body)
+            .build()
+
+        tokens.chunked(100).forEach { chunk ->
+            val multicastMessage =
+                MulticastMessage.builder()
+                    .addAllTokens(chunk.map { it.token })
+                    .setNotification(notification)
+                    .apply { if (deepLink != null) putData("deepLink", deepLink) }
+                    .build()
+            try {
+                val response = firebaseMessaging.sendEachForMulticast(multicastMessage, dryRun)
+                logger.info { "멀티캐스트 전송: success=${response.successCount}, failure=${response.failureCount}" }
+                response.responses.forEachIndexed { index, sendResponse ->
+                    if (!sendResponse.isSuccessful) {
+                        val errorCode = sendResponse.exception?.messagingErrorCode
+                        if (errorCode == MessagingErrorCode.UNREGISTERED) {
+                            try {
+                                fcmTokenRepository.delete(chunk[index])
+                                logger.info { "만료 토큰 삭제: token=${chunk[index].token}" }
+                            } catch (e: Exception) {
+                                logger.error(e) { "만료 토큰 삭제 실패: token=${chunk[index].token}" }
+                            }
+                        } else {
+                            logger.error(sendResponse.exception) {
+                                "멀티캐스트 개별 전송 실패: token=${chunk[index].token}, errorCode=$errorCode"
+                            }
+                        }
+                    }
+                }
+            } catch (e: FirebaseMessagingException) {
+                logger.error(e) { "멀티캐스트 전송 실패: chunkSize=${chunk.size}, errorCode=${e.messagingErrorCode}" }
+            }
+        }
+    }
+
     override fun sendPushToUser(
         userId: Long,
         title: String,
@@ -44,59 +91,6 @@ class FcmPushServiceImpl(
                     logger.error(e) { "FCM 전송 실패: userId=$userId, token=${fcmToken.token}" }
                 }
             }
-        }
-    }
-
-    override fun sendToTopic(
-        topic: String,
-        title: String,
-        body: String,
-        deepLink: String?,
-    ) {
-        try {
-            val message =
-                Message.builder()
-                    .setTopic(topic)
-                    .setNotification(
-                        Notification.builder()
-                            .setTitle(title)
-                            .setBody(body)
-                            .build(),
-                    )
-                    .apply { if (deepLink != null) putData("deepLink", deepLink) }
-                    .build()
-            val response = firebaseMessaging.send(message)
-            logger.info { "토픽 푸시 전송 성공: topic=$topic, messageId=$response" }
-        } catch (e: FirebaseMessagingException) {
-            logger.error(e) { "토픽 푸시 전송 실패: topic=$topic" }
-        }
-    }
-
-    override fun subscribeToTopic(token: String, topic: String) {
-        try {
-            firebaseMessaging.subscribeToTopic(listOf(token), topic)
-            logger.info { "토픽 구독 완료: token=$token, topic=$topic" }
-        } catch (e: FirebaseMessagingException) {
-            logger.error(e) { "토픽 구독 실패: token=$token, topic=$topic" }
-        }
-    }
-
-    override fun unsubscribeFromTopic(token: String, topic: String) {
-        try {
-            firebaseMessaging.unsubscribeFromTopic(listOf(token), topic)
-            logger.info { "토픽 구독 해제 완료: token=$token, topic=$topic" }
-        } catch (e: FirebaseMessagingException) {
-            logger.error(e) { "토픽 구독 해제 실패: token=$token, topic=$topic" }
-        }
-    }
-
-    override fun unsubscribeFromTopicOrThrow(token: String, topic: String) {
-        try {
-            firebaseMessaging.unsubscribeFromTopic(listOf(token), topic)
-            logger.info { "토픽 구독 해제 완료: token=$token, topic=$topic" }
-        } catch (e: FirebaseMessagingException) {
-            logger.error(e) { "토픽 구독 해제 실패: token=$token, topic=$topic" }
-            throw GlobalException(GlobalErrorCode.FCM_UNSUBSCRIBE_FAILED)
         }
     }
 

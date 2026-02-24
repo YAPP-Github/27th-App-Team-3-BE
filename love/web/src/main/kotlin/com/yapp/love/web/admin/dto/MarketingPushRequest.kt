@@ -4,4 +4,5 @@ data class MarketingPushRequest(
     val title: String,
     val body: String,
     val deepLink: String? = null,
+    val dryRun: Boolean = false,
 )

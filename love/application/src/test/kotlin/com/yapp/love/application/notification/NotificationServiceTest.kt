@@ -30,6 +30,20 @@ class NotificationServiceTest : DescribeSpec({
         clearAllMocks()
     }
 
+    describe("hasUnread") {
+        it("읽지 않은 알림이 있으면 true를 반환한다") {
+            every { notificationRepository.existsUnreadByUserId(userId) } returns true
+
+            notificationService.hasUnread(userId) shouldBe true
+        }
+
+        it("읽지 않은 알림이 없으면 false를 반환한다") {
+            every { notificationRepository.existsUnreadByUserId(userId) } returns false
+
+            notificationService.hasUnread(userId) shouldBe false
+        }
+    }
+
     describe("getNotifications") {
         it("첫 페이지 조회 시 lastId 없이 호출하고 hasNext를 반환한다") {
             val notifications = (1..21).map {
@@ -90,7 +104,7 @@ class NotificationServiceTest : DescribeSpec({
         }
 
         context("다른 사용자의 알림인 경우") {
-            it("예외가 발생한다") {
+            it("FORBIDDEN 예외가 발생한다") {
                 val otherUserNotification = Notification.create(
                     userId = 999L,
                     type = NotificationType.POKE,
@@ -99,7 +113,7 @@ class NotificationServiceTest : DescribeSpec({
                 )
                 every { notificationRepository.findById(notificationId) } returns otherUserNotification
 
-                shouldThrow<IllegalArgumentException> {
+                shouldThrow<GlobalException> {
                     notificationService.markAsRead(userId, notificationId)
                 }
             }
@@ -139,7 +153,7 @@ class NotificationServiceTest : DescribeSpec({
                     deepLinkParams = mapOf("goalId" to "10"),
                 )
 
-                verify(exactly = 1) { notificationRepository.save(any()) }
+                verify(exactly = 2) { notificationRepository.save(any()) }
                 verify { eventPublisher.publishEvent(any<FcmPushEvent>()) }
             }
 
@@ -191,7 +205,7 @@ class NotificationServiceTest : DescribeSpec({
                     bodyArgs = arrayOf("철수"),
                 )
 
-                verify(exactly = 1) { notificationRepository.save(any()) }
+                verify(exactly = 2) { notificationRepository.save(any()) }
                 verify(exactly = 0) { eventPublisher.publishEvent(any<FcmPushEvent>()) }
             }
         }
