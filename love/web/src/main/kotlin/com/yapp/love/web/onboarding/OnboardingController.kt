@@ -66,6 +66,15 @@ class OnboardingController(
         onboardingService.setProfile(userId, request.nickname)
     }
 
+    @Operation(summary = "프로필 수정")
+    @PatchMapping("/profile")
+    fun updateProfile(
+        @AuthUser userId: Long,
+        @Valid @RequestBody request: ProfileSetupRequest,
+    ) {
+        onboardingService.updateProfile(userId, request.nickname)
+    }
+
     @Operation(summary = "기념일 설정")
     @PostMapping("/anniversary")
     fun anniversarySetup(
