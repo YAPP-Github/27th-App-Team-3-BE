@@ -41,9 +41,19 @@ class StatsService(
         val startDate = yearMonth.atDay(1)
         val endDate = yearMonth.atEndOfMonth()
 
-        // 커플의 목표 조회 (상태별 필터링)
+        // 커플의 목표 조회 (상태별 + 해당 월 기간 겹침 필터링)
         val goals = goalRepository.findActiveByCoupleId(coupleInfo.id!!)
             .filter { it.goalStatus == goalStatus }
+            .filter { goal ->
+                val actualStartDate = maxOf(startDate, goal.startDate)
+                val goalEndDate = goal.endDate
+                val actualEndDate = if (goal.hasEndDate && goalEndDate != null) {
+                    minOf(endDate, goalEndDate)
+                } else {
+                    endDate
+                }
+                !actualStartDate.isAfter(actualEndDate)
+            }
 
         if (goals.isEmpty()) {
             return StatsInfo(
