@@ -37,6 +37,20 @@ interface PhotologJpaRepository : PhotologRepository, JpaRepository<Photolog, Lo
         @Param("verificationDate") verificationDate: LocalDate,
     ): Photolog?
 
+    @Query(
+        """
+        SELECT p FROM Photolog p
+        WHERE p.goalId = :goalId
+        AND p.verificationDate BETWEEN :startDate AND :endDate
+        ORDER BY p.verificationDate ASC
+    """,
+    )
+    override fun findByGoalIdAndVerificationDateBetween(
+        @Param("goalId") goalId: Long,
+        @Param("startDate") startDate: LocalDate,
+        @Param("endDate") endDate: LocalDate,
+    ): List<Photolog>
+
     @Modifying
     @Query(
         """

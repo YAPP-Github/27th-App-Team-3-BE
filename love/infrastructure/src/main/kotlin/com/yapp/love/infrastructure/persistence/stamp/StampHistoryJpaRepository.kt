@@ -43,6 +43,18 @@ interface StampHistoryJpaRepository : JpaRepository<StampHistory, Long>, StampHi
         @Param("endDate") endDate: LocalDate,
     ): List<StampHistory>
 
+    @Query(
+        """
+        SELECT COUNT(sh) FROM StampHistory sh
+        WHERE sh.goalId = :goalId
+        AND sh.userId = :userId
+    """,
+    )
+    override fun countByGoalIdAndUserId(
+        @Param("goalId") goalId: Long,
+        @Param("userId") userId: Long,
+    ): Int
+
     @Modifying
     @Query("DELETE FROM StampHistory sh WHERE sh.photologId = :photologId")
     override fun deleteByPhotologId(

@@ -22,5 +22,10 @@ interface StampHistoryRepository {
         endDate: LocalDate,
     ): List<StampHistory>
 
+    fun countByGoalIdAndUserId(
+        goalId: Long,
+        userId: Long,
+    ): Int
+
     fun deleteByPhotologId(photologId: Long)
 }
