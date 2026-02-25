@@ -30,6 +30,12 @@ interface PhotologRepository {
         endDate: LocalDate,
     ): Int
 
+    fun findByGoalIdAndVerificationDateBetween(
+        goalId: Long,
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ): List<Photolog>
+
     /**
      * 여러 목표의 모든 포토로그 삭제
      */
