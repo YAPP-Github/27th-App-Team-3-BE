@@ -52,7 +52,7 @@ class NotificationSettingService(
     }
 
     fun shouldSendPush(userId: Long, type: NotificationType): Boolean {
-        val setting = notificationSettingRepository.findByUserId(userId) ?: return false
+        val setting = findByUserId(userId)
 
         when (type) {
             NotificationType.POKE -> if (!setting.isPokePushEnabled) return false

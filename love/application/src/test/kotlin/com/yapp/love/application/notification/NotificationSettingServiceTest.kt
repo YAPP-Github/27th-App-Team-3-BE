@@ -144,10 +144,18 @@ class NotificationSettingServiceTest : DescribeSpec({
     describe("shouldSendPush") {
 
         context("설정이 존재하지 않는 경우") {
-            it("false를 반환한다") {
+            it("기본 설정을 생성하고 POKE는 false를 반환한다") {
                 every { notificationSettingRepository.findByUserId(userId) } returns null
+                every { notificationSettingRepository.save(any()) } answers { firstArg() }
 
                 service.shouldSendPush(userId, NotificationType.POKE) shouldBe false
+            }
+
+            it("기본 설정을 생성하고 PARTNER_CONNECTED는 true를 반환한다") {
+                every { notificationSettingRepository.findByUserId(userId) } returns null
+                every { notificationSettingRepository.save(any()) } answers { firstArg() }
+
+                service.shouldSendPush(userId, NotificationType.PARTNER_CONNECTED) shouldBe true
             }
         }
 
