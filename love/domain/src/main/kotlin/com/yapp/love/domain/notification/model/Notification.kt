@@ -61,38 +61,38 @@ enum class NotificationType(
     val action: String,
 ) {
     PARTNER_CONNECTED(
-        titleTemplate = "%s님과 연결됐어요",
+        titleTemplate = "'%s'님과 연결됐어요👏",
         bodyTemplate = "목표 등록하고 바로 keep it up!",
         action = "partner-connected",
     ),
 
     POKE(
-        titleTemplate = "%s님이 '%s' 찔렀어요",
-        bodyTemplate = "아직이신가요? %s님이 궁금해 해요",
+        titleTemplate = "%s님이 '%s' 찔렀어요!",
+        bodyTemplate = "아직이신가요? %s님이 궁금해해요!",
         action = "poke",
     ),
 
     GOAL_COMPLETED(
-        titleTemplate = "%s님이 '%s' 다 했나봐요",
-        bodyTemplate = "%s님의 새로운 사진 보러 가기",
+        titleTemplate = "'%s님'이 '%s' 다 했나봐요~",
+        bodyTemplate = "'%s'님의 새로운 사진 보러 가기 👉",
         action = "goal-completed",
     ),
 
     REACTION(
-        titleTemplate = "%s님이 반응을 남겼어요",
-        bodyTemplate = "%s님이 남긴 반응 보러가기",
+        titleTemplate = "'%s'님이 반응을 남겼어요!",
+        bodyTemplate = "'%s'님이 남긴 반응 보러가기 👉",
         action = "reaction",
     ),
 
     DAILY_GOAL_ACHIEVED(
         titleTemplate = "%s keep it luv 완료!",
-        bodyTemplate = "오늘 하루도 키피럽한 서로에게 박수를",
+        bodyTemplate = "오늘 하루도 키피럽한 서로에게 박수를 👏",
         action = "daily-goal-achieved",
     ),
 
     GOAL_ENDED(
-        titleTemplate = "%s이 드디어 종료됐어요",
-        bodyTemplate = "그동안 수고했어요",
+        titleTemplate = "'%s'이 드디어 종료됐어요!",
+        bodyTemplate = "그동안 수고했어요 👍",
         action = "goal-ended",
     ),
 
