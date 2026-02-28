@@ -13,13 +13,26 @@ private val logger = KotlinLogging.logger {}
 @EnableAsync
 @Configuration
 class AsyncConfig : AsyncConfigurer {
+    // current spec : 0.5 vCPU, 1GB RAM Fargate
     @Bean(name = ["fcmTaskExecutor"])
     fun fcmTaskExecutor(): ThreadPoolTaskExecutor {
         return ThreadPoolTaskExecutor().apply {
             corePoolSize = 2
-            maxPoolSize = 10
-            queueCapacity = 500
+            maxPoolSize = 4  // 0.5 vCPU에서 I/O bound 작업 기준
+            queueCapacity = 100
             setThreadNamePrefix("fcm-async-")
+            initialize()
+        }
+    }
+
+    @Bean(name = ["fcmMarketingPushExecutor"])
+    fun fcmMarketingPushExecutor(): ThreadPoolTaskExecutor {
+        // 마케팅 발송 특성상 동시에 여러 요청이 들어올 경우가 적음
+        return ThreadPoolTaskExecutor().apply {
+            corePoolSize = 2 // 500개씩 쪼개서 보내서 스레드를 오래 점유하는 작업
+            maxPoolSize = 2
+            queueCapacity = 5
+            setThreadNamePrefix("marketing-push-")
             initialize()
         }
     }

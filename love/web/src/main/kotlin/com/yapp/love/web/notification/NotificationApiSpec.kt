@@ -72,8 +72,7 @@ annotation class RegisterFcmTokenApiSpec
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "FCM 토큰 삭제",
-    description = "로그아웃 시 디바이스 FCM 토큰을 삭제하고 마케팅 topic 구독을 해제합니다. 토큰이 존재하지 않으면 무시됩니다.\n\n" +
-        "FCM topic 구독 해제 실패 시 500이 반환되며, 이 경우 DB 삭제도 롤백됩니다. 재시도해주세요.",
+    description = "로그아웃 시 디바이스 FCM 토큰을 삭제합니다. 토큰이 존재하지 않으면 무시됩니다.",
 )
 @ApiResponses(
     value = [
@@ -95,21 +94,6 @@ annotation class RegisterFcmTokenApiSpec
                         ExampleObject(
                             name = "토큰 만료",
                             value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        ApiResponse(
-            responseCode = "500",
-            description = "FCM 구독 해제 실패",
-            content = [
-                Content(
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "FCM 구독 해제 실패",
-                            value = """{"status": 500, "code": "G5001", "message": "FCM 토픽 구독 해제에 실패했습니다. 잠시 후 다시 시도해주세요."}""",
                         ),
                     ],
                 ),

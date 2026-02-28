@@ -315,6 +315,30 @@ class NotificationEventListenerTest : DescribeSpec({
         }
     }
 
+    describe("handleFcmPush") {
+        it("FCM 푸시를 전송한다") {
+            val event = FcmPushEvent(userId = 1L, title = "제목", body = "내용", deepLink = "love://home")
+
+            listener.handleFcmPush(event)
+
+            verify {
+                fcmPushService.sendPushToUser(
+                    userId = 1L,
+                    title = "제목",
+                    body = "내용",
+                    deepLink = "love://home",
+                )
+            }
+        }
+
+        it("예외 발생 시 메서드가 정상 종료된다") {
+            val event = FcmPushEvent(userId = 1L, title = "제목", body = "내용", deepLink = "love://home")
+            every { fcmPushService.sendPushToUser(any(), any(), any(), any()) } throws RuntimeException("FCM 오류")
+
+            listener.handleFcmPush(event)
+        }
+    }
+
     describe("handleReactionCreated") {
         it("포토로그 소유자에게 REACTION 알림을 전송한다") {
             val event = ReactionCreatedEvent(

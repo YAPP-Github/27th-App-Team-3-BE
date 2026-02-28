@@ -41,7 +41,7 @@ class NotificationService(
             notificationRepository.findById(notificationId)
                 ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "알림을 찾을 수 없습니다.")
 
-        require(notification.userId == userId) { "본인의 알림만 읽음 처리할 수 있습니다." }
+        if (notification.userId != userId) throw GlobalException(GlobalErrorCode.FORBIDDEN, "본인의 알림만 읽음 처리할 수 있습니다.")
 
         notification.markAsRead()
         notificationRepository.save(notification)
@@ -80,6 +80,7 @@ class NotificationService(
         }
         val deepLink = type.makeDeepLink(allParams)
         saved.deepLink = deepLink
+        notificationRepository.save(saved)
 
         // 3. FCM 푸시 전송 (커밋 이후 이벤트로 발송)
         if (notificationSettingService.shouldSendPush(targetUserId, type)) {

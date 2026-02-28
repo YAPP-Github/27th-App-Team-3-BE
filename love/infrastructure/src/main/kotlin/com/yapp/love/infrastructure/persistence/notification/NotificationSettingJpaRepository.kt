@@ -10,4 +10,6 @@ interface NotificationSettingJpaRepository :
     NotificationSettingRepository,
     JpaRepository<NotificationSetting, Long> {
     override fun findByUserId(userId: Long): NotificationSetting?
+
+    override fun findAllByIsMarketingPushEnabledTrue(): List<NotificationSetting>
 }

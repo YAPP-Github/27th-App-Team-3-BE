@@ -17,6 +17,8 @@ interface FcmTokenJpaRepositoryInterface : JpaRepository<FcmToken, Long> {
     
     fun findByDeviceIdAndUserIdNot(deviceId: String, userId: Long): List<FcmToken>
 
+    fun findByUserIdIn(userIds: List<Long>): List<FcmToken>
+
     fun deleteByTokenAndUserIdNot(token: String, userId: Long)
 
     fun deleteByUserId(userId: Long)
@@ -51,6 +53,10 @@ class FcmTokenJpaRepository(
 
     override fun findByDeviceIdAndUserIdNot(deviceId: String, userId: Long): List<FcmToken> {
         return jpaRepository.findByDeviceIdAndUserIdNot(deviceId, userId)
+    }
+
+    override fun findByUserIdIn(userIds: List<Long>): List<FcmToken> {
+        return jpaRepository.findByUserIdIn(userIds)
     }
 
     override fun deleteAll(fcmTokens: List<FcmToken>) {

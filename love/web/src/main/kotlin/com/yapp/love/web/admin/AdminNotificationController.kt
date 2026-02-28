@@ -1,7 +1,6 @@
 package com.yapp.love.web.admin
 
-import com.yapp.love.application.notification.FcmTokenService
-import com.yapp.love.application.notification.port.FcmPushService
+import com.yapp.love.application.notification.MarketingPushService
 import com.yapp.love.globalutils.exception.GlobalErrorCode
 import com.yapp.love.globalutils.exception.GlobalException
 import com.yapp.love.web.admin.dto.MarketingPushRequest
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/admin/notifications")
 class AdminNotificationController(
-    private val fcmPushService: FcmPushService,
+    private val marketingPushService: MarketingPushService,
     @Value("\${admin.secret}")
     private val adminSecret: String,
 ) {
@@ -32,11 +31,11 @@ class AdminNotificationController(
             throw GlobalException(GlobalErrorCode.UNAUTHORIZED, "인증되지 않은 요청입니다.")
         }
 
-        fcmPushService.sendToTopic(
-            topic = FcmTokenService.MARKETING_TOPIC,
+        marketingPushService.sendMarketingPush(
             title = request.title,
             body = request.body,
             deepLink = request.deepLink,
+            dryRun = request.dryRun,
         )
     }
 }
