@@ -116,15 +116,15 @@ resource "aws_ecs_task_definition" "main" {
         },
         {
           name  = "DB_HOST"
-          value = aws_db_instance.main.address
+          value = var.supabase_db_host
         },
         {
           name  = "DB_PORT"
-          value = "3306"
+          value = var.supabase_db_port
         },
         {
           name  = "DB_NAME"
-          value = var.rds_database_name
+          value = var.supabase_db_name
         },
         {
           name  = "REDIS_HOST"
@@ -214,10 +214,10 @@ resource "aws_ecs_service" "main" {
   }
 }
 
-# Secrets Manager for RDS Credentials
+# Secrets Manager for DB Credentials
 resource "aws_secretsmanager_secret" "rds_credentials" {
   name                    = "${var.project_name}-${var.environment}-rds-credentials"
-  description             = "RDS MySQL credentials"
+  description             = "Supabase PostgreSQL credentials"
   recovery_window_in_days = 0 # Dev 환경이므로 즉시 삭제 가능
 
   tags = {
@@ -228,8 +228,8 @@ resource "aws_secretsmanager_secret" "rds_credentials" {
 resource "aws_secretsmanager_secret_version" "rds_credentials" {
   secret_id = aws_secretsmanager_secret.rds_credentials.id
   secret_string = jsonencode({
-    username = var.rds_master_username
-    password = var.rds_master_password
+    username = var.supabase_db_username
+    password = var.supabase_db_password
   })
 }
 

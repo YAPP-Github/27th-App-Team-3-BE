@@ -67,6 +67,38 @@ variable "ecs_health_check_path" {
   default     = "/actuator/health"
 }
 
+# Supabase Variables
+variable "supabase_db_host" {
+  description = "Supabase PostgreSQL pooler host"
+  type        = string
+  default     = "aws-1-ap-northeast-1.pooler.supabase.com"
+}
+
+variable "supabase_db_port" {
+  description = "Supabase PostgreSQL pooler port"
+  type        = string
+  default     = "6543"
+}
+
+variable "supabase_db_name" {
+  description = "Supabase database name"
+  type        = string
+  default     = "postgres"
+}
+
+variable "supabase_db_username" {
+  description = "Supabase database username"
+  type        = string
+  default     = "postgres.muwikxxytulsvkdlojnu"
+  sensitive   = true
+}
+
+variable "supabase_db_password" {
+  description = "Supabase database password"
+  type        = string
+  sensitive   = true
+}
+
 # RDS Variables
 variable "rds_instance_class" {
   description = "RDS instance class"
