@@ -142,6 +142,13 @@ resource "aws_instance" "main" {
     systemctl enable codedeploy-agent || true
     systemctl start codedeploy-agent || true
 
+    # Swap 1GB 추가 (t3.micro 메모리 부족 방지)
+    fallocate -l 1G /swapfile || dd if=/dev/zero of=/swapfile bs=128M count=8
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+
     # 앱 환경 설정 파일 생성 (시크릿 제외)
     mkdir -p /etc/app
     printf "AWS_REGION=${var.aws_region}\n" > /etc/app/config.env
