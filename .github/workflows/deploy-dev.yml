@@ -73,7 +73,7 @@ jobs:
       - name: Create deployment bundle
         run: |
           mkdir -p deployment_bundle
-          cp appspec.yaml deployment_bundle/
+          cp appspec.yml deployment_bundle/
           cp -r scripts deployment_bundle/
           chmod +x deployment_bundle/scripts/*.sh
           cd deployment_bundle
