@@ -11,14 +11,13 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: teamtwix-dev
-  ECS_SERVICE: teamtwix-dev-service
-  ECS_CLUSTER: teamtwix-dev-cluster
-  ECS_TASK_DEFINITION: teamtwix-dev-task
-  CONTAINER_NAME: teamtwix-dev-container
+  S3_BUCKET: teamtwix-dev-static
+  CODEDEPLOY_APP: teamtwix-dev-app
+  CODEDEPLOY_GROUP: teamtwix-dev-deployment-group
 
 jobs:
   deploy:
-    name: Deploy to AWS ECS
+    name: Deploy to AWS EC2
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
@@ -65,68 +64,50 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Docker 이미지 빌드
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-          # ECR에 푸시
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Download current task definition
+      - name: Create deployment bundle
         run: |
-          aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_TASK_DEFINITION }} \
-            --query taskDefinition > task-definition.json
+          mkdir -p deployment_bundle
+          cp appspec.yaml deployment_bundle/
+          cp -r scripts deployment_bundle/
+          chmod +x deployment_bundle/scripts/*.sh
+          cd deployment_bundle
+          zip -r ../deployment.zip .
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
-
-      - name: Stop existing deployment if any
+      - name: Upload deployment bundle to S3
         run: |
-          DEPLOYMENT_ID=$(aws deploy list-deployments \
-            --application-name teamtwix-dev-app \
-            --deployment-group-name teamtwix-dev-deployment-group \
+          aws s3 cp deployment.zip \
+            s3://${{ env.S3_BUCKET }}/deployments/deployment-${{ github.sha }}.zip
+
+      - name: Create CodeDeploy deployment
+        id: deploy
+        run: |
+          DEPLOYMENT_ID=$(aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP }} \
+            --deployment-group-name ${{ env.CODEDEPLOY_GROUP }} \
+            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=deployments/deployment-${{ github.sha }}.zip \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --description "Deploy ${{ github.sha }}" \
             --region ${{ env.AWS_REGION }} \
-            --include-only-statuses InProgress \
-            --max-items 1 \
-            --query 'deployments[0]' \
+            --query deploymentId \
             --output text)
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "Deployment ID: $DEPLOYMENT_ID"
 
-          if [ "$DEPLOYMENT_ID" != "None" ] && [ "$DEPLOYMENT_ID" != "" ]; then
-            echo "Stopping existing deployment: $DEPLOYMENT_ID"
-            aws deploy stop-deployment \
-              --deployment-id $DEPLOYMENT_ID \
-              --auto-rollback-enabled \
-              --region ${{ env.AWS_REGION }}
-            sleep 10
-          else
-            echo "No active deployment to stop"
-          fi
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
-          codedeploy-appspec: appspec.yaml
-          codedeploy-application: teamtwix-dev-app
-          codedeploy-deployment-group: teamtwix-dev-deployment-group
+      - name: Wait for deployment to complete
+        run: |
+          aws deploy wait deployment-successful \
+            --deployment-id ${{ steps.deploy.outputs.deployment_id }} \
+            --region ${{ env.AWS_REGION }}
 
       - name: Deployment Summary
         if: success()
         run: |
-          echo "🚀 Deployment Successful!"
-          echo "Environment: dev"
+          echo "Deployment Successful!"
           echo "Image: ${{ steps.build-image.outputs.image }}"
-          echo "Service: ${{ env.ECS_SERVICE }}"
-          echo "Cluster: ${{ env.ECS_CLUSTER }}"
+          echo "Deployment ID: ${{ steps.deploy.outputs.deployment_id }}"

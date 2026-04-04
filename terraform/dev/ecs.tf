@@ -1,20 +1,6 @@
-# ECS Cluster
-resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-${var.environment}-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-cluster"
-  }
-}
-
-# ECS Task Execution Role
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+# EC2 IAM Role
+resource "aws_iam_role" "ec2_role" {
+  name = "${var.project_name}-${var.environment}-ec2-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -23,52 +9,53 @@ resource "aws_iam_role" "ecs_task_execution_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "ecs-tasks.amazonaws.com"
+          Service = "ec2.amazonaws.com"
         }
       }
     ]
   })
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+    Name = "${var.project_name}-${var.environment}-ec2-role"
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
-  role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# ECS Task Role
-resource "aws_iam_role" "ecs_task_role" {
-  name = "${var.project_name}-${var.environment}-ecs-task-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task-role"
-  }
+resource "aws_iam_role_policy_attachment" "ec2_cloudwatch" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
-# S3 Access Policy for ECS Task
-resource "aws_iam_role_policy" "ecs_task_s3_policy" {
-  name = "${var.project_name}-${var.environment}-ecs-task-s3-policy"
-  role = aws_iam_role.ecs_task_role.id
+resource "aws_iam_role_policy" "ec2_policy" {
+  name = "${var.project_name}-${var.environment}-ec2-policy"
+  role = aws_iam_role.ec2_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchCheckLayerAvailability"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          aws_secretsmanager_secret.rds_credentials.arn
+        ]
+      },
       {
         Effect = "Allow"
         Action = [
@@ -81,144 +68,115 @@ resource "aws_iam_role_policy" "ecs_task_s3_policy" {
           aws_s3_bucket.static.arn,
           "${aws_s3_bucket.static.arn}/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "*"
+      },
+      {
+        # CodeDeploy 배포 번들 다운로드용
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
+        ]
       }
     ]
   })
 }
 
-# ECS Task Definition
-resource "aws_ecs_task_definition" "main" {
-  family                   = "${var.project_name}-${var.environment}-task"
-  network_mode             = "awsvpc"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = var.ecs_task_cpu
-  memory                   = var.ecs_task_memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${var.project_name}-${var.environment}-ec2-profile"
+  role = aws_iam_role.ec2_role.name
+}
 
-  container_definitions = jsonencode([
-    {
-      name      = "${var.project_name}-${var.environment}-container"
-      image     = var.docker_image != "" ? var.docker_image : "${aws_ecr_repository.main.repository_url}:latest"
-      essential = true
+# Amazon Linux 2023 최신 AMI
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
 
-      portMappings = [
-        {
-          containerPort = var.ecs_container_port
-          protocol      = "tcp"
-        }
-      ]
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
 
-      environment = [
-        {
-          name  = "SPRING_PROFILES_ACTIVE"
-          value = var.environment
-        },
-        {
-          name  = "DB_HOST"
-          value = var.supabase_db_host
-        },
-        {
-          name  = "DB_PORT"
-          value = var.supabase_db_port
-        },
-        {
-          name  = "DB_NAME"
-          value = var.supabase_db_name
-        },
-        {
-          name  = "REDIS_HOST"
-          value = aws_elasticache_cluster.redis.cache_nodes[0].address
-        },
-        {
-          name  = "REDIS_PORT"
-          value = "6379"
-        }
-      ]
-
-      secrets = [
-        {
-          name      = "DB_USERNAME"
-          valueFrom = "${aws_secretsmanager_secret.rds_credentials.arn}:username::"
-        },
-        {
-          name      = "DB_PASSWORD"
-          valueFrom = "${aws_secretsmanager_secret.rds_credentials.arn}:password::"
-        }
-      ]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.ecs_container_port}${var.ecs_health_check_path} || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 60
-      }
-    }
-  ])
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-task"
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
-# ECS Service
-resource "aws_ecs_service" "main" {
-  name            = "${var.project_name}-${var.environment}-service"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.main.arn
-  desired_count   = var.ecs_desired_count
-  launch_type     = "FARGATE"
+# EC2 Instance
+resource "aws_instance" "main" {
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.ec2_instance_type
+  subnet_id              = aws_subnet.public[1].id
+  vpc_security_group_ids = [aws_security_group.ec2.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
-  network_configuration {
-    subnets          = [aws_subnet.public[1].id] # AZ-B (10.0.2.0/24)
-    security_groups  = [aws_security_group.ecs_task.id]
-    assign_public_ip = true # Public Subnet에서 인터넷 접근을 위해 필요
-  }
+  user_data = base64encode(<<-USERDATA
+    #!/bin/bash
+    set -e
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.blue.arn
-    container_name   = "${var.project_name}-${var.environment}-container"
-    container_port   = var.ecs_container_port
-  }
+    # 시스템 업데이트 및 패키지 설치
+    dnf update -y
+    dnf install -y docker ruby wget jq
+    systemctl start docker
+    systemctl enable docker
+    usermod -aG docker ec2-user
 
-  deployment_controller {
-    type = "CODE_DEPLOY" # Blue/Green 배포를 위해 CodeDeploy 사용
-  }
+    # CodeDeploy 에이전트 설치
+    cd /tmp
+    wget https://aws-codedeploy-${var.aws_region}.s3.${var.aws_region}.amazonaws.com/latest/install
+    chmod +x ./install
+    ./install auto
+    systemctl enable codedeploy-agent
+    systemctl start codedeploy-agent
 
-  # 초기 배포 시에만 무시, 이후 CodeDeploy가 관리
-  lifecycle {
-    ignore_changes = [
-      task_definition,
-      load_balancer,
-      desired_count
-    ]
-  }
-
-  depends_on = [
-    aws_lb_listener.https,
-    aws_iam_role_policy_attachment.ecs_task_execution_role_policy
-  ]
+    # 앱 환경 설정 파일 생성 (시크릿 제외)
+    mkdir -p /etc/app
+    printf "AWS_REGION=${var.aws_region}\n" > /etc/app/config.env
+    printf "ECR_REGISTRY=${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com\n" >> /etc/app/config.env
+    printf "ECR_REPOSITORY=${var.project_name}-${var.environment}\n" >> /etc/app/config.env
+    printf "CONTAINER_NAME=${var.project_name}-${var.environment}-app\n" >> /etc/app/config.env
+    printf "CONTAINER_PORT=${var.ecs_container_port}\n" >> /etc/app/config.env
+    printf "SECRET_NAME=${var.project_name}-${var.environment}-rds-credentials\n" >> /etc/app/config.env
+    printf "DB_HOST=${var.supabase_db_host}\n" >> /etc/app/config.env
+    printf "DB_PORT=${var.supabase_db_port}\n" >> /etc/app/config.env
+    printf "DB_NAME=${var.supabase_db_name}\n" >> /etc/app/config.env
+    printf "REDIS_HOST=${aws_elasticache_cluster.redis.cache_nodes[0].address}\n" >> /etc/app/config.env
+    printf "REDIS_PORT=6379\n" >> /etc/app/config.env
+  USERDATA
+  )
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-service"
+    Name        = "${var.project_name}-${var.environment}"
+    Environment = var.environment
   }
+}
+
+# EC2 인스턴스를 ALB 타겟 그룹에 등록
+resource "aws_lb_target_group_attachment" "main" {
+  target_group_arn = aws_lb_target_group.blue.arn
+  target_id        = aws_instance.main.id
+  port             = var.ecs_container_port
 }
 
 # Secrets Manager for DB Credentials
 resource "aws_secretsmanager_secret" "rds_credentials" {
   name                    = "${var.project_name}-${var.environment}-rds-credentials"
   description             = "Supabase PostgreSQL credentials"
-  recovery_window_in_days = 0 # Dev 환경이므로 즉시 삭제 가능
+  recovery_window_in_days = 0
 
   tags = {
     Name = "${var.project_name}-${var.environment}-rds-credentials"
@@ -230,26 +188,5 @@ resource "aws_secretsmanager_secret_version" "rds_credentials" {
   secret_string = jsonencode({
     username = var.supabase_db_username
     password = var.supabase_db_password
-  })
-}
-
-# ECS Task Execution Role에 Secrets Manager 접근 권한 추가
-resource "aws_iam_role_policy" "ecs_task_execution_secrets_policy" {
-  name = "${var.project_name}-${var.environment}-ecs-secrets-policy"
-  role = aws_iam_role.ecs_task_execution_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = [
-          aws_secretsmanager_secret.rds_credentials.arn
-        ]
-      }
-    ]
   })
 }

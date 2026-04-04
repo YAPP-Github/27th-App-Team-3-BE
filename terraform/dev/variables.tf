@@ -196,3 +196,10 @@ variable "docker_image" {
   type        = string
   default     = ""
 }
+
+# EC2 Variables
+variable "ec2_instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}

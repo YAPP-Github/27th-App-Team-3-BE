@@ -26,3 +26,6 @@ provider "aws" {
 data "aws_availability_zones" "available" {
   state = "available"
 }
+
+# Data source for AWS account ID
+data "aws_caller_identity" "current" {}

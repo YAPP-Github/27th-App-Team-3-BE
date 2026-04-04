@@ -33,10 +33,10 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# ECS Task Security Group
-resource "aws_security_group" "ecs_task" {
-  name        = "${var.project_name}-${var.environment}-ecs-task-sg"
-  description = "Security group for ECS tasks"
+# EC2 Security Group
+resource "aws_security_group" "ec2" {
+  name        = "${var.project_name}-${var.environment}-ec2-sg"
+  description = "Security group for EC2 instance"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -56,42 +56,7 @@ resource "aws_security_group" "ecs_task" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-ecs-task-sg"
-  }
-}
-
-# RDS Security Group
-resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-${var.environment}-rds-sg"
-  description = "Security group for RDS MySQL"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description     = "MySQL from ECS tasks"
-    from_port       = 3306
-    to_port         = 3306
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_task.id]
-  }
-
-  ingress {
-    description = "MySQL from developer IP"
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = [var.developer_ip]
-  }
-
-  egress {
-    description = "No outbound traffic needed for RDS"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-rds-sg"
+    Name = "${var.project_name}-${var.environment}-ec2-sg"
   }
 }
 
@@ -102,11 +67,11 @@ resource "aws_security_group" "redis" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description     = "Redis from ECS tasks"
+    description     = "Redis from EC2"
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_task.id]
+    security_groups = [aws_security_group.ec2.id]
   }
 
   ingress {
@@ -118,7 +83,7 @@ resource "aws_security_group" "redis" {
   }
 
   egress {
-    description = "No outbound traffic needed for Redis"
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
