@@ -126,7 +126,6 @@ resource "aws_instance" "main" {
 
   user_data = base64encode(<<-USERDATA
     #!/bin/bash
-    set -e
 
     # 시스템 업데이트 및 패키지 설치
     dnf update -y
@@ -139,9 +138,9 @@ resource "aws_instance" "main" {
     cd /tmp
     wget https://aws-codedeploy-${var.aws_region}.s3.${var.aws_region}.amazonaws.com/latest/install
     chmod +x ./install
-    ./install auto
-    systemctl enable codedeploy-agent
-    systemctl start codedeploy-agent
+    ./install auto || true
+    systemctl enable codedeploy-agent || true
+    systemctl start codedeploy-agent || true
 
     # 앱 환경 설정 파일 생성 (시크릿 제외)
     mkdir -p /etc/app
