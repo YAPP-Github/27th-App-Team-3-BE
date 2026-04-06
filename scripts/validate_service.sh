@@ -4,9 +4,8 @@ set -e
 source /etc/app/config.env
 
 echo "Waiting for application to start..."
-sleep 30
 
-MAX_RETRIES=10
+MAX_RETRIES=15
 RETRY_INTERVAL=10
 
 for i in $(seq 1 $MAX_RETRIES); do
