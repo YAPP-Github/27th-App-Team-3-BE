@@ -44,6 +44,7 @@ data class GoalItemResponse(
     val goalName: String,
     val icon: GoalIcon,
     val repeatCycle: RepeatCycle,
+    val goalStatus: GoalStatus,
     val myCompleted: Boolean,
     val partnerCompleted: Boolean,
     val myVerification: PhotologInfo?,
