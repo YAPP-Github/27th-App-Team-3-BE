@@ -79,6 +79,7 @@ class GoalController(
                     goalName = goalWithPhotologs.goal.name,
                     icon = goalWithPhotologs.goal.icon,
                     repeatCycle = goalWithPhotologs.goal.repeatCycle,
+                    goalStatus = goalWithPhotologs.goal.goalStatus,
                     myCompleted = goalWithPhotologs.myPhotolog != null,
                     partnerCompleted = goalWithPhotologs.partnerPhotolog != null,
                     myVerification =

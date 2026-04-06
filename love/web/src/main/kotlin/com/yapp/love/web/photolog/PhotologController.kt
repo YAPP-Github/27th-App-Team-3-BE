@@ -5,6 +5,7 @@ import com.yapp.love.application.goal.GoalService
 import com.yapp.love.application.photolog.PhotologService
 import com.yapp.love.application.storage.FileStoragePort
 import com.yapp.love.domain.goal.model.GoalIcon
+import com.yapp.love.domain.goal.model.GoalStatus
 import com.yapp.love.domain.photolog.model.ReactionType
 import com.yapp.love.domain.user.UserAdditionInfoRepository
 import com.yapp.love.web.auth.AuthUser
@@ -95,6 +96,7 @@ class PhotologController(
                     goalId = goalWithPhotologs.goal.id!!,
                     goalName = goalWithPhotologs.goal.name,
                     goalIcon = goalWithPhotologs.goal.icon,
+                    goalStatus = goalWithPhotologs.goal.goalStatus,
                     myPhotolog = goalWithPhotologs.myPhotolog?.let {
                         PhotologDetailResponse(
                             photologId = it.id!!,
@@ -214,6 +216,7 @@ data class GoalPhotologPair(
     val goalId: Long,
     val goalName: String,
     val goalIcon: GoalIcon,
+    val goalStatus: GoalStatus,
     val myPhotolog: PhotologDetailResponse?,
     val partnerPhotolog: PhotologDetailResponse?,
 )
