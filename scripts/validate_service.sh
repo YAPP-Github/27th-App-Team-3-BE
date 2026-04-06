@@ -12,6 +12,7 @@ RETRY_INTERVAL=10
 for i in $(seq 1 $MAX_RETRIES); do
   if curl -sf --max-time 10 "http://localhost:$CONTAINER_PORT/actuator/health" > /dev/null; then
     echo "Health check passed."
+    sleep 1
     exit 0
   fi
   echo "Health check attempt $i/$MAX_RETRIES failed. Retrying in ${RETRY_INTERVAL}s..."
