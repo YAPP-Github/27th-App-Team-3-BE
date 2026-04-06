@@ -15,6 +15,10 @@ env:
   CODEDEPLOY_APP: teamtwix-dev-app
   CODEDEPLOY_GROUP: teamtwix-dev-deployment-group
 
+concurrency:
+  group: deployment-dev
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to AWS EC2
