@@ -49,8 +49,10 @@ class UserOnboardingInfo(
     var completedAt: LocalDateTime? = null,
 ) : BaseEntity() {
 
-    fun updateStatus(coupleInfo: CoupleInfo) {
+    fun updateStatus(coupleInfo: CoupleInfo, expectedStatus: OnboardingStatus? = null) {
         check(status != OnboardingStatus.COMPLETED) { "이미 온보딩이 완료되었습니다." }
+
+        if (expectedStatus != null && status != expectedStatus) return
 
         if (coupleInfo.anniversaryDate != null && status == OnboardingStatus.PROFILE_SETUP) {
             status = OnboardingStatus.COMPLETED
