@@ -181,20 +181,7 @@ class PhotologService(
         userId: Long,
         reaction: ReactionType,
     ): ReactionInfo {
-        val photolog =
-            photologRepository.findById(photologId)
-                ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "인증샷을 찾을 수 없습니다.")
-
-        if (photolog.userId == userId) {
-            throw GlobalException(GlobalErrorCode.FORBIDDEN, "자신의 인증샷에는 리액션을 남길 수 없습니다.")
-        }
-
-        val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
-        val partnerUserId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
-
-        if (photolog.userId != partnerUserId) {
-            throw GlobalException(GlobalErrorCode.FORBIDDEN, "상대방의 인증샷에만 리액션을 남길 수 있습니다.")
-        }
+        val photolog = findPartnerPhotolog(photologId, userId)
 
         photolog.reaction = reaction
         photologRepository.save(photolog)
@@ -212,6 +199,39 @@ class PhotologService(
             photologId = photolog.id!!,
             reaction = reaction,
         )
+    }
+
+    @Transactional
+    fun removeReaction(
+        photologId: Long,
+        userId: Long,
+    ) {
+        val photolog = findPartnerPhotolog(photologId, userId)
+
+        photolog.reaction = null
+        photologRepository.save(photolog)
+    }
+
+    private fun findPartnerPhotolog(
+        photologId: Long,
+        userId: Long,
+    ): Photolog {
+        val photolog =
+            photologRepository.findById(photologId)
+                ?: throw GlobalException(GlobalErrorCode.NOT_FOUND, "인증샷을 찾을 수 없습니다.")
+
+        if (photolog.userId == userId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "자신의 인증샷에는 리액션을 남길 수 없습니다.")
+        }
+
+        val coupleInfo = coupleService.getCoupleInfoByUserId(userId)
+        val partnerUserId = coupleService.getPartnerUserIdByCoupleInfo(coupleInfo, userId)
+
+        if (photolog.userId != partnerUserId) {
+            throw GlobalException(GlobalErrorCode.FORBIDDEN, "상대방의 인증샷에만 리액션을 남길 수 있습니다.")
+        }
+
+        return photolog
     }
 
     @Transactional

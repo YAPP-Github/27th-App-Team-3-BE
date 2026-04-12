@@ -211,3 +211,91 @@ annotation class GetPhotologsByDateApiSpec
     ],
 )
 annotation class AddReactionApiSpec
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@Operation(
+    summary = "리액션 해제",
+    description = "상대방의 인증샷에 남긴 리액션을 해제합니다",
+)
+@ApiResponses(
+    value = [
+        ApiResponse(
+            responseCode = "200",
+            description = "리액션 해제 성공",
+        ),
+        ApiResponse(
+            responseCode = "401",
+            description = "인증 실패",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "인증되지 않은 사용자",
+                            value = """{"status": 401, "code": "G4010", "message": "인증되지 않은 사용자입니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "토큰 만료",
+                            value = """{"status": 401, "code": "G4011", "message": "토큰이 만료되었습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "403",
+            description = "권한 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "자신의 인증샷",
+                            value = """{"status": 403, "code": "G4030", "message": "자신의 인증샷에는 리액션을 남길 수 없습니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "다른 커플의 인증샷",
+                            value = """{"status": 403, "code": "G4030", "message": "상대방의 인증샷에만 리액션을 남길 수 있습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "404",
+            description = "리소스를 찾을 수 없음",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "인증샷 없음",
+                            value = """{"status": 404, "code": "G4040", "message": "인증샷을 찾을 수 없습니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "커플 해제됨",
+                            value = """{"status": 404, "code": "G4041", "message": "커플을 찾을 수 없습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        ApiResponse(
+            responseCode = "500",
+            description = "서버 내부 오류",
+            content = [
+                Content(
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "서버 오류",
+                            value = """{"status": 500, "code": "G5000", "message": "서버 내부 오류가 발생했습니다."}""",
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    ],
+)
+annotation class RemoveReactionApiSpec
