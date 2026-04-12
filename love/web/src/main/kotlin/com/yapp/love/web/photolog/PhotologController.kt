@@ -140,6 +140,15 @@ class PhotologController(
         )
     }
 
+    @RemoveReactionApiSpec
+    @DeleteMapping("/{photologId}/reaction")
+    fun removeReaction(
+        @AuthUser userId: Long,
+        @PathVariable photologId: Long,
+    ) {
+        photologService.removeReaction(photologId, userId)
+    }
+
     @Operation(summary = "인증샷 수정")
     @PutMapping("/{photologId}")
     fun updatePhotolog(
