@@ -36,6 +36,7 @@ data class GoalResponse(
 data class GoalListResponse(
     val completedCount: Int,
     val totalCount: Int,
+    val hasEverRegisteredGoal: Boolean,
     val goals: List<GoalItemResponse>,
 )
 

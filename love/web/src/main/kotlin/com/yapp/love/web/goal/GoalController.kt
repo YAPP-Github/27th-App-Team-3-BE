@@ -114,6 +114,7 @@ class GoalController(
         return GoalListResponse(
             completedCount = completedCount,
             totalCount = goalsWithPhotologs.size,
+            hasEverRegisteredGoal = goalsWithPhotologs.isNotEmpty() || goalService.hasEverRegisteredGoal(coupleId),
             goals = goalItems,
         )
     }

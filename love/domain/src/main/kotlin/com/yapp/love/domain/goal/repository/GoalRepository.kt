@@ -52,4 +52,9 @@ interface GoalRepository {
      * 특정 커플의 모든 활성 목표 조회 (삭제되지 않은 목표만)
      */
     fun findActiveByCoupleId(coupleId: Long): List<Goal>
+
+    /**
+     * 커플이 목표를 한 번이라도 등록한 적 있는지 확인 (삭제된 목표 포함)
+     */
+    fun existsByCoupleId(coupleId: Long): Boolean
 }

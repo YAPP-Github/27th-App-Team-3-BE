@@ -92,4 +92,10 @@ interface GoalJpaRepository : GoalRepository, JpaRepository<Goal, Long> {
     override fun findActiveByCoupleId(
         @Param("coupleId") coupleId: Long,
     ): List<Goal>
+
+    // 삭제된 목표 포함 의도적으로 deletedAt 필터 없음
+    @Query("SELECT CASE WHEN COUNT(g) > 0 THEN true ELSE false END FROM Goal g WHERE g.coupleId = :coupleId")
+    override fun existsByCoupleId(
+        @Param("coupleId") coupleId: Long,
+    ): Boolean
 }

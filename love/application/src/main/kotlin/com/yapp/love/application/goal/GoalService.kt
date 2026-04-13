@@ -51,6 +51,8 @@ class GoalService(
         return GoalInfo.from(savedGoal)
     }
 
+    fun hasEverRegisteredGoal(coupleId: Long): Boolean = goalRepository.existsByCoupleId(coupleId)
+
     fun getGoalsByDate(
         coupleId: Long,
         targetDate: LocalDate,
