@@ -24,11 +24,11 @@ echo "Starting container..."
 docker run -d \
   --name "$CONTAINER_NAME" \
   --restart unless-stopped \
-  --memory="700m" \
-  --memory-swap="700m" \
+  --memory="1400m" \
+  --memory-swap="1400m" \
   -p "$CONTAINER_PORT:$CONTAINER_PORT" \
   -e SPRING_PROFILES_ACTIVE=dev \
-  -e JAVA_OPTS="-Xms256m -Xmx512m" \
+  -e JAVA_OPTS="-Xms512m -Xmx1024m" \
   -e DB_HOST="$DB_HOST" \
   -e DB_PORT="$DB_PORT" \
   -e DB_NAME="$DB_NAME" \
