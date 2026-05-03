@@ -165,6 +165,12 @@ resource "aws_instance" "main" {
   USERDATA
   )
 
+  root_block_device {
+    volume_type           = "gp3"
+    volume_size           = 30
+    delete_on_termination = true
+  }
+
   tags = {
     Name        = "${var.project_name}-${var.environment}"
     Environment = var.environment
