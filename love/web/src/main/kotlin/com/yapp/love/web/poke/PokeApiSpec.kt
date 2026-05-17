@@ -14,9 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 @Operation(
     summary = "찌르기",
     description = "상대방을 찔러서 특정 날짜의 목표 인증을 독려합니다. " +
-        "date 필드로 어떤 날짜의 인증을 독려할지 명시하며, 알림 딥링크에 그대로 전달됩니다.",
+        "date 필드로 어떤 날짜의 인증을 독려할지 명시하며, 알림 딥링크에 그대로 전달됩니다. " +
+        "body를 생략하거나 date가 null이면 오늘 날짜로 처리됩니다(구버전 클라이언트 호환).",
     requestBody = RequestBody(
-        required = true,
+        required = false,
         content = [
             Content(
                 mediaType = "application/json",
@@ -31,6 +32,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                         name = "과거 날짜 인증 독려",
                         summary = "캘린더에서 과거 미달성 날짜를 보고 찌릅니다.",
                         value = """{"date": "2026-05-15"}""",
+                    ),
+                    ExampleObject(
+                        name = "구버전 클라이언트 (body 생략)",
+                        summary = "body 없이 호출하면 서버가 오늘 날짜로 처리합니다.",
+                        value = "",
                     ),
                 ],
             ),
@@ -54,10 +60,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                         ExampleObject(
                             name = "진행중이지 않은 목표",
                             value = """{"status": 400, "code": "G4000", "message": "진행중이지 않은 목표는 찌를 수 없습니다."}""",
-                        ),
-                        ExampleObject(
-                            name = "날짜 누락",
-                            value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
                         ),
                         ExampleObject(
                             name = "JSON 형식 오류",

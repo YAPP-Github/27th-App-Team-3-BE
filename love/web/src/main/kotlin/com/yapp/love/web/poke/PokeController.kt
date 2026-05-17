@@ -3,8 +3,6 @@ package com.yapp.love.web.poke
 import com.yapp.love.application.poke.PokeService
 import com.yapp.love.web.auth.AuthUser
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
@@ -25,17 +23,16 @@ class PokeController(
     fun poke(
         @AuthUser userId: Long,
         @PathVariable goalId: Long,
-        @Valid @RequestBody request: PokeRequest,
+        @RequestBody(required = false) request: PokeRequest?,
     ): ResponseEntity<PokeResponse> {
-        pokeService.poke(userId, goalId, request.date)
+        pokeService.poke(userId, goalId, request?.date ?: LocalDate.now())
         return ResponseEntity.ok(PokeResponse(message = "찌르기를 보냈습니다."))
     }
 }
 
 data class PokeRequest(
-    @field:NotNull(message = "인증 날짜는 필수입니다.")
     @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    val date: LocalDate,
+    val date: LocalDate? = null,
 )
 
 data class PokeResponse(
