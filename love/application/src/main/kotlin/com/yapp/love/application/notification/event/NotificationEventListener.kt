@@ -47,7 +47,7 @@ class NotificationEventListener(
                 bodyArgs = arrayOf(event.senderNickname),
                 deepLinkParams = mapOf(
                     "goalId" to event.goalId.toString(),
-                    "date" to LocalDate.now().toString(),
+                    "date" to event.verificationDate.toString(),
                 ),
             )
         } catch (e: Exception) {

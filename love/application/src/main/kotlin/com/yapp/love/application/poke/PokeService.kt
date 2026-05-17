@@ -13,8 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-
-private val logger = KotlinLogging.logger {}
+import java.time.LocalDate
 
 @Service
 class PokeService(
@@ -28,6 +27,7 @@ class PokeService(
     fun poke(
         senderId: Long,
         goalId: Long,
+        verificationDate: LocalDate,
     ) {
         // 1. 커플 정보 확인
         val coupleInfo =
@@ -71,6 +71,7 @@ class PokeService(
                 senderNickname = senderNickname,
                 goalId = goalId,
                 goalName = goal.name,
+                verificationDate = verificationDate,
             )
         )
     }

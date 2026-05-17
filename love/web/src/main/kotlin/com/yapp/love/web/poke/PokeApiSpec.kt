@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.parameters.RequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 
@@ -12,7 +13,29 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 @Retention(AnnotationRetention.RUNTIME)
 @Operation(
     summary = "찌르기",
-    description = "상대방을 찔러서 목표 인증을 독려합니다.",
+    description = "상대방을 찔러서 특정 날짜의 목표 인증을 독려합니다. " +
+        "date 필드로 어떤 날짜의 인증을 독려할지 명시하며, 알림 딥링크에 그대로 전달됩니다.",
+    requestBody = RequestBody(
+        required = true,
+        content = [
+            Content(
+                mediaType = "application/json",
+                schema = Schema(implementation = PokeRequest::class),
+                examples = [
+                    ExampleObject(
+                        name = "오늘 인증 독려",
+                        summary = "오늘 날짜의 목표 인증을 찌릅니다.",
+                        value = """{"date": "2026-05-18"}""",
+                    ),
+                    ExampleObject(
+                        name = "과거 날짜 인증 독려",
+                        summary = "캘린더에서 과거 미달성 날짜를 보고 찌릅니다.",
+                        value = """{"date": "2026-05-15"}""",
+                    ),
+                ],
+            ),
+        ],
+    ),
 )
 @ApiResponses(
     value = [
@@ -31,6 +54,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
                         ExampleObject(
                             name = "진행중이지 않은 목표",
                             value = """{"status": 400, "code": "G4000", "message": "진행중이지 않은 목표는 찌를 수 없습니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "날짜 누락",
+                            value = """{"status": 400, "code": "G4000", "message": "입력값이 올바르지 않습니다."}""",
+                        ),
+                        ExampleObject(
+                            name = "JSON 형식 오류",
+                            value = """{"status": 400, "code": "G4002", "message": "JSON 형식이 올바르지 않습니다."}""",
                         ),
                     ],
                 ),
