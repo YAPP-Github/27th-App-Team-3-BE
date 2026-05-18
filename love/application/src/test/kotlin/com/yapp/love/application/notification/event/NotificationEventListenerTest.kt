@@ -84,6 +84,7 @@ class NotificationEventListenerTest : DescribeSpec({
                 senderNickname = "철수",
                 goalId = 10L,
                 goalName = "운동하기",
+                verificationDate = LocalDate.of(2026, 5, 18),
             )
 
             listener.handlePoked(event)
@@ -94,13 +95,19 @@ class NotificationEventListenerTest : DescribeSpec({
                     type = NotificationType.POKE,
                     titleArgs = arrayOf("철수", "운동하기"),
                     bodyArgs = arrayOf("철수"),
-                    deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
+                    deepLinkParams = mapOf("goalId" to "10", "date" to "2026-05-18"),
                 )
             }
         }
 
         it("예외 발생 시 메서드가 정상 종료된다") {
-            val event = PokedEvent(targetUserId = 2L, senderNickname = "철수", goalId = 10L, goalName = "운동하기")
+            val event = PokedEvent(
+                targetUserId = 2L,
+                senderNickname = "철수",
+                goalId = 10L,
+                goalName = "운동하기",
+                verificationDate = LocalDate.of(2026, 5, 18),
+            )
             every { notificationService.sendNotification(any(), any(), any(), any(), any()) } throws RuntimeException("DB 오류")
 
             listener.handlePoked(event)

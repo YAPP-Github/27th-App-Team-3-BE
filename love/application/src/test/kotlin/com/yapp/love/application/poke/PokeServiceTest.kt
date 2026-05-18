@@ -40,6 +40,7 @@ class PokeServiceTest : DescribeSpec({
     val receiverId = 2L
     val coupleId = 100L
     val goalId = 10L
+    val verificationDate = LocalDate.of(2026, 5, 18)
 
     val coupleInfo = CoupleInfo(
         id = coupleId,
@@ -78,7 +79,7 @@ class PokeServiceTest : DescribeSpec({
             }
 
             it("찌르기가 저장된다") {
-                pokeService.poke(senderId, goalId)
+                pokeService.poke(senderId, goalId, verificationDate)
 
                 verify {
                     pokeRepository.save(match<Poke> {
@@ -90,7 +91,7 @@ class PokeServiceTest : DescribeSpec({
             }
 
             it("상대방에게 PokedEvent가 발행된다") {
-                pokeService.poke(senderId, goalId)
+                pokeService.poke(senderId, goalId, verificationDate)
 
                 verify {
                     eventPublisher.publishEvent(
@@ -99,6 +100,7 @@ class PokeServiceTest : DescribeSpec({
                             senderNickname = "철수",
                             goalId = goalId,
                             goalName = "운동하기",
+                            verificationDate = verificationDate,
                         )
                     )
                 }
@@ -107,7 +109,7 @@ class PokeServiceTest : DescribeSpec({
             it("닉네임이 없으면 '상대방'으로 이벤트가 발행된다") {
                 every { userAdditionInfoRepository.findByUserId(senderId) } returns null
 
-                pokeService.poke(senderId, goalId)
+                pokeService.poke(senderId, goalId, verificationDate)
 
                 verify {
                     eventPublisher.publishEvent(
@@ -116,6 +118,7 @@ class PokeServiceTest : DescribeSpec({
                             senderNickname = "상대방",
                             goalId = goalId,
                             goalName = "운동하기",
+                            verificationDate = verificationDate,
                         )
                     )
                 }
@@ -127,7 +130,7 @@ class PokeServiceTest : DescribeSpec({
                 every { coupleInfoRepository.findByUserId(senderId) } returns null
 
                 shouldThrow<GlobalException> {
-                    pokeService.poke(senderId, goalId)
+                    pokeService.poke(senderId, goalId, verificationDate)
                 }
             }
         }
@@ -138,7 +141,7 @@ class PokeServiceTest : DescribeSpec({
                 every { goalRepository.findById(goalId) } returns null
 
                 shouldThrow<GlobalException> {
-                    pokeService.poke(senderId, goalId)
+                    pokeService.poke(senderId, goalId, verificationDate)
                 }
             }
         }
@@ -161,7 +164,7 @@ class PokeServiceTest : DescribeSpec({
                 every { goalRepository.findById(goalId) } returns otherGoal
 
                 shouldThrow<GlobalException> {
-                    pokeService.poke(senderId, goalId)
+                    pokeService.poke(senderId, goalId, verificationDate)
                 }
             }
         }
@@ -184,7 +187,7 @@ class PokeServiceTest : DescribeSpec({
                 every { goalRepository.findById(goalId) } returns completedGoal
 
                 shouldThrow<GlobalException> {
-                    pokeService.poke(senderId, goalId)
+                    pokeService.poke(senderId, goalId, verificationDate)
                 }
             }
         }
