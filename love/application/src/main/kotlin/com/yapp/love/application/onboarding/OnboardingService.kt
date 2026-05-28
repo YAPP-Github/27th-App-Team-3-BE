@@ -26,11 +26,10 @@ class OnboardingService(
     private val userAdditionInfoRepository: UserAdditionInfoRepository,
     private val notificationEventPublisher: ApplicationEventPublisher,
 ) {
-
     @Transactional
     fun getOnboardingStatus(userId: Long): OnboardingStatus {
         return onboardingInfoRepository.findByUserId(userId)?.status
-            ?:onboardingInfoRepository.save(UserOnboardingInfo.create(userId)).status
+            ?: onboardingInfoRepository.save(UserOnboardingInfo.create(userId)).status
     }
 
     @Transactional
@@ -52,7 +51,7 @@ class OnboardingService(
                 user1Id = inviteCodes.creatorId,
                 user2Id = usedUserId,
                 inviteCodeId = inviteCodes.id!!,
-            )
+            ),
         )
 
         val coupleInfo = coupleInfoRepository.findByUserId(usedUserId)
@@ -106,7 +105,21 @@ class OnboardingService(
         coupleInfo.setAnniversary(anniversaryDate)
         coupleInfoRepository.save(coupleInfo)
 
-        updateOnboardingStatus(userId, coupleInfo, OnboardingStatus.ANNIVERSARY_SETUP)
+        completeAnniversarySetupForCouple(coupleInfo)
+    }
+
+    private fun completeAnniversarySetupForCouple(coupleInfo: CoupleInfo) {
+        listOf(coupleInfo.user1Id, coupleInfo.user2Id)
+            .forEach { userId ->
+                completeAnniversarySetupIfReady(userId, coupleInfo)
+            }
+    }
+
+    private fun completeAnniversarySetupIfReady(userId: Long, coupleInfo: CoupleInfo) {
+        val onboardingInfo = onboardingInfoRepository.findByUserId(userId) ?: return
+        if (!onboardingInfo.completeAnniversarySetupIfReady(coupleInfo)) return
+
+        onboardingInfoRepository.save(onboardingInfo)
     }
 
     private fun updateOnboardingStatus(userId: Long, coupleInfo: CoupleInfo, expectedStatus: OnboardingStatus? = null) {
