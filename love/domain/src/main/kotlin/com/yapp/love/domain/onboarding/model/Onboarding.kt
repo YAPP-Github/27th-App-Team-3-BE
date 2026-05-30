@@ -55,17 +55,29 @@ class UserOnboardingInfo(
         if (expectedStatus != null && status != expectedStatus) return
 
         if (coupleInfo.anniversaryDate != null && status == OnboardingStatus.PROFILE_SETUP) {
-            status = OnboardingStatus.COMPLETED
-            completedAt = LocalDateTime.now()
+            complete()
             return
         }
 
         status = status.next()
 
         if (status == OnboardingStatus.COMPLETED) {
-            completedAt = LocalDateTime.now()
+            complete()
         }
 
+    }
+
+    fun completeAnniversarySetupIfReady(coupleInfo: CoupleInfo): Boolean {
+        if (coupleInfo.anniversaryDate == null) return false
+        if (status != OnboardingStatus.ANNIVERSARY_SETUP) return false
+
+        complete()
+        return true
+    }
+
+    private fun complete() {
+        status = OnboardingStatus.COMPLETED
+        completedAt = LocalDateTime.now()
     }
 
     companion object {
