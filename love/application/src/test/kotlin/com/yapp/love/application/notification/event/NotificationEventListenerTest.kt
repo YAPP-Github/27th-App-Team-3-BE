@@ -118,6 +118,7 @@ class NotificationEventListenerTest : DescribeSpec({
         val userId = 1L
         val partnerId = 2L
         val goalId = 10L
+        val verificationDate = LocalDate.of(2026, 1, 15)
 
         val coupleInfo = CoupleInfo(
             id = 100L,
@@ -145,7 +146,9 @@ class NotificationEventListenerTest : DescribeSpec({
                     UserAdditionInfo(userId = userId, nickname = "철수")
                 every { goalRepository.findById(goalId) } returns goal
 
-                listener.handlePhotologCreated(PhotologCreatedEvent(userId = userId, goalId = goalId))
+                listener.handlePhotologCreated(
+                    PhotologCreatedEvent(userId = userId, goalId = goalId, verificationDate = verificationDate),
+                )
 
                 verify {
                     notificationService.sendNotification(
@@ -153,7 +156,7 @@ class NotificationEventListenerTest : DescribeSpec({
                         type = NotificationType.GOAL_COMPLETED,
                         titleArgs = arrayOf("철수", "운동하기"),
                         bodyArgs = arrayOf("철수"),
-                        deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
+                        deepLinkParams = mapOf("goalId" to "10", "date" to verificationDate.toString()),
                     )
                 }
             }
@@ -172,7 +175,9 @@ class NotificationEventListenerTest : DescribeSpec({
                     UserAdditionInfo(userId = userId, nickname = "철수")
                 every { goalRepository.findById(goalId) } returns goal
 
-                listener.handlePhotologCreated(PhotologCreatedEvent(userId = userId, goalId = goalId))
+                listener.handlePhotologCreated(
+                    PhotologCreatedEvent(userId = userId, goalId = goalId, verificationDate = verificationDate),
+                )
 
                 verify {
                     notificationService.sendNotification(
@@ -180,7 +185,7 @@ class NotificationEventListenerTest : DescribeSpec({
                         type = NotificationType.GOAL_COMPLETED,
                         titleArgs = arrayOf("철수", "운동하기"),
                         bodyArgs = arrayOf("철수"),
-                        deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
+                        deepLinkParams = mapOf("goalId" to "10", "date" to verificationDate.toString()),
                     )
                 }
             }
@@ -192,7 +197,9 @@ class NotificationEventListenerTest : DescribeSpec({
                 every { userAdditionInfoRepository.findByUserId(userId) } returns null
                 every { goalRepository.findById(goalId) } returns goal
 
-                listener.handlePhotologCreated(PhotologCreatedEvent(userId = userId, goalId = goalId))
+                listener.handlePhotologCreated(
+                    PhotologCreatedEvent(userId = userId, goalId = goalId, verificationDate = verificationDate),
+                )
 
                 verify {
                     notificationService.sendNotification(
@@ -200,7 +207,7 @@ class NotificationEventListenerTest : DescribeSpec({
                         type = NotificationType.GOAL_COMPLETED,
                         titleArgs = arrayOf("상대방", "운동하기"),
                         bodyArgs = arrayOf("상대방"),
-                        deepLinkParams = mapOf("goalId" to "10", "date" to LocalDate.now().toString()),
+                        deepLinkParams = mapOf("goalId" to "10", "date" to verificationDate.toString()),
                     )
                 }
             }
@@ -210,7 +217,9 @@ class NotificationEventListenerTest : DescribeSpec({
             it("알림을 전송하지 않는다") {
                 every { coupleInfoRepository.findByUserId(userId) } returns null
 
-                listener.handlePhotologCreated(PhotologCreatedEvent(userId = userId, goalId = goalId))
+                listener.handlePhotologCreated(
+                    PhotologCreatedEvent(userId = userId, goalId = goalId, verificationDate = verificationDate),
+                )
 
                 verify(exactly = 0) { notificationService.sendNotification(any(), any(), any(), any(), any()) }
             }
@@ -223,7 +232,9 @@ class NotificationEventListenerTest : DescribeSpec({
                     UserAdditionInfo(userId = userId, nickname = "철수")
                 every { goalRepository.findById(goalId) } returns null
 
-                listener.handlePhotologCreated(PhotologCreatedEvent(userId = userId, goalId = goalId))
+                listener.handlePhotologCreated(
+                    PhotologCreatedEvent(userId = userId, goalId = goalId, verificationDate = verificationDate),
+                )
 
                 verify(exactly = 0) { notificationService.sendNotification(any(), any(), any(), any(), any()) }
             }
