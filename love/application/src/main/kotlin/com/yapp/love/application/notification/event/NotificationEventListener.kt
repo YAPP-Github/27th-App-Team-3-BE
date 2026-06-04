@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
@@ -79,7 +78,7 @@ class NotificationEventListener(
                 bodyArgs = arrayOf(nickname),
                 deepLinkParams = mapOf(
                     "goalId" to event.goalId.toString(),
-                    "date" to LocalDate.now().toString(),
+                    "date" to event.verificationDate.toString(),
                 ),
             )
         } catch (e: Exception) {

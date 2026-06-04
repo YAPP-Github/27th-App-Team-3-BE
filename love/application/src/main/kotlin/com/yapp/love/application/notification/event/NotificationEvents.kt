@@ -18,6 +18,7 @@ data class PokedEvent(
 data class PhotologCreatedEvent(
     val userId: Long,
     val goalId: Long,
+    val verificationDate: LocalDate,
 )
 
 data class GoalEndedEvent(

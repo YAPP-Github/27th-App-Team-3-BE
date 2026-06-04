@@ -122,7 +122,9 @@ class PhotologService(
             )
         )
 
-        notificationEventPublisher.publishEvent(PhotologCreatedEvent(userId = userId, goalId = goalId))
+        notificationEventPublisher.publishEvent(
+            PhotologCreatedEvent(userId = userId, goalId = goalId, verificationDate = verificationDate),
+        )
 
         return saved
     }
