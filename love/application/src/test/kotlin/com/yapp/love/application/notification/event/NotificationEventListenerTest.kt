@@ -278,50 +278,6 @@ class NotificationEventListenerTest : DescribeSpec({
         }
     }
 
-    describe("handleDailyGoalAchieved") {
-        it("양쪽 사용자에게 DAILY_GOAL_ACHIEVED 알림을 전송한다") {
-            val event = DailyGoalAchievedEvent(user1Id = 1L, user2Id = 2L, goalName = "운동하기")
-
-            listener.handleDailyGoalAchieved(event)
-
-            verify {
-                notificationService.sendNotification(
-                    targetUserId = 1L,
-                    type = NotificationType.DAILY_GOAL_ACHIEVED,
-                    titleArgs = arrayOf("운동하기"),
-                )
-            }
-            verify {
-                notificationService.sendNotification(
-                    targetUserId = 2L,
-                    type = NotificationType.DAILY_GOAL_ACHIEVED,
-                    titleArgs = arrayOf("운동하기"),
-                )
-            }
-        }
-
-        it("user1 알림 전송 실패 시 user2에게는 정상 전송된다") {
-            val event = DailyGoalAchievedEvent(user1Id = 1L, user2Id = 2L, goalName = "운동하기")
-            every {
-                notificationService.sendNotification(
-                    targetUserId = 1L,
-                    type = any(),
-                    titleArgs = any(),
-                )
-            } throws RuntimeException("user1 DB 오류")
-
-            listener.handleDailyGoalAchieved(event) // 예외 전파 없이 종료되어야 함
-
-            verify {
-                notificationService.sendNotification(
-                    targetUserId = 2L,
-                    type = NotificationType.DAILY_GOAL_ACHIEVED,
-                    titleArgs = arrayOf("운동하기"),
-                )
-            }
-        }
-    }
-
     describe("handleFcmPush") {
         it("FCM 푸시를 전송한다") {
             val event = FcmPushEvent(userId = 1L, title = "제목", body = "내용", deepLink = "love://home")

@@ -137,19 +137,4 @@ class NotificationEventListener(
             logger.error(e) { "FCM 푸시 처리 실패: $event" }
         }
     }
-
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleDailyGoalAchieved(event: DailyGoalAchievedEvent) {
-        listOf(event.user1Id, event.user2Id).forEach { targetUserId ->
-            try {
-                notificationService.sendNotification(
-                    targetUserId = targetUserId,
-                    type = NotificationType.DAILY_GOAL_ACHIEVED,
-                    titleArgs = arrayOf(event.goalName),
-                )
-            } catch (e: Exception) {
-                logger.error(e) { "알림 처리 실패: userId=$targetUserId, event=$event" }
-            }
-        }
-    }
 }
