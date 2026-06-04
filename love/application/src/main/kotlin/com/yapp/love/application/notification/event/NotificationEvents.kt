@@ -34,12 +34,6 @@ data class ReactionCreatedEvent(
     val verificationDate: LocalDate,
 )
 
-data class DailyGoalAchievedEvent(
-    val user1Id: Long,
-    val user2Id: Long,
-    val goalName: String,
-)
-
 data class FcmPushEvent(
     val userId: Long,
     val title: String,

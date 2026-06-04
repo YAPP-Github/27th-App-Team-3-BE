@@ -36,11 +36,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody
                         value = """{"targetUserId": 52, "type": "REACTION", "titleArgs": ["지수"], "bodyArgs": ["지수"], "deepLinkParams": {"goalId": "10", "date": "2026-02-20"}}""",
                     ),
                     ExampleObject(
-                        name = "DAILY_GOAL_ACHIEVED",
-                        summary = "데일리 목표 달성 — titleArgs[0]: 목표이름",
-                        value = """{"targetUserId": 52, "type": "DAILY_GOAL_ACHIEVED", "titleArgs": ["운동하기"], "bodyArgs": [], "deepLinkParams": {}}""",
-                    ),
-                    ExampleObject(
                         name = "GOAL_ENDED",
                         summary = "목표 종료 — titleArgs[0]: 목표이름",
                         value = """{"targetUserId": 52, "type": "GOAL_ENDED", "titleArgs": ["운동하기"], "bodyArgs": [], "deepLinkParams": {"goalId": "10"}}""",

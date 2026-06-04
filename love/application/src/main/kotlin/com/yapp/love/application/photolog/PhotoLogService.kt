@@ -1,7 +1,6 @@
 package com.yapp.love.application.photolog
 
 import com.yapp.love.application.couple.CoupleService
-import com.yapp.love.application.notification.event.DailyGoalAchievedEvent
 import com.yapp.love.application.notification.event.PhotologCreatedEvent
 import com.yapp.love.application.notification.event.ReactionCreatedEvent
 import com.yapp.love.application.photolog.dto.ReactionInfo
@@ -124,7 +123,6 @@ class PhotologService(
         )
 
         notificationEventPublisher.publishEvent(PhotologCreatedEvent(userId = userId, goalId = goalId))
-        checkAndPublishDailyGoalAchieved(userId, goalId, verificationDate)
 
         return saved
     }
@@ -153,26 +151,6 @@ class PhotologService(
     private fun validateNoDuplicatePhotolog(goalId: Long, userId: Long, verificationDate: LocalDate) {
         photologRepository.findByGoalIdAndUserIdAndVerificationDate(goalId, userId, verificationDate)
             ?.let { throw GlobalException(GlobalErrorCode.INVALID_INPUT_VALUE, "이미 오늘 인증을 완료했습니다.") }
-    }
-
-    private fun checkAndPublishDailyGoalAchieved(userId: Long, goalId: Long, verificationDate: LocalDate) {
-        val coupleInfo = coupleInfoRepository.findByUserId(userId) ?: return
-        val goal = goalRepository.findActiveGoalById(goalId) ?: return
-
-        val photologs = photologRepository.findByGoalIdsAndVerificationDate(listOf(goalId), verificationDate)
-
-        val user1Completed = photologs.any { it.goalId == goalId && it.userId == coupleInfo.user1Id }
-        val user2Completed = photologs.any { it.goalId == goalId && it.userId == coupleInfo.user2Id }
-
-        if (user1Completed && user2Completed) {
-            notificationEventPublisher.publishEvent(
-                DailyGoalAchievedEvent(
-                    user1Id = coupleInfo.user1Id,
-                    user2Id = coupleInfo.user2Id,
-                    goalName = goal.name,
-                ),
-            )
-        }
     }
 
     @Transactional
