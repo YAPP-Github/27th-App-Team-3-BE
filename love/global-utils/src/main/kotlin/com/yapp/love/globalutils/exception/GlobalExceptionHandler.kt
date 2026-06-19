@@ -27,7 +27,7 @@ class GlobalExceptionHandler {
     protected fun handleGlobalException(e: GlobalException): ResponseEntity<ErrorResponse> {
         val errorCode = e.errorCode
 
-        logger.warn(e) { "GlobalException: ${errorCode.getCode()}" }
+        logger.info { "GlobalException: ${errorCode.getCode()} - ${e.message}" }
 
         val error = ErrorResponse.from(errorCode, e.getCustomMessage())
 
@@ -38,7 +38,7 @@ class GlobalExceptionHandler {
     protected fun invalidArgumentBindResponse(e: BindException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.INVALID_INPUT_VALUE
 
-        logger.warn(e) { "Parameter binding failed" }
+        logger.info { "Parameter binding failed: ${e.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -51,7 +51,7 @@ class GlobalExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.METHOD_NOT_ALLOWED
 
-        logger.warn(e) { "HTTP method not supported" }
+        logger.info { "HTTP method not supported: ${e.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -69,7 +69,7 @@ class GlobalExceptionHandler {
                 "${it.field}: ${it.defaultMessage}"
             }
 
-        logger.warn(e) { "Validation failed: $errorMsg" }
+        logger.info { "Validation failed: $errorMsg" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -82,7 +82,7 @@ class GlobalExceptionHandler {
     ): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.INVALID_INPUT_VALUE
 
-        logger.warn(e) { "Type mismatch for parameter '${e.name}': ${e.value}" }
+        logger.info { "Type mismatch for parameter '${e.name}': ${e.value}" }
 
         val error = ErrorResponse.from(globalErrorCode, "입력값이 올바르지 않습니다.")
 
@@ -93,7 +93,7 @@ class GlobalExceptionHandler {
     protected fun handleInvalidJson(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.MALFORMED_JSON
 
-        logger.warn(ex) { "Malformed JSON request" }
+        logger.info { "Malformed JSON request: ${ex.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -104,7 +104,7 @@ class GlobalExceptionHandler {
     protected fun handleNoResourceFound(ex: NoResourceFoundException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.NOT_FOUND
 
-        logger.warn(ex) { "Resource not found: ${ex.resourcePath}" }
+        logger.info { "Resource not found: ${ex.resourcePath}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -115,7 +115,7 @@ class GlobalExceptionHandler {
     protected fun handleAuthenticationException(ex: AuthenticationException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.UNAUTHORIZED
 
-        logger.warn(ex) { "Authentication failed: ${ex.message}" }
+        logger.info { "Authentication failed: ${ex.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -126,7 +126,7 @@ class GlobalExceptionHandler {
     protected fun handleAccessDeniedException(ex: AccessDeniedException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.FORBIDDEN
 
-        logger.warn(ex) { "Access denied: ${ex.message}" }
+        logger.info { "Access denied: ${ex.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
@@ -137,7 +137,7 @@ class GlobalExceptionHandler {
     protected fun handleIllegalException(ex: RuntimeException): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.INVALID_INPUT_VALUE
 
-        logger.warn(ex) { "Domain validation failed: ${ex.message}" }
+        logger.info { "Domain validation failed: ${ex.message}" }
 
         val error =
             ErrorResponse(
@@ -153,8 +153,7 @@ class GlobalExceptionHandler {
     protected fun handleGeneralException(ex: Exception): ResponseEntity<ErrorResponse> {
         val globalErrorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR
 
-        // Log4j2 Sentry Appender가 ERROR 로그를 자동으로 Sentry에 전송
-        logger.error(ex) { "Unexpected error occurred" }
+        logger.info { "Unexpected error occurred: ${ex.message}" }
 
         val error = ErrorResponse.from(globalErrorCode)
 
